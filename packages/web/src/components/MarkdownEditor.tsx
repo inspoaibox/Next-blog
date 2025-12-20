@@ -1,5 +1,4 @@
 import { useState, useRef, useCallback } from 'react';
-import { Button, Textarea } from './ui';
 
 interface MarkdownEditorProps {
   value: string;

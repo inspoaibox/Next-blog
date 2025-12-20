@@ -68,9 +68,15 @@ router.get('/published', optionalAuth, async (req: AuthRequest, res: Response, n
 
     const result = await articleService.findPublished({ page, limit, categoryId, tagId, search });
 
+    // 处理标签数据格式
+    const items = result.items.map((article: any) => ({
+      ...article,
+      tags: article.tags?.map((t: any) => t.tag || t) || [],
+    }));
+
     res.json({
       success: true,
-      data: result,
+      data: { items, total: result.total },
     });
   } catch (error) {
     next(error);
@@ -86,9 +92,15 @@ router.get('/popular', async (_req, res, next) => {
     const limit = parseInt(_req.query.limit as string) || 10;
     const articles = await articleService.findPopular(limit);
 
+    // 处理标签数据格式
+    const items = articles.map((article: any) => ({
+      ...article,
+      tags: article.tags?.map((t: any) => t.tag || t) || [],
+    }));
+
     res.json({
       success: true,
-      data: articles,
+      data: items,
     });
   } catch (error) {
     next(error);

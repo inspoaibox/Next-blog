@@ -1,11 +1,11 @@
 // 杂志主题 - 大图卡片网格，紫粉渐变，现代视觉
-import { ReactNode, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { ReactNode, useState } from 'react';
+import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
 import { DesktopNavMenu, MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
-import { useSiteSettingsStore } from '../../stores/site-settings.store';
+import { useSiteSettingsContext } from '../../contexts/site-settings-context';
 import type {
   ThemeComponents,
   ThemeConfig,
@@ -132,23 +132,18 @@ const gridClasses: Record<string, string> = {
 function BlogLayout({ children, config = defaultConfig }: { children: ReactNode; config?: ThemeConfig }) {
   const colors = colorSchemes[config.colorScheme] || colorSchemes.purple;
   const rounded = roundedClasses[config.roundedCorners] || roundedClasses.large;
-  const { settings, fetchSettings, getNavMenu } = useSiteSettingsStore();
+  const { settings, navMenu } = useSiteSettingsContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
 
   const siteName = settings.siteName || 'NextBlog';
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString()) 
     || `© ${new Date().getFullYear()} ${siteName}`;
-  const navMenu = getNavMenu();
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950">
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 md:gap-3">
+          <Link href="/" className="flex items-center gap-2 md:gap-3">
             <div className={`w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br ${colors.gradient} ${rounded.button} flex items-center justify-center text-white font-bold text-sm md:text-lg`}>{siteName[0]}</div>
             <span className={`text-lg md:text-xl font-bold bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>{siteName}</span>
           </Link>
@@ -268,26 +263,26 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
           {article.category && (
             <>
               <span>·</span>
-              <Link to={`/?category=${article.category.id}`} className={`${colors.text} hover:underline`}>
+              <Link href={`/?category=${article.category.id}`} className={`${colors.text} hover:underline`}>
                 {article.category.name}
               </Link>
             </>
           )}
         </div>
-        <Link to={`/article/${article.slug}`}>
+        <Link href={`/article/${article.slug}`}>
           <h2 className={`text-lg font-bold mt-2 mb-3 group-hover:${colors.text} transition-colors line-clamp-2`}>{article.title}</h2>
         </Link>
         <p className="text-gray-500 text-sm mb-4 line-clamp-2">{truncate(article.excerpt || article.content, 100)}</p>
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             {article.tags?.slice(0, 2).map((tag) => (
-              <Link key={tag.id} to={`/?tag=${tag.id}`}
+              <Link key={tag.id} href={`/?tag=${tag.id}`}
                 className={`px-2 py-1 bg-gray-100 dark:bg-gray-800 ${rounded.button} text-xs hover:${colors.bg} hover:${colors.text} transition-colors`}>
                 {tag.name}
               </Link>
             ))}
           </div>
-          <Link to={`/article/${article.slug}`} className={`${colors.text} text-sm font-medium`}>阅读 →</Link>
+          <Link href={`/article/${article.slug}`} className={`${colors.text} text-sm font-medium`}>阅读 →</Link>
         </div>
       </div>
     </article>
@@ -351,7 +346,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
       {article.tags && article.tags.length > 0 && (
         <div className="mt-8 flex flex-wrap gap-3">
           {article.tags.map((tag) => (
-            <Link key={tag.id} to={`/?tag=${tag.id}`}
+            <Link key={tag.id} href={`/?tag=${tag.id}`}
               className={`px-5 py-2.5 bg-white dark:bg-gray-900 ${rounded.card} text-sm font-medium hover:${colors.bg} hover:${colors.text} shadow-sm transition-all`}>
               # {tag.name}
             </Link>
@@ -396,7 +391,7 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
         {flatCategories.map(({ category, isChild, parentIndex }) => (
           <Link
             key={category.id}
-            to={`/?category=${category.id}`}
+            href={`/?category=${category.id}`}
             className={`bg-gradient-to-br ${gradients[parentIndex % gradients.length]} ${rounded.card} ${isChild ? 'p-4 opacity-90' : 'p-6'} text-white hover:shadow-2xl hover:-translate-y-1 transition-all duration-300`}
           >
             <div className="flex items-center justify-between mb-2">
@@ -439,7 +434,7 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
             const count = tag._count?.articles || 0;
             const size = count > 10 ? 'text-lg px-5 py-2.5' : count > 5 ? 'text-base px-4 py-2' : 'text-sm px-3 py-1.5';
             return (
-              <Link key={tag.id} to={`/?tag=${tag.id}`}
+              <Link key={tag.id} href={`/?tag=${tag.id}`}
                 className={`${tagColors[index % tagColors.length]} ${size} ${rounded.button} font-medium transition-all dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-violet-900/30`}>
                 #{tag.name}
                 <span className="ml-1 opacity-60">({count})</span>
@@ -470,7 +465,7 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
       <div className={`grid grid-cols-1 ${gridClass} gap-6`}>
         {articles.map((article) => (
           <div key={article.id} className={`bg-white dark:bg-gray-900 ${rounded.card} p-6 shadow-sm hover:shadow-lg transition-shadow`}>
-            <Link to={`/article/${article.slug}`}>
+            <Link href={`/article/${article.slug}`}>
               <h2 className={`font-bold text-lg hover:${colors.text} transition-colors`}>{article.title}</h2>
             </Link>
             <p className="text-gray-500 text-sm mt-2 line-clamp-2">{truncate(article.excerpt || article.content, 100)}</p>

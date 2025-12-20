@@ -1,7 +1,10 @@
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '../stores/auth.store';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, ReactNode } from 'react';
 
 const menuItems = [
   { path: '/admin', label: '仪表盘', icon: '📊' },
@@ -16,31 +19,25 @@ const menuItems = [
   { path: '/admin/settings', label: '系统设置', icon: '⚙️' },
 ];
 
-export function AdminLayout() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { isAuthenticated, logout, user } = useAuthStore();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+interface AdminLayoutProps {
+  children: ReactNode;
+}
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
+export function AdminLayout({ children }: AdminLayoutProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { logout, user } = useAuthStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // 路由变化时关闭侧边栏
   useEffect(() => {
     setSidebarOpen(false);
-  }, [location.pathname]);
+  }, [pathname]);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    router.push('/login');
   };
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen flex">
@@ -60,7 +57,7 @@ export function AdminLayout() {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <Link to="/admin" className="text-xl font-bold">
+          <Link href="/admin" className="text-xl font-bold">
             NextBlog 后台
           </Link>
           <button
@@ -77,9 +74,9 @@ export function AdminLayout() {
           {menuItems.map((item) => (
             <Link
               key={item.path}
-              to={item.path}
+              href={item.path}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
-                location.pathname === item.path
+                pathname === item.path
                   ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400'
                   : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
@@ -120,7 +117,7 @@ export function AdminLayout() {
             </svg>
           </button>
           <Link
-            to="/"
+            href="/"
             target="_blank"
             className="text-sm text-primary-600 dark:text-primary-400 hover:underline flex items-center gap-1 ml-auto"
           >
@@ -129,7 +126,7 @@ export function AdminLayout() {
           </Link>
         </div>
         <div className="p-4 lg:p-6">
-          <Outlet />
+          {children}
         </div>
       </main>
     </div>

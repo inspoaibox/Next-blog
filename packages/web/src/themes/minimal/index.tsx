@@ -1,10 +1,11 @@
 // 极简主题 - 纯净简约，大量留白，专注阅读
-import { ReactNode, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { ReactNode, useState, useRef } from 'react';
+import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
 import { formatDate, truncate } from '../../lib/utils';
-import { useSiteSettingsStore, NavMenuItem } from '../../stores/site-settings.store';
+import { useSiteSettingsContext } from '../../contexts/site-settings-context';
+import type { NavMenuItem } from '../../stores/site-settings.store';
 import type {
   ThemeComponents,
   ThemeConfig,
@@ -87,23 +88,18 @@ const widthClasses: Record<string, string> = {
 function BlogLayout({ children, config = defaultConfig }: { children: ReactNode; config?: ThemeConfig }) {
   const widthClass = widthClasses[config.contentWidth] || widthClasses.narrow;
   const isLargeHeader = config.headerStyle === 'centered';
-  const { settings, fetchSettings, getNavMenu } = useSiteSettingsStore();
+  const { settings, navMenu } = useSiteSettingsContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
 
   const siteName = settings.siteName || 'NextBlog';
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString()) 
     || `© ${new Date().getFullYear()} ${siteName}`;
-  const navMenu = getNavMenu();
 
   return (
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-100">
       <header className={`${isLargeHeader ? 'py-12 md:py-20' : 'py-10 md:py-16'} px-4`}>
         <div className={`${widthClass} mx-auto text-center`}>
-          <Link to="/" className={`${isLargeHeader ? 'text-3xl md:text-5xl' : 'text-2xl md:text-4xl'} font-extralight tracking-[0.2em] uppercase`}>
+          <Link href="/" className={`${isLargeHeader ? 'text-3xl md:text-5xl' : 'text-2xl md:text-4xl'} font-extralight tracking-[0.2em] uppercase`}>
             {siteName}
           </Link>
           <div className={`w-12 h-px bg-gray-300 dark:bg-gray-700 mx-auto ${isLargeHeader ? 'mt-6 md:mt-8' : 'mt-4 md:mt-6'}`} />
@@ -177,9 +173,40 @@ function getReadingTime(content: string): number {
 function MinimalNavItem({ item, showDot }: { item: NavMenuItem; showDot: boolean }) {
   const [open, setOpen] = useState(false);
   const [subOpen, setSubOpen] = useState<string | null>(null);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const subCloseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hasChildren = item.children && item.children.length > 0;
 
   const linkClass = "text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap";
+
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpen(false);
+      setSubOpen(null);
+    }, 150);
+  };
+
+  const handleSubMouseEnter = (id: string) => {
+    if (subCloseTimeoutRef.current) {
+      clearTimeout(subCloseTimeoutRef.current);
+      subCloseTimeoutRef.current = null;
+    }
+    setSubOpen(id);
+  };
+
+  const handleSubMouseLeave = () => {
+    subCloseTimeoutRef.current = setTimeout(() => {
+      setSubOpen(null);
+    }, 150);
+  };
 
   if (!hasChildren) {
     return (
@@ -190,7 +217,7 @@ function MinimalNavItem({ item, showDot }: { item: NavMenuItem; showDot: boolean
             {item.label}
           </a>
         ) : (
-          <Link to={item.url} className={linkClass}>
+          <Link href={item.url} className={linkClass}>
             {item.label}
           </Link>
         )}
@@ -203,8 +230,8 @@ function MinimalNavItem({ item, showDot }: { item: NavMenuItem; showDot: boolean
       {showDot && <span className="text-gray-300 dark:text-gray-700">·</span>}
       <div 
         className="relative"
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => { setOpen(false); setSubOpen(null); }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         <button className={`${linkClass} flex items-center gap-1`}>
           {item.label}
@@ -213,7 +240,10 @@ function MinimalNavItem({ item, showDot }: { item: NavMenuItem; showDot: boolean
           </svg>
         </button>
         {open && (
-          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 py-2 bg-white dark:bg-gray-900 rounded shadow-lg border border-gray-100 dark:border-gray-800 min-w-[140px] z-50 text-left normal-case tracking-normal">
+          <div 
+            className="absolute top-full left-1/2 -translate-x-1/2 py-1 bg-white dark:bg-gray-900 rounded shadow-lg border border-gray-100 dark:border-gray-800 min-w-[140px] z-50 text-left normal-case tracking-normal"
+            style={{ marginTop: '4px' }}
+          >
             {item.children!.map((child) => {
               const hasGrandChildren = child.children && child.children.length > 0;
               
@@ -222,26 +252,47 @@ function MinimalNavItem({ item, showDot }: { item: NavMenuItem; showDot: boolean
                   <div 
                     key={child.id} 
                     className="relative"
-                    onMouseEnter={() => setSubOpen(child.id)}
-                    onMouseLeave={() => setSubOpen(null)}
+                    onMouseEnter={() => handleSubMouseEnter(child.id)}
+                    onMouseLeave={handleSubMouseLeave}
                   >
-                    <button className="w-full flex items-center justify-between px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <span>{child.label}</span>
-                      <svg className="w-3 h-3 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                    <div className="flex items-center">
+                      {child.type === 'external' ? (
+                        <a
+                          href={child.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          {child.label}
+                        </a>
+                      ) : (
+                        <Link
+                          href={child.url}
+                          className="flex-1 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      )}
+                      <span className="pr-3 text-gray-400">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </div>
                     {subOpen === child.id && (
-                      <div className="absolute left-full top-0 ml-1 py-2 bg-white dark:bg-gray-900 rounded shadow-lg border border-gray-100 dark:border-gray-800 min-w-[140px] z-50">
+                      <div 
+                        className="absolute left-full top-0 py-1 bg-white dark:bg-gray-900 rounded shadow-lg border border-gray-100 dark:border-gray-800 min-w-[140px] z-50"
+                        style={{ marginLeft: '2px' }}
+                      >
                         {child.children!.map((grandChild) => (
                           grandChild.type === 'external' ? (
                             <a key={grandChild.id} href={grandChild.url} target="_blank" rel="noopener noreferrer"
-                              className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                              className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                               {grandChild.label}
                             </a>
                           ) : (
-                            <Link key={grandChild.id} to={grandChild.url}
-                              className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                            <Link key={grandChild.id} href={grandChild.url}
+                              className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                               {grandChild.label}
                             </Link>
                           )
@@ -254,12 +305,12 @@ function MinimalNavItem({ item, showDot }: { item: NavMenuItem; showDot: boolean
 
               return child.type === 'external' ? (
                 <a key={child.id} href={child.url} target="_blank" rel="noopener noreferrer"
-                  className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                  className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   {child.label}
                 </a>
               ) : (
-                <Link key={child.id} to={child.url}
-                  className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                <Link key={child.id} href={child.url}
+                  className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
                   {child.label}
                 </Link>
               );
@@ -284,7 +335,7 @@ function MinimalMobileNavItem({ item, onClose, level = 0 }: { item: NavMenuItem;
         {level > 0 && '└ '}{item.label}
       </a>
     ) : (
-      <Link to={item.url} onClick={onClose}
+      <Link href={item.url} onClick={onClose}
         className={`text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors ${indent}`}>
         {level > 0 && '└ '}{item.label}
       </Link>
@@ -293,15 +344,29 @@ function MinimalMobileNavItem({ item, onClose, level = 0 }: { item: NavMenuItem;
 
   return (
     <div className={`flex flex-col items-center gap-2 ${indent}`}>
-      <button 
-        onClick={() => setExpanded(!expanded)}
-        className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1"
-      >
-        {level > 0 && '└ '}{item.label}
-        <svg className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+      <div className="flex items-center gap-2">
+        {/* 菜单项本身可点击跳转 */}
+        {item.type === 'external' ? (
+          <a href={item.url} target="_blank" rel="noopener noreferrer" onClick={onClose}
+            className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            {level > 0 && '└ '}{item.label}
+          </a>
+        ) : (
+          <Link href={item.url} onClick={onClose}
+            className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+            {level > 0 && '└ '}{item.label}
+          </Link>
+        )}
+        {/* 展开/收起按钮 */}
+        <button 
+          onClick={() => setExpanded(!expanded)}
+          className="text-gray-300 hover:text-gray-500 transition-colors"
+        >
+          <svg className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+      </div>
       {expanded && (
         <div className="flex flex-col items-center gap-2 text-[10px]">
           {item.children!.map((child) => (
@@ -326,7 +391,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
           <span className="ml-3">· {getReadingTime(article.content)} 分钟阅读</span>
         )}
       </time>
-      <Link to={`/article/${article.slug}`}>
+      <Link href={`/article/${article.slug}`}>
         <h2 className={`text-xl ${fontClass} mt-3 mb-4 hover:text-gray-500 transition-colors leading-relaxed`}>
           {article.title}
         </h2>
@@ -336,12 +401,12 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
       </p>
       <div className="flex items-center gap-4 mt-4 text-xs text-gray-400">
         {article.category && (
-          <Link to={`/?category=${article.category.id}`} className="hover:text-gray-600 transition-colors">
+          <Link href={`/?category=${article.category.id}`} className="hover:text-gray-600 transition-colors">
             {article.category.name}
           </Link>
         )}
         {article.tags?.slice(0, 2).map((tag) => (
-          <Link key={tag.id} to={`/?tag=${tag.id}`} className="hover:text-gray-600 transition-colors">
+          <Link key={tag.id} href={`/?tag=${tag.id}`} className="hover:text-gray-600 transition-colors">
             #{tag.name}
           </Link>
         ))}
@@ -367,7 +432,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
         <div className="flex items-center justify-center gap-6 text-xs text-gray-400">
           {article.author && <span>{article.author.username}</span>}
           {article.category && (
-            <Link to={`/?category=${article.category.id}`} className="hover:text-gray-600">{article.category.name}</Link>
+            <Link href={`/?category=${article.category.id}`} className="hover:text-gray-600">{article.category.name}</Link>
           )}
           <span>{article.viewCount || 0} 阅读</span>
         </div>
@@ -384,7 +449,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
         <footer className="mt-16 pt-8 border-t border-gray-100 dark:border-gray-900">
           <div className="flex flex-wrap justify-center gap-4">
             {article.tags.map((tag) => (
-              <Link key={tag.id} to={`/?tag=${tag.id}`} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+              <Link key={tag.id} href={`/?tag=${tag.id}`} className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
                 #{tag.name}
               </Link>
             ))}
@@ -402,7 +467,7 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
   const renderCategory = (category: any, isChild = false) => (
     <Link
       key={category.id}
-      to={`/?category=${category.id}`}
+      href={`/?category=${category.id}`}
       className={`flex items-center justify-between py-4 border-b border-gray-100 dark:border-gray-900 hover:text-gray-500 transition-colors group ${isChild ? 'pl-6' : ''}`}
     >
       <span className={fontClass}>
@@ -435,7 +500,7 @@ function TagList({ tags }: TagListProps & { config?: ThemeConfig }) {
       <h1 className="text-2xl font-extralight tracking-wide text-center mb-12">标签</h1>
       <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
         {tags.map((tag) => (
-          <Link key={tag.id} to={`/?tag=${tag.id}`}
+          <Link key={tag.id} href={`/?tag=${tag.id}`}
             className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors text-sm">
             #{tag.name}
             <span className="text-xs ml-1 text-gray-300">({tag._count?.articles || 0})</span>
@@ -460,7 +525,7 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
       <div className="space-y-8">
         {articles.map((article) => (
           <div key={article.id} className={`py-6 ${showDivider ? 'border-b border-gray-100 dark:border-gray-900' : ''}`}>
-            <Link to={`/article/${article.slug}`}>
+            <Link href={`/article/${article.slug}`}>
               <h2 className={`${fontClass} text-lg hover:text-gray-500 transition-colors`}>{article.title}</h2>
             </Link>
             <p className={`text-gray-500 text-sm mt-2 ${fontClass} leading-relaxed`}>

@@ -53,6 +53,9 @@ export class ArticleService {
    */
   async create(input: CreateArticleInput): Promise<Article> {
     const slug = generateSlug(input.title);
+    // 空字符串转为 undefined，避免外键约束错误
+    const categoryId = input.categoryId || undefined;
+    const featuredImage = input.featuredImage || undefined;
 
     const article = await prisma.article.create({
       data: {
@@ -60,14 +63,14 @@ export class ArticleService {
         slug,
         content: input.content,
         excerpt: input.excerpt,
-        featuredImage: input.featuredImage,
+        featuredImage,
         status: 'PUBLISHED',
         publishedAt: new Date(),
         authorId: input.authorId,
-        categoryId: input.categoryId,
+        categoryId,
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
-        tags: input.tagIds
+        tags: input.tagIds?.length
           ? {
               create: input.tagIds.map((tagId) => ({ tagId })),
             }
@@ -134,9 +137,11 @@ export class ArticleService {
     // 更新标签关联
     if (input.tagIds) {
       await prisma.articleTag.deleteMany({ where: { articleId: id } });
-      await prisma.articleTag.createMany({
-        data: input.tagIds.map((tagId) => ({ articleId: id, tagId })),
-      });
+      if (input.tagIds.length > 0) {
+        await prisma.articleTag.createMany({
+          data: input.tagIds.map((tagId) => ({ articleId: id, tagId })),
+        });
+      }
     }
 
     // 如果 slug 为空，自动生成
@@ -144,6 +149,14 @@ export class ArticleService {
     if (slug === '' || slug === undefined || slug === null) {
       slug = generateSlug(input.title || current.title);
     }
+
+    // 空字符串转为 null，避免外键约束错误
+    const categoryId = input.categoryId === '' ? null : input.categoryId;
+
+    // 处理特色图：undefined 表示不更新，null 或空字符串表示清除，其他值表示设置
+    const featuredImageUpdate = input.featuredImage === undefined 
+      ? {} 
+      : { featuredImage: input.featuredImage || null };
 
     // 更新文章
     return prisma.article.update({
@@ -153,11 +166,11 @@ export class ArticleService {
         content: input.content,
         excerpt: input.excerpt,
         slug,
-        featuredImage: input.featuredImage,
         status: input.status,
-        categoryId: input.categoryId,
+        categoryId,
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
+        ...featuredImageUpdate,
         // 如果状态变为已发布且之前未发布，设置发布时间
         ...(input.status === 'PUBLISHED' && current.status !== 'PUBLISHED' 
           ? { publishedAt: new Date() } 

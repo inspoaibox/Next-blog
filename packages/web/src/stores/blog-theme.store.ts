@@ -7,11 +7,14 @@ interface BlogThemeState {
   currentTheme: string;
   themeConfig: ThemeConfig;
   isLoading: boolean;
+  isHydrated: boolean;
   setTheme: (theme: string) => void;
+  setConfig: (config: ThemeConfig) => void;
   setThemeConfig: (config: ThemeConfig) => void;
   updateThemeConfig: (key: string, value: any) => void;
   fetchActiveTheme: () => Promise<void>;
   getConfig: () => ThemeConfig;
+  setHydrated: () => void;
 }
 
 export const useBlogThemeStore = create<BlogThemeState>()(
@@ -20,12 +23,17 @@ export const useBlogThemeStore = create<BlogThemeState>()(
       currentTheme: 'classic',
       themeConfig: {},
       isLoading: true,
+      isHydrated: false,
+
+      setHydrated: () => set({ isHydrated: true }),
 
       setTheme: (theme) => {
-        // 切换主题时，加载该主题的默认配置
-        const themeData = themes[theme];
-        const defaultConfig = themeData?.defaultConfig || {};
-        set({ currentTheme: theme, themeConfig: defaultConfig });
+        // 只更新主题名称，不重置配置
+        set({ currentTheme: theme });
+      },
+
+      setConfig: (config) => {
+        set({ themeConfig: config });
       },
 
       setThemeConfig: (config) => {
@@ -87,6 +95,9 @@ export const useBlogThemeStore = create<BlogThemeState>()(
         currentTheme: state.currentTheme,
         themeConfig: state.themeConfig,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHydrated();
+      },
     }
   )
 );

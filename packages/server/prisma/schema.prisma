@@ -7,12 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 用户表
 model User {
   id            String    @id @default(cuid())
   username      String    @unique
   passwordHash  String
-  role          String    @default("ADMIN") // ADMIN, EDITOR, VIEWER
+  role          String    @default("ADMIN")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   lastLoginAt   DateTime?
@@ -22,77 +21,71 @@ model User {
   comments      Comment[]
 }
 
-// 文章表
 model Article {
-  id             String          @id @default(cuid())
+  id             String           @id @default(cuid())
   title          String
-  slug           String          @unique
+  slug           String           @unique
   content        String
   excerpt        String?
-  featuredImage  String?
-  status         String          @default("DRAFT") // DRAFT, PUBLISHED, SCHEDULED, TRASHED
+  status         String           @default("DRAFT")
   publishedAt    DateTime?
   scheduledAt    DateTime?
   seoTitle       String?
   seoDescription String?
-  viewCount      Int             @default(0)
+  viewCount      Int              @default(0)
   authorId       String
-  author         User            @relation(fields: [authorId], references: [id])
   categoryId     String?
-  category       Category?       @relation(fields: [categoryId], references: [id])
-  tags           ArticleTag[]
-  comments       Comment[]
-  versions       ArticleVersion[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
   deletedAt      DateTime?
+  featuredImage  String?
+  category       Category?        @relation(fields: [categoryId], references: [id])
+  author         User             @relation(fields: [authorId], references: [id])
+  tags           ArticleTag[]
+  versions       ArticleVersion[]
+  comments       Comment[]
 }
 
-// 文章版本历史
 model ArticleVersion {
   id        String   @id @default(cuid())
   articleId String
-  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
   title     String
   content   String
   createdAt DateTime @default(now())
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
 }
 
-// 分类表
 model Category {
   id        String     @id @default(cuid())
   name      String
   slug      String     @unique
   parentId  String?
-  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
-  children  Category[] @relation("CategoryTree")
-  articles  Article[]
   sortOrder Int        @default(0)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+  articles  Article[]
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
 }
 
-// 标签表
 model Tag {
   id        String       @id @default(cuid())
   name      String       @unique
   slug      String       @unique
-  articles  ArticleTag[]
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
+  articles  ArticleTag[]
 }
 
-// 文章-标签关联表
 model ArticleTag {
   articleId String
-  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
   tagId     String
   tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@id([articleId, tagId])
 }
 
-// 独立页面表
 model Page {
   id        String   @id @default(cuid())
   title     String
@@ -104,7 +97,6 @@ model Page {
   updatedAt DateTime @updatedAt
 }
 
-// 媒体文件表
 model Media {
   id            String   @id @default(cuid())
   filename      String
@@ -116,38 +108,35 @@ model Media {
   createdAt     DateTime @default(now())
 }
 
-// 知识库文档表
 model KnowledgeDoc {
   id        String         @id @default(cuid())
   title     String
   slug      String         @unique
   content   String
   parentId  String?
-  parent    KnowledgeDoc?  @relation("DocTree", fields: [parentId], references: [id])
-  children  KnowledgeDoc[] @relation("DocTree")
   sortOrder Int            @default(0)
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
+  parent    KnowledgeDoc?  @relation("DocTree", fields: [parentId], references: [id])
+  children  KnowledgeDoc[] @relation("DocTree")
 }
 
-// 评论表
 model Comment {
   id          String    @id @default(cuid())
   content     String
   authorName  String
   authorEmail String
-  status      String    @default("PENDING") // PENDING, APPROVED, SPAM, TRASHED
+  status      String    @default("PENDING")
   articleId   String
-  article     Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
   userId      String?
-  user        User?     @relation(fields: [userId], references: [id])
   parentId    String?
+  createdAt   DateTime  @default(now())
   parent      Comment?  @relation("CommentTree", fields: [parentId], references: [id])
   replies     Comment[] @relation("CommentTree")
-  createdAt   DateTime  @default(now())
+  user        User?     @relation(fields: [userId], references: [id])
+  article     Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
 }
 
-// AI 模型配置表
 model AIModel {
   id        String   @id @default(cuid())
   name      String
@@ -162,7 +151,6 @@ model AIModel {
   updatedAt DateTime @updatedAt
 }
 
-// AI 使用日志
 model AIUsageLog {
   id        String   @id @default(cuid())
   modelId   String
@@ -174,7 +162,6 @@ model AIUsageLog {
   createdAt DateTime @default(now())
 }
 
-// 主题配置表
 model Theme {
   id        String   @id @default(cuid())
   name      String   @unique
@@ -186,7 +173,6 @@ model Theme {
   updatedAt DateTime @updatedAt
 }
 
-// 插件配置表
 model Plugin {
   id           String   @id @default(cuid())
   name         String   @unique
@@ -199,14 +185,12 @@ model Plugin {
   updatedAt    DateTime @updatedAt
 }
 
-// 系统设置表
 model Setting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
 }
 
-// 访问统计表
 model PageView {
   id        String   @id @default(cuid())
   articleId String?

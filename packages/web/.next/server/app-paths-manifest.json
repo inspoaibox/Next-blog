@@ -1,0 +1,7 @@
+{
+  "/(admin)/admin/settings/page": "app/(admin)/admin/settings/page.js",
+  "/(blog)/page": "app/(blog)/page.js",
+  "/(blog)/tags/page": "app/(blog)/tags/page.js",
+  "/(admin)/admin/categories/page": "app/(admin)/admin/categories/page.js",
+  "/(blog)/article/[slug]/page": "app/(blog)/article/[slug]/page.js"
+}

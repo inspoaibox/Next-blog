@@ -1,6 +1,6 @@
 # 博客系统
 
-一个功能完整的个人博客平台，基于 Node.js + React + TypeScript 构建。
+一个功能完整的个人博客平台，基于 Node.js + Next.js + TypeScript 构建，支持服务端渲染（SSR）。
 
 ## 功能特性
 
@@ -24,10 +24,11 @@
 
 ### 系统功能
 - **用户认证** - JWT + bcrypt 安全认证
-- **主题系统** - 深色/浅色模式切换
+- **主题系统** - 三套主题（经典、极简、杂志），支持深色/浅色模式
+- **三级菜单** - 支持三级导航菜单配置
 - **插件系统** - 插件安装、启用/禁用、依赖管理
 - **数据备份** - JSON/Markdown 导出导入
-- **SEO 优化** - 自定义标题、描述、固定链接
+- **SEO 优化** - 服务端渲染，爬虫可抓取完整内容
 
 ## 技术栈
 
@@ -39,12 +40,12 @@
 - Vitest 测试框架
 
 ### 前端
-- React 18
+- Next.js 14 (App Router)
 - TypeScript
 - Tailwind CSS
-- React Router
 - Zustand 状态管理
 - TanStack Query
+- 服务端渲染 (SSR) + 静态生成 (SSG)
 
 ## 快速开始
 
@@ -66,14 +67,28 @@ npm install
 ```
 
 3. **配置环境变量**
-```bash
-# 复制环境变量模板
-cp packages/server/.env.example packages/server/.env
 
-# 编辑 .env 文件，设置以下变量：
-# DATABASE_URL="file:./dev.db"
-# JWT_SECRET="your-secret-key"
-# ENCRYPTION_KEY="your-32-char-encryption-key"
+后端配置：
+```bash
+cp packages/server/.env.example packages/server/.env
+```
+
+编辑 `packages/server/.env`：
+```env
+DATABASE_URL="file:./dev.db"
+JWT_SECRET="your-secret-key"
+ENCRYPTION_KEY="your-32-char-encryption-key"
+PORT=3012
+```
+
+前端配置：
+```bash
+cp packages/web/.env.local.example packages/web/.env.local
+```
+
+编辑 `packages/web/.env.local`：
+```env
+NEXT_PUBLIC_API_URL=http://127.0.0.1:3012
 ```
 
 4. **初始化数据库**
@@ -121,12 +136,20 @@ cd packages/web
 npm run build
 ```
 
-2. **启动后端**
+2. **启动前端（Next.js 需要 Node.js 运行时）**
+```bash
+cd packages/web
+npm start
+```
+
+3. **启动后端**
 ```bash
 cd packages/server
 npm run build
 npm start
 ```
+
+详细部署说明请参考 [部署指南](docs/DEPLOYMENT.md)。
 
 ## 项目结构
 
@@ -142,17 +165,22 @@ blog/
 │   │       ├── middleware/     # 中间件
 │   │       └── lib/            # 工具库
 │   │
-│   └── web/                    # 前端应用
+│   └── web/                    # 前端应用 (Next.js)
 │       └── src/
+│           ├── app/            # App Router 页面
+│           │   ├── (blog)/     # 博客前台（SSR）
+│           │   ├── (admin)/    # 后台管理（CSR）
+│           │   └── login/      # 登录页
 │           ├── components/     # 通用组件
-│           ├── pages/          # 页面组件
+│           ├── views/          # 页面视图组件
 │           ├── layouts/        # 布局组件
 │           ├── hooks/          # 自定义 Hooks
 │           ├── stores/         # 状态管理
+│           ├── themes/         # 主题组件
 │           ├── lib/            # 工具函数
 │           └── types/          # 类型定义
 │
-└── .kiro/specs/                # 项目规格文档
+└── docs/                       # 项目文档
 ```
 
 ## API 接口
@@ -210,9 +238,9 @@ npm run db:seed      # 初始化数据
 
 # 前端开发
 cd packages/web
-npm run dev          # 启动开发服务器
+npm run dev          # 启动开发服务器 (Next.js)
 npm run build        # 构建生产版本
-npm run preview      # 预览生产构建
+npm start            # 启动生产服务器
 
 # 数据库
 cd packages/server
@@ -237,6 +265,16 @@ ENCRYPTION_KEY="your-32-character-encryption-key"
 
 # 服务端口
 PORT=3012
+
+# CORS 允许的域名（生产环境）
+ALLOWED_ORIGINS=https://your-domain.com
+```
+
+### 前端配置 (packages/web/.env.local)
+
+```env
+# API 服务器地址
+NEXT_PUBLIC_API_URL=http://127.0.0.1:3012
 ```
 
 ### AI 模型配置
@@ -246,6 +284,18 @@ PORT=3012
 1. 添加 AI 模型（OpenAI/Claude/通义千问）
 2. 填写 API Key
 3. 设置默认模型
+
+## SEO 说明
+
+本项目使用 Next.js 服务端渲染（SSR），博客前台页面在服务端生成完整 HTML：
+
+- **首页** - SSR，每次请求时获取最新文章
+- **文章详情** - SSG + ISR，静态生成并定期重新验证
+- **分类/标签页** - SSG + ISR
+- **搜索页** - SSR，支持动态搜索参数
+- **后台管理** - CSR，客户端渲染
+
+爬虫访问时可以获取完整的页面内容，有利于 SEO。
 
 ## License
 

@@ -1,26 +1,41 @@
-import typography from '@tailwindcss/typography';
-
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+module.exports = {
+  content: [
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   darkMode: 'class',
   theme: {
     extend: {
       colors: {
         primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+        },
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: 'none',
+            h1: { fontWeight: '700', marginTop: '1.5em', marginBottom: '0.5em' },
+            h2: { fontWeight: '600', marginTop: '1.25em', marginBottom: '0.5em' },
+            h3: { fontWeight: '600', marginTop: '1em', marginBottom: '0.5em' },
+            'code::before': { content: '""' },
+            'code::after': { content: '""' },
+          },
         },
       },
     },
   },
-  plugins: [typography],
+  plugins: [
+    require('@tailwindcss/typography'),
+  ],
 };

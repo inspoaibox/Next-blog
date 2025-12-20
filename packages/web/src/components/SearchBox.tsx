@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 interface SearchBoxProps {
   className?: string;
@@ -11,7 +11,7 @@ export function SearchBox({ className = '', placeholder = '搜索文章...' }: S
   const [query, setQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -33,7 +33,7 @@ export function SearchBox({ className = '', placeholder = '搜索文章...' }: S
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
       setIsOpen(false);
       setQuery('');
     }
@@ -90,12 +90,12 @@ export function SearchBox({ className = '', placeholder = '搜索文章...' }: S
 // 内联搜索框（用于移动端或需要始终显示的场景）
 export function InlineSearchBox({ className = '', placeholder = '搜索文章...' }: SearchBoxProps) {
   const [query, setQuery] = useState('');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(query.trim())}`);
       setQuery('');
     }
   };

@@ -1,9 +1,21 @@
 const API_BASE = '/api';
 
+interface ApiError {
+  code: string;
+  message: string;
+}
+
 interface ApiResponse<T> {
   success: boolean;
   data: T;
-  error?: string;
+  error?: string | ApiError;
+}
+
+// 提取错误消息
+function getErrorMessage(error: string | ApiError | undefined): string {
+  if (!error) return '请求失败';
+  if (typeof error === 'string') return error;
+  return error.message || '请求失败';
 }
 
 async function request<T>(
@@ -29,7 +41,7 @@ async function request<T>(
   const data: ApiResponse<T> = await response.json();
 
   if (!response.ok || !data.success) {
-    throw new Error(data.error || 'Request failed');
+    throw new Error(getErrorMessage(data.error));
   }
 
   return data.data;
@@ -72,7 +84,7 @@ export const api = {
     const data: ApiResponse<T> = await response.json();
     
     if (!response.ok || !data.success) {
-      throw new Error(data.error || 'Upload failed');
+      throw new Error(getErrorMessage(data.error));
     }
     
     return data.data;

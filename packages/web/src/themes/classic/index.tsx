@@ -1,11 +1,11 @@
 // 经典主题 - 传统两栏博客布局，温暖琥珀色调
-import { ReactNode, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { ReactNode, useState } from 'react';
+import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
 import { DesktopNavMenu, MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
-import { useSiteSettingsStore } from '../../stores/site-settings.store';
+import { useSiteSettingsContext } from '../../contexts/site-settings-context';
 import type {
   ThemeComponents,
   ThemeConfig,
@@ -98,25 +98,20 @@ const colorClasses: Record<string, { gradient: string; text: string; bg: string;
 function BlogLayout({ children, config = defaultConfig }: { children: ReactNode; config?: ThemeConfig }) {
   const colors = colorClasses[config.primaryColor] || colorClasses.amber;
   const isSidebar = config.layout === 'sidebar';
-  const { settings, fetchSettings, getNavMenu } = useSiteSettingsStore();
+  const { settings, navMenu } = useSiteSettingsContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
 
   const siteName = settings.siteName || 'NextBlog';
   const siteDescription = settings.siteDescription || '下一个博客，记录精彩生活';
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString()) 
     || `© ${new Date().getFullYear()} ${siteName}`;
-  const navMenu = getNavMenu();
 
   return (
     <div className="min-h-screen bg-stone-50 dark:bg-stone-900">
       {/* 顶部横幅 */}
       <div className={`bg-gradient-to-r ${colors.gradient} text-white`}>
         <div className="max-w-6xl mx-auto px-4 py-6 md:py-8 text-center">
-          <Link to="/" className="text-2xl md:text-3xl font-serif font-bold tracking-wide">
+          <Link href="/" className="text-2xl md:text-3xl font-serif font-bold tracking-wide">
             📚 {siteName}
           </Link>
           <p className="mt-2 text-white/70 text-sm hidden md:block">{siteDescription}</p>
@@ -173,9 +168,9 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                 <div className="bg-white dark:bg-stone-800 rounded-lg p-6 shadow-sm border border-stone-200 dark:border-stone-700">
                   <h3 className="font-serif font-bold text-lg mb-4 pb-2 border-b border-stone-200 dark:border-stone-700">🔗 快速链接</h3>
                   <div className="space-y-2 text-sm">
-                    <Link to="/categories" className={`block text-stone-600 dark:text-stone-400 ${colors.hover}`}>→ 所有分类</Link>
-                    <Link to="/tags" className={`block text-stone-600 dark:text-stone-400 ${colors.hover}`}>→ 标签云</Link>
-                    <Link to="/knowledge" className={`block text-stone-600 dark:text-stone-400 ${colors.hover}`}>→ 知识库</Link>
+                    <Link href="/categories" className={`block text-stone-600 dark:text-stone-400 ${colors.hover}`}>→ 所有分类</Link>
+                    <Link href="/tags" className={`block text-stone-600 dark:text-stone-400 ${colors.hover}`}>→ 标签云</Link>
+                    <Link href="/knowledge" className={`block text-stone-600 dark:text-stone-400 ${colors.hover}`}>→ 知识库</Link>
                   </div>
                 </div>
               )}
@@ -215,7 +210,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
     <article className="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden hover:shadow-md transition-shadow">
       <div className={`h-1 bg-gradient-to-r ${colors.gradient}`} />
       {showFeaturedImage && (
-        <Link to={`/article/${article.slug}`}>
+        <Link href={`/article/${article.slug}`}>
           <img 
             src={article.featuredImage!} 
             alt={article.title}
@@ -227,12 +222,12 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
         <div className="flex items-center gap-2 text-xs text-stone-500 mb-3">
           <span>📅 {formatDate(article.publishedAt || article.createdAt)}</span>
           {article.category && (
-            <Link to={`/?category=${article.category.id}`} className={`${colors.text} hover:underline`}>
+            <Link href={`/?category=${article.category.id}`} className={`${colors.text} hover:underline`}>
               📂 {article.category.name}
             </Link>
           )}
         </div>
-        <Link to={`/article/${article.slug}`}>
+        <Link href={`/article/${article.slug}`}>
           <h2 className={`text-xl font-serif font-bold mb-3 ${colors.hover} transition-colors`}>{article.title}</h2>
         </Link>
         <p className="text-stone-600 dark:text-stone-400 text-sm leading-relaxed mb-4">
@@ -241,12 +236,12 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
         <div className="flex items-center justify-between">
           <div className="flex flex-wrap gap-2">
             {article.tags?.slice(0, 3).map((tag) => (
-              <Link key={tag.id} to={`/?tag=${tag.id}`} className={`px-2 py-1 bg-stone-100 dark:bg-stone-700 text-xs rounded hover:${colors.bg}`}>
+              <Link key={tag.id} href={`/?tag=${tag.id}`} className={`px-2 py-1 bg-stone-100 dark:bg-stone-700 text-xs rounded hover:${colors.bg}`}>
                 #{tag.name}
               </Link>
             ))}
           </div>
-          <Link to={`/article/${article.slug}`} className={`${colors.text} text-sm font-medium hover:underline`}>阅读全文 →</Link>
+          <Link href={`/article/${article.slug}`} className={`${colors.text} text-sm font-medium hover:underline`}>阅读全文 →</Link>
         </div>
       </div>
     </article>
@@ -267,7 +262,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
             <span>📅 {formatDate(article.publishedAt || article.createdAt)}</span>
             {article.author && <span>✍️ {article.author.username}</span>}
             {article.category && (
-              <Link to={`/?category=${article.category.id}`} className={`${colors.text} hover:underline`}>📂 {article.category.name}</Link>
+              <Link href={`/?category=${article.category.id}`} className={`${colors.text} hover:underline`}>📂 {article.category.name}</Link>
             )}
             <span>👁️ {article.viewCount || 0} 次阅读</span>
           </div>
@@ -279,7 +274,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
             <div className="flex flex-wrap gap-2">
               <span className="text-stone-500 text-sm">🏷️ 标签：</span>
               {article.tags.map((tag) => (
-                <Link key={tag.id} to={`/?tag=${tag.id}`} className={`px-3 py-1 bg-stone-100 dark:bg-stone-700 text-sm rounded-full hover:${colors.bg}`}>
+                <Link key={tag.id} href={`/?tag=${tag.id}`} className={`px-3 py-1 bg-stone-100 dark:bg-stone-700 text-sm rounded-full hover:${colors.bg}`}>
                   {tag.name}
                 </Link>
               ))}
@@ -298,7 +293,7 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
   const renderCategory = (category: any, isChild = false) => (
     <Link
       key={category.id}
-      to={`/?category=${category.id}`}
+      href={`/?category=${category.id}`}
       className={`bg-white dark:bg-stone-800 rounded-lg p-5 border border-stone-200 dark:border-stone-700 hover:shadow-md transition-all group ${isChild ? 'ml-4' : ''}`}
     >
       <div className="flex items-center justify-between">
@@ -341,7 +336,7 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
             const count = tag._count?.articles || 0;
             const size = count > 10 ? 'text-xl' : count > 5 ? 'text-lg' : 'text-base';
             return (
-              <Link key={tag.id} to={`/?tag=${tag.id}`}
+              <Link key={tag.id} href={`/?tag=${tag.id}`}
                 className={`${size} px-4 py-2 bg-stone-100 dark:bg-stone-700 rounded-full hover:${colors.bg} ${colors.hover} transition-all`}>
                 #{tag.name}
                 <span className="ml-2 text-xs text-stone-400">({count})</span>
@@ -365,7 +360,7 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
       <div className="space-y-4">
         {articles.map((article) => (
           <div key={article.id} className={`bg-white dark:bg-stone-800 rounded-lg p-5 border border-stone-200 dark:border-stone-700 hover:border-${config.primaryColor}-500 transition-colors`}>
-            <Link to={`/article/${article.slug}`}>
+            <Link href={`/article/${article.slug}`}>
               <h2 className={`font-serif font-bold text-lg ${colors.hover} transition-colors`}>{article.title}</h2>
             </Link>
             <p className="text-stone-500 text-sm mt-2">{truncate(article.excerpt || article.content, 150)}</p>

@@ -43,6 +43,7 @@ export interface SliderItem {
 interface SiteSettingsState {
   settings: SiteSettings;
   isLoading: boolean;
+  setSettings: (settings: Record<string, string>) => void;
   fetchSettings: () => Promise<void>;
   getNavMenu: () => NavMenuItem[];
   getSliderItems: () => SliderItem[];
@@ -81,6 +82,10 @@ const defaultNavMenu: NavMenuItem[] = [
 export const useSiteSettingsStore = create<SiteSettingsState>((set, get) => ({
   settings: defaultSettings,
   isLoading: true,
+
+  setSettings: (newSettings) => {
+    set({ settings: { ...defaultSettings, ...newSettings } as SiteSettings, isLoading: false });
+  },
 
   fetchSettings: async () => {
     try {
