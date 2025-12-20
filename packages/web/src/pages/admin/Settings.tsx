@@ -1384,9 +1384,9 @@ function SEOSettings() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold">静态页面生成</h2>
+          <h2 className="text-lg font-semibold">SEO 静态页面生成</h2>
           <p className="text-sm text-gray-500 mt-1">
-            为所有已发布文章生成静态 HTML 页面，提升 SEO 效果和首屏加载速度
+            为搜索引擎爬虫生成包含完整 SEO 元数据的静态 HTML 页面
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1405,10 +1405,11 @@ function SEOSettings() {
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
             <h3 className="font-medium mb-2">工作原理</h3>
             <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-              <li>• 为每篇已发布文章生成独立的 HTML 文件</li>
-              <li>• 搜索引擎爬虫可以直接读取完整内容</li>
+              <li>• 为每篇已发布文章生成独立的 SEO 优化 HTML 文件</li>
+              <li>• 静态页面包含完整的文章内容和 SEO 元数据</li>
               <li>• 文章发布/更新时会自动重新生成对应页面</li>
-              <li>• 静态页面存储在 dist/article/ 目录下</li>
+              <li>• 静态页面存储在 dist/prerender/article/ 目录</li>
+              <li>• 不影响 SPA 正常运行，仅供爬虫抓取使用</li>
             </ul>
           </div>
 
@@ -1425,21 +1426,36 @@ function SEOSettings() {
 
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold">SEO 说明</h2>
+          <h2 className="text-lg font-semibold">SEO 优化说明</h2>
         </CardHeader>
         <CardContent>
           <div className="prose dark:prose-invert max-w-none text-sm">
-            <p>静态页面包含以下 SEO 优化：</p>
+            <p>生成的静态页面包含以下 SEO 优化：</p>
             <ul>
-              <li>完整的 meta 标签（title, description, keywords）</li>
-              <li>Open Graph 标签（社交分享优化）</li>
+              <li>完整的 meta 标签（title, description, keywords, author）</li>
+              <li>Open Graph 标签（Facebook、微信等社交分享优化）</li>
               <li>Twitter Card 标签</li>
-              <li>JSON-LD 结构化数据（Schema.org）</li>
-              <li>语义化 HTML 结构</li>
+              <li>JSON-LD 结构化数据（Schema.org Article 类型）</li>
+              <li>语义化 HTML 结构和完整文章内容</li>
+              <li>Canonical URL 规范链接</li>
             </ul>
             <p className="mt-4">
-              <strong>注意：</strong>Caddy 配置需要支持 try_files，优先返回静态 HTML 文件。
+              <strong>Caddy 配置示例：</strong>
             </p>
+            <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded text-xs overflow-x-auto">
+{`# 爬虫访问时返回预渲染页面
+@crawler {
+  header_regexp User-Agent (?i)(googlebot|bingbot|baiduspider|yandex)
+}
+handle @crawler {
+  try_files /prerender{path}.html {path}
+}
+
+# 普通用户访问 SPA
+handle {
+  try_files {path} /index.html
+}`}
+            </pre>
           </div>
         </CardContent>
       </Card>
