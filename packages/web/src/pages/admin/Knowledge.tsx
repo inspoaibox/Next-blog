@@ -44,7 +44,6 @@ export function KnowledgePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [selectedDoc, setSelectedDoc] = useState<KnowledgeDoc | null>(null);
   const [form, setForm] = useState({ title: '', content: '', parentId: '' });
   const [folderForm, setFolderForm] = useState({ title: '', parentId: '' });
   const [uploadedFileName, setUploadedFileName] = useState('');
@@ -90,8 +89,8 @@ export function KnowledgePage() {
   const handleDelete = async (id: string) => {
     if (confirm('确定要删除这个文档吗？')) {
       await deleteDoc.mutateAsync(id);
-      if (selectedDoc?.id === id) {
-        setSelectedDoc(null);
+      if (selectedDocId === id) {
+        setSelectedDocId(null);
       }
     }
   };
@@ -149,21 +148,6 @@ export function KnowledgePage() {
 
   const flatDocs = docs ? flattenDocs(docs) : [];
 
-  // 简单的 Markdown 渲染
-  const renderMarkdown = (content: string) => {
-    const html = content
-      .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold mt-6 mb-3">$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold mt-6 mb-4">$1</h1>')
-      .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-      .replace(/`([^`]+)`/gim, '<code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">$1</code>')
-      .replace(/^\- (.*$)/gim, '<li class="ml-4">$1</li>')
-      .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal">$1</li>')
-      .replace(/\n/gim, '<br />');
-    return html;
-  };
-
   const renderTree = (items: KnowledgeDoc[], level = 0) => {
     return items.map((doc) => {
       const isFolder = doc.children && doc.children.length > 0;
@@ -172,14 +156,14 @@ export function KnowledgePage() {
         <div key={doc.id}>
           <div
             className={`group flex items-center gap-2 px-3 py-2 cursor-pointer rounded-lg transition-colors ${
-              selectedDoc?.id === doc.id
+              selectedDocId === doc.id
                 ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600'
                 : 'hover:bg-gray-100 dark:hover:bg-gray-700'
             }`}
             style={{ paddingLeft: `${level * 16 + 12}px` }}
           >
             <span className="text-gray-400">{isFolder || hasNoContent ? '📁' : '📄'}</span>
-            <span className="flex-1 truncate" onClick={() => setSelectedDoc(doc)}>
+            <span className="flex-1 truncate" onClick={() => setSelectedDocId(doc.id)}>
               {doc.title}
             </span>
             <div className="hidden group-hover:flex items-center gap-1">
@@ -267,7 +251,7 @@ export function KnowledgePage() {
             {selectedDoc ? (
               <div
                 className="prose dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedDoc.content || '') }}
+                dangerouslySetInnerHTML={{ __html: selectedDoc.htmlContent || selectedDoc.content || '' }}
               />
             ) : (
               <div className="text-center text-gray-500 py-12">
