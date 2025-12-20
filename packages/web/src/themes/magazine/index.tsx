@@ -43,6 +43,13 @@ const configOptions: ThemeConfigOption[] = [
     description: '文章卡片的视觉样式',
   },
   {
+    key: 'showFeaturedImage',
+    label: '显示特色图',
+    type: 'boolean',
+    default: true,
+    description: '在文章卡片顶部显示特色图或渐变背景',
+  },
+  {
     key: 'colorScheme',
     label: '配色方案',
     type: 'select',
@@ -78,6 +85,7 @@ const configOptions: ThemeConfigOption[] = [
 const defaultConfig: ThemeConfig = {
   gridColumns: '3',
   cardStyle: 'gradient',
+  showFeaturedImage: true,
   colorScheme: 'purple',
   showHeroHeader: true,
   roundedCorners: 'large',
@@ -259,11 +267,12 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
   const gradient = gradients[hashCode(article.id) % gradients.length];
 
   const isSimple = config.cardStyle === 'simple';
+  const showFeaturedImage = config.showFeaturedImage !== false;
   const hasFeaturedImage = !!article.featuredImage;
 
   return (
     <article className={`group bg-white dark:bg-gray-900 ${rounded.card} overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2`}>
-      {!isSimple && (
+      {!isSimple && showFeaturedImage && (
         <div className={`aspect-[16/10] relative overflow-hidden`}>
           {hasFeaturedImage ? (
             <img 
@@ -277,17 +286,20 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
             </div>
           )}
           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-500" />
-          {article.category && (
-            <div className="absolute top-4 left-4">
-              <span className={`px-3 py-1.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm ${rounded.button} text-xs font-semibold`}>
-                {article.category.name}
-              </span>
-            </div>
-          )}
         </div>
       )}
       <div className="p-6">
-        <time className="text-xs text-gray-500">{formatDate(article.publishedAt || article.createdAt)}</time>
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <time>{formatDate(article.publishedAt || article.createdAt)}</time>
+          {article.category && (
+            <>
+              <span>·</span>
+              <Link to={`/?category=${article.category.id}`} className={`${colors.text} hover:underline`}>
+                {article.category.name}
+              </Link>
+            </>
+          )}
+        </div>
         <Link to={`/article/${article.slug}`}>
           <h2 className={`text-lg font-bold mt-2 mb-3 group-hover:${colors.text} transition-colors line-clamp-2`}>{article.title}</h2>
         </Link>

@@ -1442,8 +1442,7 @@ function SEOSettings() {
             <p className="mt-4">
               <strong>Caddy 配置示例：</strong>
             </p>
-            <pre className="bg-gray-100 dark:bg-gray-900 p-3 rounded text-xs overflow-x-auto">
-{`# 爬虫访问时返回预渲染页面
+            <pre className="bg-gray-800 text-gray-100 p-3 rounded text-xs overflow-x-auto">{`# 爬虫访问时返回预渲染页面
 @crawler {
   header_regexp User-Agent (?i)(googlebot|bingbot|baiduspider|yandex)
 }
@@ -1454,8 +1453,7 @@ handle @crawler {
 # 普通用户访问 SPA
 handle {
   try_files {path} /index.html
-}`}
-            </pre>
+}`}</pre>
           </div>
         </CardContent>
       </Card>

@@ -130,14 +130,14 @@ export function ArticleDetailPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* 侧边栏 - 目录（左侧，仅桌面端） */}
           {toc.length > 0 && (
-            <aside className="hidden lg:block lg:order-first">
+            <aside className="hidden lg:block lg:order-first lg:col-span-1">
               <Card className="sticky top-20">
                 <CardContent className="p-4">
                   <h3 className="font-semibold mb-4">目录</h3>
-                  <nav className="text-sm max-h-[70vh] overflow-y-auto">
+                  <nav className="text-sm max-h-[70vh] overflow-y-auto min-w-[180px]">
                     {renderTocItems(toc)}
                   </nav>
                 </CardContent>
@@ -146,7 +146,7 @@ export function ArticleDetailPage() {
           )}
 
           {/* 文章内容 - 使用主题组件 */}
-          <div className={toc.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'}>
+          <div className={toc.length > 0 ? 'lg:col-span-4' : 'lg:col-span-5'}>
             <ArticleDetail article={{ ...article, htmlContent }} config={config} />
             
             {/* 评论区 */}

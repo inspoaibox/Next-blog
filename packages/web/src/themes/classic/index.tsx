@@ -44,6 +44,13 @@ const configOptions: ThemeConfigOption[] = [
     description: '在侧边栏显示快速链接',
   },
   {
+    key: 'showFeaturedImage',
+    label: '显示特色图',
+    type: 'boolean',
+    default: false,
+    description: '在文章卡片顶部显示特色图',
+  },
+  {
     key: 'articlesPerRow',
     label: '每行文章数',
     type: 'select',
@@ -73,6 +80,7 @@ const defaultConfig: ThemeConfig = {
   layout: 'sidebar',
   showAuthorCard: true,
   showQuickLinks: true,
+  showFeaturedImage: false,
   articlesPerRow: '1',
   primaryColor: 'amber',
 };
@@ -227,10 +235,20 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 // ============ 文章卡片 ============
 function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { config?: ThemeConfig }) {
   const colors = colorClasses[config.primaryColor] || colorClasses.amber;
+  const showFeaturedImage = config.showFeaturedImage && article.featuredImage;
 
   return (
     <article className="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-stone-200 dark:border-stone-700 overflow-hidden hover:shadow-md transition-shadow">
       <div className={`h-1 bg-gradient-to-r ${colors.gradient}`} />
+      {showFeaturedImage && (
+        <Link to={`/article/${article.slug}`}>
+          <img 
+            src={article.featuredImage!} 
+            alt={article.title}
+            className="w-full h-48 object-cover hover:opacity-90 transition-opacity"
+          />
+        </Link>
+      )}
       <div className="p-6">
         <div className="flex items-center gap-2 text-xs text-stone-500 mb-3">
           <span>📅 {formatDate(article.publishedAt || article.createdAt)}</span>
