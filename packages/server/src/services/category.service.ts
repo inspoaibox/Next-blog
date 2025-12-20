@@ -91,13 +91,15 @@ export class CategoryService {
    * 更新分类
    */
   async update(id: string, input: UpdateCategoryInput): Promise<Category> {
+    const data: any = {};
+    if (input.name !== undefined) data.name = input.name;
+    if (input.slug !== undefined) data.slug = input.slug;
+    if (input.parentId !== undefined) data.parentId = input.parentId;
+    if (input.sortOrder !== undefined) data.sortOrder = input.sortOrder;
+
     return prisma.category.update({
       where: { id },
-      data: {
-        name: input.name,
-        parentId: input.parentId,
-        sortOrder: input.sortOrder,
-      },
+      data,
       include: {
         parent: true,
         children: true,

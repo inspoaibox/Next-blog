@@ -24,15 +24,20 @@ export function CategoriesPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: '', slug: '', description: '', parentId: '' });
+  const [form, setForm] = useState({ name: '', slug: '', parentId: '' });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const data = {
+        name: form.name,
+        slug: form.slug || undefined,
+        parentId: form.parentId || undefined,
+      };
       if (editingId) {
-        await updateCategory.mutateAsync({ id: editingId, data: form });
+        await updateCategory.mutateAsync({ id: editingId, data });
       } else {
-        await createCategory.mutateAsync(form);
+        await createCategory.mutateAsync(data);
       }
       closeModal();
     } catch (error) {
@@ -45,7 +50,6 @@ export function CategoriesPage() {
     setForm({
       name: category.name,
       slug: category.slug,
-      description: category.description || '',
       parentId: category.parentId || '',
     });
     setIsModalOpen(true);
@@ -60,7 +64,7 @@ export function CategoriesPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
-    setForm({ name: '', slug: '', description: '', parentId: '' });
+    setForm({ name: '', slug: '', parentId: '' });
   };
 
   return (
@@ -126,15 +130,10 @@ export function CategoriesPage() {
             required
           />
           <Input
-            label="别名"
+            label="别名 (Slug)"
             value={form.slug}
             onChange={(e) => setForm({ ...form, slug: e.target.value })}
             placeholder="留空自动生成"
-          />
-          <Input
-            label="描述"
-            value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={closeModal}>
