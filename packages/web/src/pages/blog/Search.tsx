@@ -27,7 +27,7 @@ export function SearchPage() {
     queryKey: ['search', debouncedQuery],
     queryFn: () =>
       api.get<PaginatedResponse<Article>>(
-        `/articles/public?search=${encodeURIComponent(debouncedQuery)}&status=published`
+        `/articles/published?search=${encodeURIComponent(debouncedQuery)}`
       ),
     enabled: debouncedQuery.length >= 2,
   });

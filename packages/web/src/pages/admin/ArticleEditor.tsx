@@ -21,7 +21,7 @@ export function ArticleEditorPage() {
     content: '',
     excerpt: '',
     slug: '',
-    status: 'draft' as const,
+    status: 'DRAFT' as 'DRAFT' | 'PUBLISHED',
     categoryId: '',
     tagIds: [] as string[],
     seoTitle: '',
@@ -35,7 +35,7 @@ export function ArticleEditorPage() {
         content: article.content,
         excerpt: article.excerpt || '',
         slug: article.slug,
-        status: article.status as 'draft',
+        status: article.status as 'DRAFT' | 'PUBLISHED',
         categoryId: article.categoryId || '',
         tagIds: article.tags?.map((t) => t.id) || [],
         seoTitle: article.seoTitle || '',
@@ -141,8 +141,8 @@ export function ArticleEditorPage() {
                 value={form.status}
                 onChange={(e) => handleChange('status', e.target.value)}
                 options={[
-                  { value: 'draft', label: '草稿' },
-                  { value: 'published', label: '已发布' },
+                  { value: 'DRAFT', label: '草稿' },
+                  { value: 'PUBLISHED', label: '已发布' },
                 ]}
               />
               <Select

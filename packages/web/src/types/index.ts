@@ -5,7 +5,7 @@ export interface Article {
   slug: string;
   content: string;
   excerpt?: string;
-  status: 'draft' | 'published' | 'scheduled' | 'trash';
+  status: 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'TRASHED';
   publishedAt?: string;
   scheduledAt?: string;
   viewCount: number;
@@ -23,7 +23,6 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
-  description?: string;
   parentId?: string;
   parent?: Category;
   children?: Category[];
@@ -46,9 +45,8 @@ export interface Page {
   title: string;
   slug: string;
   content: string;
-  isPublished: boolean;
+  sortOrder: number;
   showInNav: boolean;
-  order: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -69,9 +67,11 @@ export interface Media {
 export interface KnowledgeDoc {
   id: string;
   title: string;
+  slug: string;
   content: string;
   parentId?: string;
-  order: number;
+  parent?: KnowledgeDoc;
+  sortOrder: number;
   children?: KnowledgeDoc[];
   createdAt: string;
   updatedAt: string;
@@ -84,7 +84,7 @@ export interface Comment {
   authorName: string;
   authorEmail: string;
   authorUrl?: string;
-  status: 'pending' | 'approved' | 'spam';
+  status: 'PENDING' | 'APPROVED' | 'SPAM' | 'TRASHED';
   articleId: string;
   article?: Article;
   createdAt: string;

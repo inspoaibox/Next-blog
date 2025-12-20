@@ -20,7 +20,7 @@ export function ArticleDetailPage() {
 
   const { data: article, isLoading, error } = useQuery({
     queryKey: ['article', slug],
-    queryFn: () => api.get<Article>(`/articles/public/${slug}`),
+    queryFn: () => api.get<Article>(`/articles/${slug}`),
     enabled: !!slug,
   });
 
@@ -57,14 +57,9 @@ export function ArticleDetailPage() {
     <BlogLayout>
       <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* 文章内容 - 使用主题组件 */}
-          <div className="lg:col-span-3">
-            <ArticleDetail article={{ ...article, htmlContent }} />
-          </div>
-
-          {/* 侧边栏 - 目录 */}
+          {/* 侧边栏 - 目录（左侧） */}
           {toc.length > 0 && (
-            <aside className="hidden lg:block">
+            <aside className="hidden lg:block lg:order-first">
               <Card className="sticky top-4">
                 <CardContent className="p-4">
                   <h3 className="font-semibold mb-4">目录</h3>
@@ -84,6 +79,11 @@ export function ArticleDetailPage() {
               </Card>
             </aside>
           )}
+
+          {/* 文章内容 - 使用主题组件 */}
+          <div className={toc.length > 0 ? 'lg:col-span-3' : 'lg:col-span-4'}>
+            <ArticleDetail article={{ ...article, htmlContent }} />
+          </div>
         </div>
       </div>
     </BlogLayout>

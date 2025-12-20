@@ -12,10 +12,12 @@ interface CommentSectionProps {
 export function CommentSection({ articleId }: CommentSectionProps) {
   const queryClient = useQueryClient();
   
-  const { data: comments, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['comments', articleId],
-    queryFn: () => api.get<Comment[]>(`/comments/public?articleId=${articleId}`),
+    queryFn: () => api.get<{ items: Comment[]; total: number }>(`/comments/article/${articleId}`),
   });
+
+  const comments = data?.items;
 
   const submitComment = useMutation({
     mutationFn: (data: { content: string; authorName: string; authorEmail: string; authorUrl?: string }) =>

@@ -22,10 +22,14 @@ export function TagsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const data = {
+        name: form.name,
+        slug: form.slug || undefined,
+      };
       if (editingId) {
-        await updateTag.mutateAsync({ id: editingId, data: form });
+        await updateTag.mutateAsync({ id: editingId, data });
       } else {
-        await createTag.mutateAsync(form);
+        await createTag.mutateAsync(data);
       }
       closeModal();
     } catch (error) {

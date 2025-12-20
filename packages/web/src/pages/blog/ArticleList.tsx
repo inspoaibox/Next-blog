@@ -24,13 +24,12 @@ export function ArticleListPage() {
   const params = new URLSearchParams();
   params.set('page', String(page));
   params.set('pageSize', '10');
-  params.set('status', 'published');
   if (categoryId) params.set('categoryId', categoryId);
   if (tagId) params.set('tagId', tagId);
 
   const { data, isLoading } = useQuery({
     queryKey: ['public-articles', { page, categoryId, tagId }],
-    queryFn: () => api.get<PaginatedResponse<Article>>(`/articles/public?${params}`),
+    queryFn: () => api.get<PaginatedResponse<Article>>(`/articles/published?${params}`),
   });
 
   const handlePageChange = (newPage: number) => {

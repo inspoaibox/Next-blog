@@ -3,10 +3,12 @@ import type { Tag } from '@prisma/client';
 
 export interface CreateTagInput {
   name: string;
+  slug?: string;
 }
 
 export interface UpdateTagInput {
   name?: string;
+  slug?: string;
 }
 
 function generateSlug(name: string): string {
@@ -22,7 +24,7 @@ export class TagService {
    * 创建标签
    */
   async create(input: CreateTagInput): Promise<Tag> {
-    const slug = generateSlug(input.name);
+    const slug = input.slug || generateSlug(input.name);
 
     return prisma.tag.create({
       data: {
@@ -73,6 +75,10 @@ export class TagService {
     const data: { name?: string; slug?: string } = {};
     if (input.name) {
       data.name = input.name;
+    }
+    if (input.slug) {
+      data.slug = input.slug;
+    } else if (input.name) {
       data.slug = generateSlug(input.name);
     }
 

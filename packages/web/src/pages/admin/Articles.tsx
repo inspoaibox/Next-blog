@@ -39,18 +39,18 @@ export function ArticlesPage() {
 
   const statusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'success' | 'warning' | 'danger'> = {
-      draft: 'default',
-      published: 'success',
-      scheduled: 'warning',
-      trash: 'danger',
+      DRAFT: 'default',
+      PUBLISHED: 'success',
+      SCHEDULED: 'warning',
+      TRASHED: 'danger',
     };
     const labels: Record<string, string> = {
-      draft: '草稿',
-      published: '已发布',
-      scheduled: '定时',
-      trash: '回收站',
+      DRAFT: '草稿',
+      PUBLISHED: '已发布',
+      SCHEDULED: '定时',
+      TRASHED: '回收站',
     };
-    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
+    return <Badge variant={variants[status] || 'default'}>{labels[status] || status}</Badge>;
   };
 
   return (
@@ -77,10 +77,10 @@ export function ArticlesPage() {
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
             >
               <option value="">全部状态</option>
-              <option value="draft">草稿</option>
-              <option value="published">已发布</option>
-              <option value="scheduled">定时</option>
-              <option value="trash">回收站</option>
+              <option value="DRAFT">草稿</option>
+              <option value="PUBLISHED">已发布</option>
+              <option value="SCHEDULED">定时</option>
+              <option value="TRASHED">回收站</option>
             </select>
           </div>
         </CardHeader>
@@ -121,7 +121,7 @@ export function ArticlesPage() {
                         <Link to={`/admin/articles/${article.id}`}>
                           <Button variant="ghost" size="sm">编辑</Button>
                         </Link>
-                        {article.status === 'draft' && (
+                        {article.status === 'DRAFT' && (
                           <Button
                             variant="ghost"
                             size="sm"

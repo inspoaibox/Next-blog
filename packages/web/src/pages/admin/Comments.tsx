@@ -44,16 +44,18 @@ export function CommentsPage() {
 
   const statusBadge = (status: string) => {
     const variants: Record<string, 'default' | 'success' | 'danger'> = {
-      pending: 'default',
-      approved: 'success',
-      spam: 'danger',
+      PENDING: 'default',
+      APPROVED: 'success',
+      SPAM: 'danger',
+      TRASHED: 'danger',
     };
     const labels: Record<string, string> = {
-      pending: '待审核',
-      approved: '已批准',
-      spam: '垃圾',
+      PENDING: '待审核',
+      APPROVED: '已批准',
+      SPAM: '垃圾',
+      TRASHED: '已删除',
     };
-    return <Badge variant={variants[status]}>{labels[status]}</Badge>;
+    return <Badge variant={variants[status] || 'default'}>{labels[status] || status}</Badge>;
   };
 
   return (
@@ -71,9 +73,9 @@ export function CommentsPage() {
               className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
             >
               <option value="">全部状态</option>
-              <option value="pending">待审核</option>
-              <option value="approved">已批准</option>
-              <option value="spam">垃圾</option>
+              <option value="PENDING">待审核</option>
+              <option value="APPROVED">已批准</option>
+              <option value="SPAM">垃圾</option>
             </select>
           </div>
         </CardHeader>
@@ -107,7 +109,7 @@ export function CommentsPage() {
                       文章: {comment.article?.title || comment.articleId}
                     </span>
                     <div className="flex items-center gap-2">
-                      {comment.status === 'pending' && (
+                      {comment.status === 'PENDING' && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -116,7 +118,7 @@ export function CommentsPage() {
                           批准
                         </Button>
                       )}
-                      {comment.status !== 'spam' && (
+                      {comment.status !== 'SPAM' && (
                         <Button
                           variant="ghost"
                           size="sm"

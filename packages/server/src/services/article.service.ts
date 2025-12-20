@@ -16,7 +16,7 @@ export interface UpdateArticleInput {
   title?: string;
   content?: string;
   excerpt?: string;
-  categoryId?: string;
+  categoryId?: string | null;
   tagIds?: string[];
   seoTitle?: string;
   seoDescription?: string;

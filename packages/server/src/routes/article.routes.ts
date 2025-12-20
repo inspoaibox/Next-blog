@@ -92,11 +92,15 @@ router.get('/popular', async (_req, res, next) => {
 
 /**
  * GET /api/articles/:id
- * 获取文章详情
+ * 获取文章详情（支持 ID 或 slug）
  */
 router.get('/:id', optionalAuth, async (req: AuthRequest, res: Response, next) => {
   try {
-    const article = await articleService.findById(req.params.id);
+    // 先尝试通过 ID 查找，如果失败则尝试通过 slug 查找
+    let article = await articleService.findById(req.params.id);
+    if (!article) {
+      article = await articleService.findBySlug(req.params.id);
+    }
 
     if (!article) {
       return next(createError('Article not found', 404, 'NOT_FOUND'));

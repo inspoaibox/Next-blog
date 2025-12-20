@@ -70,11 +70,22 @@ export class StatsService {
    * 获取总体统计
    */
   async getOverallStats() {
-    const [totalArticles, publishedArticles, totalViews, totalComments] = await Promise.all([
+    const [
+      totalArticles, 
+      publishedArticles, 
+      totalViews, 
+      totalComments,
+      pendingComments,
+      totalCategories,
+      totalTags,
+    ] = await Promise.all([
       prisma.article.count({ where: { deletedAt: null } }),
       prisma.article.count({ where: { status: 'PUBLISHED', deletedAt: null } }),
       prisma.pageView.count(),
       prisma.comment.count({ where: { status: 'APPROVED' } }),
+      prisma.comment.count({ where: { status: 'PENDING' } }),
+      prisma.category.count(),
+      prisma.tag.count(),
     ]);
 
     return {
@@ -82,6 +93,9 @@ export class StatsService {
       publishedArticles,
       totalViews,
       totalComments,
+      pendingComments,
+      totalCategories,
+      totalTags,
     };
   }
 

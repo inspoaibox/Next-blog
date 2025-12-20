@@ -8,10 +8,12 @@ const router = Router();
 
 const createTagSchema = z.object({
   name: z.string().min(1, 'Name is required'),
+  slug: z.string().optional(),
 });
 
 const updateTagSchema = z.object({
   name: z.string().min(1).optional(),
+  slug: z.string().optional(),
 });
 
 const mergeTagsSchema = z.object({

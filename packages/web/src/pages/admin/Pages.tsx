@@ -48,9 +48,8 @@ export function PagesPage() {
     title: '',
     slug: '',
     content: '',
-    isPublished: true,
     showInNav: false,
-    order: 0,
+    sortOrder: 0,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,9 +72,8 @@ export function PagesPage() {
       title: page.title,
       slug: page.slug,
       content: page.content,
-      isPublished: page.isPublished,
       showInNav: page.showInNav,
-      order: page.order,
+      sortOrder: page.sortOrder,
     });
     setIsModalOpen(true);
   };
@@ -89,7 +87,7 @@ export function PagesPage() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingId(null);
-    setForm({ title: '', slug: '', content: '', isPublished: true, showInNav: false, order: 0 });
+    setForm({ title: '', slug: '', content: '', showInNav: false, sortOrder: 0 });
   };
 
   return (
@@ -111,8 +109,8 @@ export function PagesPage() {
                 <TableRow>
                   <TableHead>标题</TableHead>
                   <TableHead>链接</TableHead>
-                  <TableHead>状态</TableHead>
                   <TableHead>导航</TableHead>
+                  <TableHead>排序</TableHead>
                   <TableHead>创建时间</TableHead>
                   <TableHead>操作</TableHead>
                 </TableRow>
@@ -123,13 +121,9 @@ export function PagesPage() {
                     <TableCell className="font-medium">{page.title}</TableCell>
                     <TableCell className="text-gray-500">/{page.slug}</TableCell>
                     <TableCell>
-                      <Badge variant={page.isPublished ? 'success' : 'default'}>
-                        {page.isPublished ? '已发布' : '草稿'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
                       {page.showInNav && <Badge variant="primary">显示</Badge>}
                     </TableCell>
+                    <TableCell>{page.sortOrder}</TableCell>
                     <TableCell>{formatDate(page.createdAt)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -178,21 +172,19 @@ export function PagesPage() {
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
-                checked={form.isPublished}
-                onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
-                className="rounded"
-              />
-              <span>发布</span>
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
                 checked={form.showInNav}
                 onChange={(e) => setForm({ ...form, showInNav: e.target.checked })}
                 className="rounded"
               />
               <span>显示在导航</span>
             </label>
+            <Input
+              label="排序"
+              type="number"
+              value={form.sortOrder}
+              onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })}
+              className="w-24"
+            />
           </div>
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={closeModal}>

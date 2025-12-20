@@ -16,7 +16,7 @@ export function KnowledgeBasePage() {
 
   const { data: docs, isLoading } = useQuery({
     queryKey: ['public-knowledge'],
-    queryFn: () => api.get<KnowledgeDoc[]>('/knowledge/public'),
+    queryFn: () => api.get<KnowledgeDoc[]>('/knowledge'),
   });
 
   const [selectedDoc, setSelectedDoc] = useState<KnowledgeDoc | null>(null);
