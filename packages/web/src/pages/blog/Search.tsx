@@ -7,9 +7,10 @@ import { useBlogThemeStore } from '../../stores/blog-theme.store';
 import { getTheme } from '../../themes';
 
 export function SearchPage() {
-  const { currentTheme, fetchActiveTheme } = useBlogThemeStore();
+  const { currentTheme, fetchActiveTheme, getConfig } = useBlogThemeStore();
   const theme = getTheme(currentTheme);
   const { BlogLayout, SearchResults } = theme;
+  const config = getConfig();
 
   useEffect(() => {
     fetchActiveTheme();
@@ -33,7 +34,7 @@ export function SearchPage() {
   });
 
   return (
-    <BlogLayout>
+    <BlogLayout config={config}>
       <div className="mb-8">
         <Input
           placeholder="输入关键词搜索文章..."
@@ -50,7 +51,7 @@ export function SearchPage() {
       ) : !data?.items.length ? (
         <div className="text-center py-12 text-gray-500">未找到相关文章</div>
       ) : (
-        <SearchResults articles={data.items} total={data.total} query={debouncedQuery} />
+        <SearchResults articles={data.items} total={data.total} query={debouncedQuery} config={config} />
       )}
     </BlogLayout>
   );

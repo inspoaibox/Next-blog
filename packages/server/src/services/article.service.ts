@@ -5,6 +5,7 @@ export interface CreateArticleInput {
   title: string;
   content: string;
   excerpt?: string;
+  featuredImage?: string;
   authorId: string;
   categoryId?: string;
   tagIds?: string[];
@@ -16,6 +17,9 @@ export interface UpdateArticleInput {
   title?: string;
   content?: string;
   excerpt?: string;
+  slug?: string;
+  featuredImage?: string | null;
+  status?: string;
   categoryId?: string | null;
   tagIds?: string[];
   seoTitle?: string;
@@ -43,6 +47,7 @@ export class ArticleService {
         slug,
         content: input.content,
         excerpt: input.excerpt,
+        featuredImage: input.featuredImage,
         status: 'DRAFT',
         authorId: input.authorId,
         categoryId: input.categoryId,
@@ -120,6 +125,12 @@ export class ArticleService {
       });
     }
 
+    // 如果 slug 为空，自动生成
+    let slug = input.slug;
+    if (slug === '' || slug === undefined || slug === null) {
+      slug = generateSlug(input.title || current.title);
+    }
+
     // 更新文章
     return prisma.article.update({
       where: { id },
@@ -127,9 +138,16 @@ export class ArticleService {
         title: input.title,
         content: input.content,
         excerpt: input.excerpt,
+        slug,
+        featuredImage: input.featuredImage,
+        status: input.status,
         categoryId: input.categoryId,
         seoTitle: input.seoTitle,
         seoDescription: input.seoDescription,
+        // 如果状态变为已发布且之前未发布，设置发布时间
+        ...(input.status === 'PUBLISHED' && current.status !== 'PUBLISHED' 
+          ? { publishedAt: new Date() } 
+          : {}),
       },
       include: {
         tags: { include: { tag: true } },

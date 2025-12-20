@@ -29,6 +29,7 @@ model Article {
   slug           String          @unique
   content        String
   excerpt        String?
+  featuredImage  String?
   status         String          @default("DRAFT") // DRAFT, PUBLISHED, SCHEDULED, TRASHED
   publishedAt    DateTime?
   scheduledAt    DateTime?

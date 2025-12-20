@@ -14,6 +14,7 @@ import backupRoutes from './routes/backup.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import themeRoutes from './routes/theme.routes.js';
 import pluginRoutes from './routes/plugin.routes.js';
+import settingRoutes from './routes/setting.routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3012;
@@ -41,6 +42,7 @@ app.use('/api/backup', backupRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/themes', themeRoutes);
 app.use('/api/plugins', pluginRoutes);
+app.use('/api/settings', settingRoutes);
 
 // Error handler
 app.use(errorHandler);

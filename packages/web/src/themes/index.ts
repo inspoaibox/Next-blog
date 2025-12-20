@@ -68,20 +68,38 @@ export interface SearchResultProps {
   query: string;
 }
 
+// 主题配置选项定义
+export interface ThemeConfigOption {
+  key: string;
+  label: string;
+  type: 'select' | 'boolean' | 'color' | 'number';
+  options?: { value: string; label: string }[];
+  default: any;
+  description?: string;
+}
+
+// 主题配置值
+export interface ThemeConfig {
+  [key: string]: any;
+}
+
 export interface ThemeComponents {
   name: string;
   displayName: string;
   description: string;
+  // 配置选项
+  configOptions: ThemeConfigOption[];
+  defaultConfig: ThemeConfig;
   // 布局
-  BlogLayout: React.ComponentType<{ children: React.ReactNode }>;
+  BlogLayout: React.ComponentType<{ children: React.ReactNode; config?: ThemeConfig }>;
   // 文章相关
-  ArticleCard: React.ComponentType<ArticleCardProps>;
-  ArticleDetail: React.ComponentType<ArticleDetailProps>;
+  ArticleCard: React.ComponentType<ArticleCardProps & { config?: ThemeConfig }>;
+  ArticleDetail: React.ComponentType<ArticleDetailProps & { config?: ThemeConfig }>;
   // 分类标签
-  CategoryList: React.ComponentType<CategoryListProps>;
-  TagList: React.ComponentType<TagListProps>;
+  CategoryList: React.ComponentType<CategoryListProps & { config?: ThemeConfig }>;
+  TagList: React.ComponentType<TagListProps & { config?: ThemeConfig }>;
   // 搜索
-  SearchResults: React.ComponentType<SearchResultProps>;
+  SearchResults: React.ComponentType<SearchResultProps & { config?: ThemeConfig }>;
 }
 
 // 所有可用主题

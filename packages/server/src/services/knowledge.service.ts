@@ -1,4 +1,5 @@
 import { prisma } from '../lib/prisma.js';
+import { markdownService } from './markdown.service.js';
 import type { KnowledgeDoc } from '@prisma/client';
 
 export interface CreateKnowledgeDocInput {
@@ -15,6 +16,11 @@ export interface UpdateKnowledgeDocInput {
   sortOrder?: number;
 }
 
+export interface KnowledgeDocWithHtml extends KnowledgeDoc {
+  htmlContent?: string;
+  children?: KnowledgeDocWithHtml[];
+}
+
 function generateSlug(title: string): string {
   return title
     .toLowerCase()
@@ -29,13 +35,14 @@ export class KnowledgeService {
    */
   async create(input: CreateKnowledgeDocInput): Promise<KnowledgeDoc> {
     const slug = generateSlug(input.title);
+    const parentId = input.parentId && input.parentId.trim() !== '' ? input.parentId : null;
 
     return prisma.knowledgeDoc.create({
       data: {
         title: input.title,
         slug,
         content: input.content,
-        parentId: input.parentId,
+        parentId,
         sortOrder: input.sortOrder ?? 0,
       },
       include: { parent: true, children: true },
@@ -43,23 +50,31 @@ export class KnowledgeService {
   }
 
   /**
-   * 根据 ID 获取文档
+   * 根据 ID 获取文档（包含渲染后的 HTML）
    */
-  async findById(id: string): Promise<KnowledgeDoc | null> {
-    return prisma.knowledgeDoc.findUnique({
+  async findById(id: string): Promise<KnowledgeDocWithHtml | null> {
+    const doc = await prisma.knowledgeDoc.findUnique({
       where: { id },
       include: { parent: true, children: { orderBy: { sortOrder: 'asc' } } },
     });
+    if (!doc) return null;
+    
+    const { html } = await markdownService.parse(doc.content || '');
+    return { ...doc, htmlContent: html };
   }
 
   /**
-   * 根据 slug 获取文档
+   * 根据 slug 获取文档（包含渲染后的 HTML）
    */
-  async findBySlug(slug: string): Promise<KnowledgeDoc | null> {
-    return prisma.knowledgeDoc.findUnique({
+  async findBySlug(slug: string): Promise<KnowledgeDocWithHtml | null> {
+    const doc = await prisma.knowledgeDoc.findUnique({
       where: { slug },
       include: { parent: true, children: { orderBy: { sortOrder: 'asc' } } },
     });
+    if (!doc) return null;
+    
+    const { html } = await markdownService.parse(doc.content || '');
+    return { ...doc, htmlContent: html };
   }
 
 
@@ -67,8 +82,11 @@ export class KnowledgeService {
    * 获取知识库目录树
    */
   async findTree(): Promise<KnowledgeDoc[]> {
+    // 获取所有根文档（parentId 为 null 或空字符串）
     return prisma.knowledgeDoc.findMany({
-      where: { parentId: null },
+      where: {
+        OR: [{ parentId: null }, { parentId: '' }],
+      },
       orderBy: { sortOrder: 'asc' },
       include: {
         children: {
@@ -90,7 +108,7 @@ export class KnowledgeService {
       data: {
         title: input.title,
         content: input.content,
-        parentId: input.parentId,
+        parentId: input.parentId === '' ? null : input.parentId,
         sortOrder: input.sortOrder,
       },
       include: { parent: true, children: true },

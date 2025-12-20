@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import { articleService } from '../services/article.service.js';
+import { markdownService } from '../services/markdown.service.js';
 import { authenticate, AuthRequest, optionalAuth } from '../middleware/auth.js';
 import { createError } from '../middleware/errorHandler.js';
 
@@ -21,6 +22,8 @@ const updateArticleSchema = z.object({
   title: z.string().min(1).optional(),
   content: z.string().min(1).optional(),
   excerpt: z.string().optional(),
+  slug: z.string().optional(),
+  status: z.enum(['DRAFT', 'PUBLISHED', 'SCHEDULED', 'TRASHED']).optional(),
   categoryId: z.string().nullable().optional(),
   tagIds: z.array(z.string()).optional(),
   seoTitle: z.string().optional(),
@@ -116,9 +119,20 @@ router.get('/:id', optionalAuth, async (req: AuthRequest, res: Response, next) =
       await articleService.incrementViewCount(article.id);
     }
 
+    // 渲染 Markdown 为 HTML
+    const { html, toc } = await markdownService.parse(article.content);
+
+    // 处理标签数据格式
+    const tags = (article as any).tags?.map((t: any) => t.tag || t) || [];
+
     res.json({
       success: true,
-      data: article,
+      data: {
+        ...article,
+        htmlContent: html,
+        toc,
+        tags,
+      },
     });
   } catch (error) {
     next(error);

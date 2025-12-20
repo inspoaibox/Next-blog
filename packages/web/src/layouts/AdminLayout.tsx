@@ -42,7 +42,7 @@ export function AdminLayout() {
       <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <Link to="/admin" className="text-xl font-bold">
-            博客后台
+            NextBlog 后台
           </Link>
         </div>
         

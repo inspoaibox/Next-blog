@@ -4,7 +4,6 @@ import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
 import rehypeStringify from 'rehype-stringify';
 import rehypeSlug from 'rehype-slug';
-import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import { createHighlighter, type Highlighter } from 'shiki';
 
 export interface TocItem {
@@ -68,7 +67,6 @@ export class MarkdownService {
       .use(remarkGfm)
       .use(remarkRehype, { allowDangerousHtml: true })
       .use(rehypeSlug)
-      .use(rehypeAutolinkHeadings, { behavior: 'wrap' })
       .use(rehypeStringify, { allowDangerousHtml: true });
 
     const result = await processor.process(markdown);

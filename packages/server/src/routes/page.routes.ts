@@ -8,7 +8,7 @@ const router = Router();
 
 const createPageSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  content: z.string().min(1, 'Content is required'),
+  content: z.string().default(''),
   slug: z.string().optional(),
   sortOrder: z.number().optional(),
   showInNav: z.boolean().optional(),
@@ -16,7 +16,7 @@ const createPageSchema = z.object({
 
 const updatePageSchema = z.object({
   title: z.string().min(1).optional(),
-  content: z.string().min(1).optional(),
+  content: z.string().optional(),
   slug: z.string().optional(),
   sortOrder: z.number().optional(),
   showInNav: z.boolean().optional(),

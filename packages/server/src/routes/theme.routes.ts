@@ -24,6 +24,16 @@ router.get('/', async (_req, res, next) => {
   }
 });
 
+// 初始化内置主题（如果不存在则创建，不会删除现有数据）
+router.post('/init', authenticate, async (_req: AuthRequest, res: Response, next) => {
+  try {
+    const themes = await themeService.initBuiltinThemes();
+    res.json({ success: true, data: themes });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/active', async (_req, res, next) => {
   try {
     const theme = await themeService.getActive();
@@ -70,6 +80,23 @@ router.put('/:id/config', authenticate, async (req: AuthRequest, res: Response, 
     res.json({ success: true, data: theme });
   } catch (error) {
     if (error instanceof z.ZodError) return next(createError(error.errors[0].message, 400, 'VALIDATION_ERROR'));
+    next(error);
+  }
+});
+
+// 通用更新路由（支持 config 字段）
+router.put('/:id', authenticate, async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { config } = req.body;
+    if (config !== undefined) {
+      // config 可能是对象或字符串
+      const configObj = typeof config === 'string' ? JSON.parse(config) : config;
+      const theme = await themeService.updateConfig(req.params.id, configObj);
+      res.json({ success: true, data: theme });
+    } else {
+      res.json({ success: true, data: await themeService.findById(req.params.id) });
+    }
+  } catch (error) {
     next(error);
   }
 });

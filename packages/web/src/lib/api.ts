@@ -50,6 +50,31 @@ export const api = {
       body: body ? JSON.stringify(body) : undefined,
     }),
   
-  delete: <T>(endpoint: string) =>
-    request<T>(endpoint, { method: 'DELETE' }),
+  delete: <T>(endpoint: string, body?: unknown) =>
+    request<T>(endpoint, { 
+      method: 'DELETE',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  upload: async <T>(endpoint: string, formData: FormData): Promise<T> => {
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    
+    const data: ApiResponse<T> = await response.json();
+    
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Upload failed');
+    }
+    
+    return data.data;
+  },
 };

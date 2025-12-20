@@ -9,29 +9,32 @@ export function MediaPage() {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   const { data: mediaList, isLoading } = useQuery({
     queryKey: ['media'],
     queryFn: () => api.get<Media[]>('/media'),
   });
 
+  const { data: settings } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: () => api.get<Record<string, string>>('/settings'),
+  });
+
+  // 获取允许的文件类型
+  const allowedTypes = settings?.allowedMediaTypes || 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf';
+
   const uploadMedia = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
-      
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/media/upload', {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
-      });
-      
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error);
-      return data.data;
+      return api.upload<Media>('/media/upload', formData);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['media'] }),
+    onError: (error: Error) => {
+      alert(error.message);
+    },
   });
 
   const deleteMedia = useMutation({
@@ -39,6 +42,15 @@ export function MediaPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['media'] });
       setSelectedMedia(null);
+    },
+  });
+
+  const batchDelete = useMutation({
+    mutationFn: (ids: string[]) => api.delete('/media/batch', { ids } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['media'] });
+      setSelectedIds(new Set());
+      setIsSelectionMode(false);
     },
   });
 
@@ -61,28 +73,89 @@ export function MediaPage() {
     }
   };
 
+  const handleBatchDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (confirm(`确定要删除选中的 ${selectedIds.size} 个文件吗？`)) {
+      await batchDelete.mutateAsync(Array.from(selectedIds));
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
+  };
+
+  const toggleSelectAll = () => {
+    if (!mediaList) return;
+    if (selectedIds.size === mediaList.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(mediaList.map(m => m.id)));
+    }
+  };
+
+  const handleMediaClick = (media: Media) => {
+    if (isSelectionMode) {
+      toggleSelection(media.id);
+    } else {
+      setSelectedMedia(media);
+    }
+  };
+
   const formatSize = (bytes: number) => {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  // 生成 accept 属性
+  const acceptTypes = allowedTypes.split(',').map((t: string) => t.trim()).join(',');
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">媒体库</h1>
-        <div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <Button onClick={() => fileInputRef.current?.click()} loading={uploadMedia.isPending}>
-            上传文件
-          </Button>
+        <div className="flex gap-2">
+          {isSelectionMode ? (
+            <>
+              <Button variant="outline" onClick={toggleSelectAll}>
+                {mediaList && selectedIds.size === mediaList.length ? '取消全选' : '全选'}
+              </Button>
+              <Button 
+                variant="danger" 
+                onClick={handleBatchDelete} 
+                loading={batchDelete.isPending}
+                disabled={selectedIds.size === 0}
+              >
+                删除选中 ({selectedIds.size})
+              </Button>
+              <Button variant="outline" onClick={() => { setIsSelectionMode(false); setSelectedIds(new Set()); }}>
+                取消
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" onClick={() => setIsSelectionMode(true)}>
+                批量管理
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={acceptTypes}
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button onClick={() => fileInputRef.current?.click()} loading={uploadMedia.isPending}>
+                上传文件
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -97,12 +170,25 @@ export function MediaPage() {
               {mediaList.map((media) => (
                 <div
                   key={media.id}
-                  onClick={() => setSelectedMedia(media)}
-                  className="cursor-pointer group relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden"
+                  onClick={() => handleMediaClick(media)}
+                  className={`cursor-pointer group relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden ${
+                    selectedIds.has(media.id) ? 'ring-2 ring-primary-500' : ''
+                  }`}
                 >
+                  {isSelectionMode && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(media.id)}
+                        onChange={() => toggleSelection(media.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                    </div>
+                  )}
                   {media.mimeType.startsWith('image/') ? (
                     <img
-                      src={media.thumbnailPath || media.path}
+                      src={`/api/media/${media.id}/file`}
                       alt={media.originalName}
                       className="w-full h-full object-cover"
                     />
@@ -134,7 +220,7 @@ export function MediaPage() {
             <div className="aspect-video bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
               {selectedMedia.mimeType.startsWith('image/') ? (
                 <img
-                  src={selectedMedia.path}
+                  src={`/api/media/${selectedMedia.id}/file`}
                   alt={selectedMedia.originalName}
                   className="w-full h-full object-contain"
                 />
@@ -153,7 +239,7 @@ export function MediaPage() {
               <p>
                 <span className="text-gray-500">链接：</span>
                 <code className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-xs">
-                  {selectedMedia.path}
+                  /api/media/{selectedMedia.id}/file
                 </code>
               </p>
             </div>

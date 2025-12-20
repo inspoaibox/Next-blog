@@ -1,5 +1,7 @@
 import { prisma } from '../lib/prisma.js';
-import type { Theme } from '@prisma/client';
+
+// 使用 Prisma 推断的类型
+type Theme = Awaited<ReturnType<typeof prisma.theme.findFirst>> & {};
 
 export interface CreateThemeInput {
   name: string;
@@ -113,6 +115,64 @@ export class ThemeService {
 
     const customConfig = theme.config ? JSON.parse(theme.config) : {};
     return { ...defaults, ...customConfig };
+  }
+
+  /**
+   * 初始化内置主题（如果不存在则创建）
+   */
+  async initBuiltinThemes(): Promise<Theme[]> {
+    const builtinThemes = [
+      {
+        name: 'classic',
+        version: '1.0.0',
+        path: '/themes/classic',
+        isActive: true,
+        config: JSON.stringify({
+          displayName: '经典主题',
+          description: '传统博客风格，简洁大方',
+        }),
+      },
+      {
+        name: 'minimal',
+        version: '1.0.0',
+        path: '/themes/minimal',
+        isActive: false,
+        config: JSON.stringify({
+          displayName: '极简主题',
+          description: '简约风格，专注阅读体验',
+        }),
+      },
+      {
+        name: 'magazine',
+        version: '1.0.0',
+        path: '/themes/magazine',
+        isActive: false,
+        config: JSON.stringify({
+          displayName: '杂志主题',
+          description: '卡片式布局，现代视觉风格',
+        }),
+      },
+    ];
+
+    const results: Theme[] = [];
+    
+    for (const theme of builtinThemes) {
+      const existing = await this.findByName(theme.name);
+      if (!existing) {
+        const created = await prisma.theme.create({ data: theme });
+        results.push(created);
+      } else {
+        results.push(existing);
+      }
+    }
+
+    // 确保至少有一个主题是激活的
+    const activeTheme = await this.getActive();
+    if (!activeTheme && results.length > 0) {
+      await this.activate(results[0].id);
+    }
+
+    return results;
   }
 }
 

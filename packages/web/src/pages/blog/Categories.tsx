@@ -6,9 +6,10 @@ import { useBlogThemeStore } from '../../stores/blog-theme.store';
 import { getTheme } from '../../themes';
 
 export function CategoriesPage() {
-  const { currentTheme, fetchActiveTheme } = useBlogThemeStore();
+  const { currentTheme, fetchActiveTheme, getConfig } = useBlogThemeStore();
   const theme = getTheme(currentTheme);
   const { BlogLayout, CategoryList } = theme;
+  const config = getConfig();
 
   useEffect(() => {
     fetchActiveTheme();
@@ -20,13 +21,13 @@ export function CategoriesPage() {
   });
 
   return (
-    <BlogLayout>
+    <BlogLayout config={config}>
       {isLoading ? (
         <div className="text-center py-12 text-gray-500">加载中...</div>
       ) : !categories?.length ? (
         <div className="text-center py-12 text-gray-500">暂无分类</div>
       ) : (
-        <CategoryList categories={categories} />
+        <CategoryList categories={categories} config={config} />
       )}
     </BlogLayout>
   );

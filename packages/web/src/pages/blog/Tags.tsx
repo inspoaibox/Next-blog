@@ -6,9 +6,10 @@ import { useBlogThemeStore } from '../../stores/blog-theme.store';
 import { getTheme } from '../../themes';
 
 export function TagsPage() {
-  const { currentTheme, fetchActiveTheme } = useBlogThemeStore();
+  const { currentTheme, fetchActiveTheme, getConfig } = useBlogThemeStore();
   const theme = getTheme(currentTheme);
   const { BlogLayout, TagList } = theme;
+  const config = getConfig();
 
   useEffect(() => {
     fetchActiveTheme();
@@ -20,13 +21,13 @@ export function TagsPage() {
   });
 
   return (
-    <BlogLayout>
+    <BlogLayout config={config}>
       {isLoading ? (
         <div className="text-center py-12 text-gray-500">加载中...</div>
       ) : !tags?.length ? (
         <div className="text-center py-12 text-gray-500">暂无标签</div>
       ) : (
-        <TagList tags={tags} />
+        <TagList tags={tags} config={config} />
       )}
     </BlogLayout>
   );

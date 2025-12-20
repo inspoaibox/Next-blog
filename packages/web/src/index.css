@@ -13,3 +13,36 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* Prose 自定义增强 */
+.prose {
+  max-width: none;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  scroll-margin-top: 80px;
+}
+
+/* 代码字体 */
+.prose code {
+  font-family: 'Fira Code', 'JetBrains Mono', Consolas, Monaco, 'Andale Mono', monospace;
+}
+
+/* Shiki 代码高亮样式 */
+.prose .shiki {
+  background-color: #1e1e1e !important;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.prose .shiki code {
+  background: none;
+  padding: 0;
+}

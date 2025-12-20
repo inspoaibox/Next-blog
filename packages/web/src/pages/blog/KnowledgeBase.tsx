@@ -6,9 +6,10 @@ import { useBlogThemeStore } from '../../stores/blog-theme.store';
 import { getTheme } from '../../themes';
 
 export function KnowledgeBasePage() {
-  const { currentTheme, fetchActiveTheme } = useBlogThemeStore();
+  const { currentTheme, fetchActiveTheme, getConfig } = useBlogThemeStore();
   const theme = getTheme(currentTheme);
   const { BlogLayout } = theme;
+  const config = getConfig();
 
   useEffect(() => {
     fetchActiveTheme();
@@ -42,7 +43,7 @@ export function KnowledgeBasePage() {
   };
 
   return (
-    <BlogLayout>
+    <BlogLayout config={config}>
       <h1 className="text-2xl font-bold mb-8">📚 知识库</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

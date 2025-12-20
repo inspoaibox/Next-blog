@@ -21,6 +21,8 @@ import { formatDate } from '../../lib/utils';
 
 export function PagesPage() {
   const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
+  
   const { data: pages, isLoading } = useQuery({
     queryKey: ['pages'],
     queryFn: () => api.get<Page[]>('/pages'),
@@ -28,13 +30,25 @@ export function PagesPage() {
 
   const createPage = useMutation({
     mutationFn: (data: Partial<Page>) => api.post<Page>('/pages', data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pages'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages'] });
+      setError(null);
+    },
+    onError: (err: any) => {
+      setError(err.message || '创建失败');
+    },
   });
 
   const updatePage = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Page> }) =>
       api.put<Page>(`/pages/${id}`, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pages'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pages'] });
+      setError(null);
+    },
+    onError: (err: any) => {
+      setError(err.message || '更新失败');
+    },
   });
 
   const deletePage = useMutation({
@@ -54,6 +68,13 @@ export function PagesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    
+    if (!form.title.trim()) {
+      setError('标题不能为空');
+      return;
+    }
+    
     try {
       if (editingId) {
         await updatePage.mutateAsync({ id: editingId, data: form });
@@ -61,8 +82,9 @@ export function PagesPage() {
         await createPage.mutateAsync(form);
       }
       closeModal();
-    } catch (error) {
-      console.error('保存失败:', error);
+    } catch (err) {
+      // 错误已在 mutation 的 onError 中处理
+      console.error('保存失败:', err);
     }
   };
 
@@ -88,6 +110,7 @@ export function PagesPage() {
     setIsModalOpen(false);
     setEditingId(null);
     setForm({ title: '', slug: '', content: '', showInNav: false, sortOrder: 0 });
+    setError(null);
   };
 
   return (
@@ -150,6 +173,11 @@ export function PagesPage() {
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={editingId ? '编辑页面' : '新建页面'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
           <Input
             label="标题"
             value={form.title}
@@ -169,7 +197,7 @@ export function PagesPage() {
             className="min-h-[200px]"
           />
           <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2">
+            <label className="flex items-center gap-2 whitespace-nowrap">
               <input
                 type="checkbox"
                 checked={form.showInNav}
@@ -178,13 +206,14 @@ export function PagesPage() {
               />
               <span>显示在导航</span>
             </label>
-            <Input
-              label="排序"
-              type="number"
-              value={form.sortOrder}
-              onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })}
-              className="w-24"
-            />
+            <div className="w-24">
+              <Input
+                label="排序"
+                type="number"
+                value={form.sortOrder}
+                onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })}
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={closeModal}>

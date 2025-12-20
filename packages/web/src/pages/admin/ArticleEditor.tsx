@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useArticle, useCreateArticle, useUpdateArticle } from '../../hooks/useArticles';
 import { useCategories } from '../../hooks/useCategories';
-import { useTags } from '../../hooks/useTags';
+import { useTags, useCreateTag } from '../../hooks/useTags';
 import { Button, Input, Card, CardContent, Select, Textarea } from '../../components/ui';
+import { MarkdownEditor } from '../../components/MarkdownEditor';
+import { api } from '../../lib/api';
 
 export function ArticleEditorPage() {
   const { id } = useParams();
@@ -13,14 +15,17 @@ export function ArticleEditorPage() {
   const { data: article, isLoading } = useArticle(id || '');
   const { data: categories } = useCategories();
   const { data: tags } = useTags();
+  const createTag = useCreateTag();
   const createArticle = useCreateArticle();
   const updateArticle = useUpdateArticle();
 
+  const [newTagName, setNewTagName] = useState('');
   const [form, setForm] = useState({
     title: '',
     content: '',
     excerpt: '',
     slug: '',
+    featuredImage: '',
     status: 'DRAFT' as 'DRAFT' | 'PUBLISHED',
     categoryId: '',
     tagIds: [] as string[],
@@ -30,14 +35,18 @@ export function ArticleEditorPage() {
 
   useEffect(() => {
     if (article) {
+      // 处理标签数据 - 后端返回的是 ArticleTag[] 格式
+      const tagIds = article.tags?.map((t: any) => t.tag?.id || t.id).filter(Boolean) || [];
+      
       setForm({
         title: article.title,
         content: article.content,
         excerpt: article.excerpt || '',
         slug: article.slug,
+        featuredImage: article.featuredImage || '',
         status: article.status as 'DRAFT' | 'PUBLISHED',
         categoryId: article.categoryId || '',
-        tagIds: article.tags?.map((t) => t.id) || [],
+        tagIds,
         seoTitle: article.seoTitle || '',
         seoDescription: article.seoDescription || '',
       });
@@ -61,6 +70,22 @@ export function ArticleEditorPage() {
 
   const handleChange = (field: string, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleFeaturedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    const result = await api.upload<{ url: string }>('/media/upload', formData);
+    handleChange('featuredImage', result.url);
+  };
+
+  const handleAddTag = async () => {
+    if (!newTagName.trim()) return;
+    const result = await createTag.mutateAsync({ name: newTagName.trim() });
+    handleChange('tagIds', [...form.tagIds, result.id]);
+    setNewTagName('');
   };
 
   if (!isNew && isLoading) {
@@ -97,13 +122,22 @@ export function ArticleEditorPage() {
                 onChange={(e) => handleChange('slug', e.target.value)}
                 placeholder="留空自动生成"
               />
-              <Textarea
-                label="内容 (Markdown)"
-                value={form.content}
-                onChange={(e) => handleChange('content', e.target.value)}
-                className="min-h-[400px] font-mono"
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  内容 (Markdown)
+                </label>
+                <MarkdownEditor
+                  value={form.content}
+                  onChange={(value) => handleChange('content', value)}
+                  onImageUpload={async (file) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const result = await api.upload<{ url: string }>('/media/upload', formData);
+                    return result.url;
+                  }}
+                  placeholder="在这里输入文章内容..."
+                />
+              </div>
               <Textarea
                 label="摘要"
                 value={form.excerpt}
@@ -159,7 +193,50 @@ export function ArticleEditorPage() {
 
           <Card>
             <CardContent className="space-y-4">
+              <h3 className="font-semibold">特色图</h3>
+              {form.featuredImage ? (
+                <div className="relative">
+                  <img
+                    src={form.featuredImage}
+                    alt="特色图"
+                    className="w-full h-40 object-cover rounded"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleChange('featuredImage', '')}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <label className="block border-2 border-dashed border-gray-300 dark:border-gray-600 rounded p-4 text-center cursor-pointer hover:border-primary-500">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleFeaturedImageUpload}
+                  />
+                  <span className="text-gray-500">点击上传特色图</span>
+                </label>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="space-y-4">
               <h3 className="font-semibold">标签</h3>
+              <div className="flex gap-2">
+                <Input
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  placeholder="输入新标签"
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                />
+                <Button type="button" onClick={handleAddTag} disabled={!newTagName.trim()}>
+                  添加
+                </Button>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {tags?.map((tag) => (
                   <label

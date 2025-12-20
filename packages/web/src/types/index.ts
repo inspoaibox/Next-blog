@@ -5,6 +5,7 @@ export interface Article {
   slug: string;
   content: string;
   excerpt?: string;
+  featuredImage?: string;
   status: 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'TRASHED';
   publishedAt?: string;
   scheduledAt?: string;

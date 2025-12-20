@@ -35,7 +35,7 @@ export function LoginPage() {
       
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-center">登录</h1>
+          <h1 className="text-2xl font-bold text-center">NextBlog 登录</h1>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

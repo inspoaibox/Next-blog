@@ -71,8 +71,11 @@ export class CategoryService {
           orderBy: { sortOrder: 'asc' },
           include: {
             children: { orderBy: { sortOrder: 'asc' } },
+            _count: { select: { articles: true } },
           },
+          
         },
+        _count: { select: { articles: true } },
       },
     });
   }
@@ -83,7 +86,10 @@ export class CategoryService {
   async findAllFlat(): Promise<Category[]> {
     return prisma.category.findMany({
       orderBy: [{ parentId: 'asc' }, { sortOrder: 'asc' }],
-      include: { parent: true },
+      include: { 
+        parent: true,
+        _count: { select: { articles: true } },
+      },
     });
   }
 

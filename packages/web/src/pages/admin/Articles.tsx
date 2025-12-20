@@ -121,6 +121,13 @@ export function ArticlesPage() {
                         <Link to={`/admin/articles/${article.id}`}>
                           <Button variant="ghost" size="sm">编辑</Button>
                         </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => window.open(`/article/${article.slug}`, '_blank')}
+                        >
+                          预览
+                        </Button>
                         {article.status === 'DRAFT' && (
                           <Button
                             variant="ghost"
