@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
+import { DesktopNavMenu, MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
 import { useSiteSettingsStore } from '../../stores/site-settings.store';
 import type {
@@ -151,21 +152,10 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
             <div className={`w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br ${colors.gradient} ${rounded.button} flex items-center justify-center text-white font-bold text-sm md:text-lg`}>{siteName[0]}</div>
             <span className={`text-lg md:text-xl font-bold bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>{siteName}</span>
           </Link>
-          <nav className="hidden md:flex items-center gap-1">
-            {navMenu.map((item) => (
-              item.type === 'external' ? (
-                <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer"
-                  className={`px-4 py-2 ${rounded.button} text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all`}>
-                  {item.label}
-                </a>
-              ) : (
-                <Link key={item.id} to={item.url}
-                  className={`px-4 py-2 ${rounded.button} text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all`}>
-                  {item.label}
-                </Link>
-              )
-            ))}
-          </nav>
+          <DesktopNavMenu 
+            items={navMenu} 
+            itemClassName={`px-4 py-2 ${rounded.button} text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all`}
+          />
           <div className="flex items-center gap-2">
             <SearchBox />
             <ThemeToggle />
@@ -188,23 +178,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         </div>
         {/* Mobile Nav */}
         {mobileMenuOpen && (
-          <nav className="md:hidden border-t border-gray-200/50 dark:border-gray-800/50 bg-white dark:bg-gray-900">
-            {navMenu.map((item) => (
-              item.type === 'external' ? (
-                <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
-                  {item.label}
-                </a>
-              ) : (
-                <Link key={item.id} to={item.url}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
-                  {item.label}
-                </Link>
-              )
-            ))}
-          </nav>
+          <MobileNavMenu items={navMenu} onClose={() => setMobileMenuOpen(false)} />
         )}
       </header>
 

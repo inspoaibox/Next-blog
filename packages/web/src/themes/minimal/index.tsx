@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
 import { formatDate, truncate } from '../../lib/utils';
-import { useSiteSettingsStore } from '../../stores/site-settings.store';
+import { useSiteSettingsStore, NavMenuItem } from '../../stores/site-settings.store';
 import type {
   ThemeComponents,
   ThemeConfig,
@@ -114,20 +114,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center justify-center gap-4 text-xs tracking-[0.1em] uppercase flex-wrap">
           {navMenu.map((item, index) => (
-            <span key={item.id} className="flex items-center gap-4">
-              {index > 0 && <span className="text-gray-300 dark:text-gray-700">·</span>}
-              {item.type === 'external' ? (
-                <a href={item.url} target="_blank" rel="noopener noreferrer"
-                  className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap">
-                  {item.label}
-                </a>
-              ) : (
-                <Link to={item.url}
-                  className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap">
-                  {item.label}
-                </Link>
-              )}
-            </span>
+            <MinimalNavItem key={item.id} item={item} showDot={index > 0} />
           ))}
           <span className="text-gray-300 dark:text-gray-700">·</span>
           <SearchBox />
@@ -150,19 +137,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 flex flex-col items-center gap-3 text-xs tracking-[0.1em] uppercase">
             {navMenu.map((item) => (
-              item.type === 'external' ? (
-                <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  {item.label}
-                </a>
-              ) : (
-                <Link key={item.id} to={item.url}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
-                  {item.label}
-                </Link>
-              )
+              <MinimalMobileNavItem key={item.id} item={item} onClose={() => setMobileMenuOpen(false)} />
             ))}
           </div>
         )}
@@ -196,6 +171,146 @@ function getReadingTime(content: string): number {
   const wordsPerMinute = 200;
   const words = content.replace(/<[^>]*>/g, '').length;
   return Math.ceil(words / wordsPerMinute);
+}
+
+// 极简主题桌面端导航项（支持三级下拉）
+function MinimalNavItem({ item, showDot }: { item: NavMenuItem; showDot: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [subOpen, setSubOpen] = useState<string | null>(null);
+  const hasChildren = item.children && item.children.length > 0;
+
+  const linkClass = "text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap";
+
+  if (!hasChildren) {
+    return (
+      <span className="flex items-center gap-4">
+        {showDot && <span className="text-gray-300 dark:text-gray-700">·</span>}
+        {item.type === 'external' ? (
+          <a href={item.url} target="_blank" rel="noopener noreferrer" className={linkClass}>
+            {item.label}
+          </a>
+        ) : (
+          <Link to={item.url} className={linkClass}>
+            {item.label}
+          </Link>
+        )}
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex items-center gap-4">
+      {showDot && <span className="text-gray-300 dark:text-gray-700">·</span>}
+      <div 
+        className="relative"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => { setOpen(false); setSubOpen(null); }}
+      >
+        <button className={`${linkClass} flex items-center gap-1`}>
+          {item.label}
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {open && (
+          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 py-2 bg-white dark:bg-gray-900 rounded shadow-lg border border-gray-100 dark:border-gray-800 min-w-[140px] z-50 text-left normal-case tracking-normal">
+            {item.children!.map((child) => {
+              const hasGrandChildren = child.children && child.children.length > 0;
+              
+              if (hasGrandChildren) {
+                return (
+                  <div 
+                    key={child.id} 
+                    className="relative"
+                    onMouseEnter={() => setSubOpen(child.id)}
+                    onMouseLeave={() => setSubOpen(null)}
+                  >
+                    <button className="w-full flex items-center justify-between px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <span>{child.label}</span>
+                      <svg className="w-3 h-3 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                    {subOpen === child.id && (
+                      <div className="absolute left-full top-0 ml-1 py-2 bg-white dark:bg-gray-900 rounded shadow-lg border border-gray-100 dark:border-gray-800 min-w-[140px] z-50">
+                        {child.children!.map((grandChild) => (
+                          grandChild.type === 'external' ? (
+                            <a key={grandChild.id} href={grandChild.url} target="_blank" rel="noopener noreferrer"
+                              className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                              {grandChild.label}
+                            </a>
+                          ) : (
+                            <Link key={grandChild.id} to={grandChild.url}
+                              className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                              {grandChild.label}
+                            </Link>
+                          )
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              return child.type === 'external' ? (
+                <a key={child.id} href={child.url} target="_blank" rel="noopener noreferrer"
+                  className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                  {child.label}
+                </a>
+              ) : (
+                <Link key={child.id} to={child.url}
+                  className="block px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800">
+                  {child.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </span>
+  );
+}
+
+// 极简主题移动端导航项（支持三级展开）
+function MinimalMobileNavItem({ item, onClose, level = 0 }: { item: NavMenuItem; onClose: () => void; level?: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = item.children && item.children.length > 0;
+  const indent = level > 0 ? `pl-${level * 4}` : '';
+
+  if (!hasChildren) {
+    return item.type === 'external' ? (
+      <a href={item.url} target="_blank" rel="noopener noreferrer" onClick={onClose}
+        className={`text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors ${indent}`}>
+        {level > 0 && '└ '}{item.label}
+      </a>
+    ) : (
+      <Link to={item.url} onClick={onClose}
+        className={`text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors ${indent}`}>
+        {level > 0 && '└ '}{item.label}
+      </Link>
+    );
+  }
+
+  return (
+    <div className={`flex flex-col items-center gap-2 ${indent}`}>
+      <button 
+        onClick={() => setExpanded(!expanded)}
+        className="text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1"
+      >
+        {level > 0 && '└ '}{item.label}
+        <svg className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {expanded && (
+        <div className="flex flex-col items-center gap-2 text-[10px]">
+          {item.children!.map((child) => (
+            <MinimalMobileNavItem key={child.id} item={child} onClose={onClose} level={level + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ============ 文章卡片 - 极简列表 ============

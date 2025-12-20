@@ -3,6 +3,7 @@ import { ReactNode, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
+import { DesktopNavMenu, MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
 import { useSiteSettingsStore } from '../../stores/site-settings.store';
 import type {
@@ -125,21 +126,10 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       {/* 导航栏 */}
       <nav className="bg-white dark:bg-stone-800 border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="hidden md:flex items-center gap-6 text-sm">
-            {navMenu.map((item) => (
-              item.type === 'external' ? (
-                <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer"
-                  className={`text-stone-600 dark:text-stone-300 ${colors.hover} font-medium`}>
-                  {item.label}
-                </a>
-              ) : (
-                <Link key={item.id} to={item.url}
-                  className={`text-stone-600 dark:text-stone-300 ${colors.hover} font-medium`}>
-                  {item.label}
-                </Link>
-              )
-            ))}
-          </div>
+          <DesktopNavMenu 
+            items={navMenu} 
+            itemClassName={`text-stone-600 dark:text-stone-300 ${colors.hover} font-medium px-3 py-2`}
+          />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden p-2 text-stone-600 dark:text-stone-300"
@@ -160,23 +150,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         </div>
         {/* Mobile Nav */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-stone-200 dark:border-stone-700">
-            {navMenu.map((item) => (
-              item.type === 'external' ? (
-                <a key={item.id} href={item.url} target="_blank" rel="noopener noreferrer"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700">
-                  {item.label}
-                </a>
-              ) : (
-                <Link key={item.id} to={item.url}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-700">
-                  {item.label}
-                </Link>
-              )
-            ))}
-          </div>
+          <MobileNavMenu items={navMenu} onClose={() => setMobileMenuOpen(false)} />
         )}
       </nav>
 

@@ -37,6 +37,7 @@ export class MarkdownService {
   async parse(markdown: string): Promise<ParseResult> {
     const toc: TocItem[] = [];
     const headingStack: TocItem[] = [];
+    const idCounter: Record<string, number> = {}; // 用于跟踪重复 ID
 
     // 先移除代码块，避免匹配代码块内的 #
     const codeBlockPlaceholder = '___CODE_BLOCK___';
@@ -52,7 +53,16 @@ export class MarkdownService {
     while ((match = headingRegex.exec(contentWithoutCode)) !== null) {
       const level = match[1].length;
       const text = match[2].trim();
-      const id = this.generateHeadingId(text);
+      const baseId = this.generateHeadingId(text);
+      
+      // 处理重复 ID，添加计数后缀
+      let id = baseId;
+      if (idCounter[baseId] !== undefined) {
+        idCounter[baseId]++;
+        id = `${baseId}-${idCounter[baseId]}`;
+      } else {
+        idCounter[baseId] = 0;
+      }
 
       const item: TocItem = { id, text, level, children: [] };
 
@@ -69,7 +79,7 @@ export class MarkdownService {
       headingStack.push(item);
     }
 
-    // 解析 Markdown 为 HTML
+    // 解析 Markdown 为 HTML，使用自定义的 slug 生成器确保 ID 一致
     const processor = unified()
       .use(remarkParse)
       .use(remarkGfm)
@@ -79,6 +89,18 @@ export class MarkdownService {
 
     const result = await processor.process(markdown);
     let html = String(result);
+
+    // 修复 HTML 中的重复 ID，使其与 TOC 一致
+    const htmlIdCounter: Record<string, number> = {};
+    html = html.replace(/<(h[1-6])\s+id="([^"]+)">/g, (_match, tag, id) => {
+      if (htmlIdCounter[id] !== undefined) {
+        htmlIdCounter[id]++;
+        return `<${tag} id="${id}-${htmlIdCounter[id]}">`;
+      } else {
+        htmlIdCounter[id] = 0;
+        return `<${tag} id="${id}">`;
+      }
+    });
 
     // 代码高亮
     html = await this.highlightCode(html);

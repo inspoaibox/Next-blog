@@ -182,12 +182,23 @@ function extractTOC(content: string): TOCItem[] {
   
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
   const flatToc: TOCItem[] = [];
+  const idCounter: Record<string, number> = {}; // 用于跟踪重复 ID
   let match;
 
   while ((match = headingRegex.exec(contentWithoutCode)) !== null) {
     const level = match[1].length;
     const text = match[2].trim();
-    const id = generateSlugId(text);
+    const baseId = generateSlugId(text);
+    
+    // 处理重复 ID，添加计数后缀
+    let id = baseId;
+    if (idCounter[baseId] !== undefined) {
+      idCounter[baseId]++;
+      id = `${baseId}-${idCounter[baseId]}`;
+    } else {
+      idCounter[baseId] = 0;
+    }
+    
     flatToc.push({ id, text, level });
   }
 
@@ -222,10 +233,23 @@ function buildTocTree(flatToc: TOCItem[]): TOCItem[] {
 
 // 前端备用渲染（当后端没有返回 htmlContent 时使用）
 function renderMarkdown(content: string): string {
+  const idCounter: Record<string, number> = {};
+  
+  const getUniqueId = (text: string): string => {
+    const baseId = generateSlugId(text);
+    if (idCounter[baseId] !== undefined) {
+      idCounter[baseId]++;
+      return `${baseId}-${idCounter[baseId]}`;
+    } else {
+      idCounter[baseId] = 0;
+      return baseId;
+    }
+  };
+
   return content
-    .replace(/^### (.+)$/gim, (_, text) => `<h3 id="${generateSlugId(text)}">${text}</h3>`)
-    .replace(/^## (.+)$/gim, (_, text) => `<h2 id="${generateSlugId(text)}">${text}</h2>`)
-    .replace(/^# (.+)$/gim, (_, text) => `<h1 id="${generateSlugId(text)}">${text}</h1>`)
+    .replace(/^### (.+)$/gim, (_, text) => `<h3 id="${getUniqueId(text)}">${text}</h3>`)
+    .replace(/^## (.+)$/gim, (_, text) => `<h2 id="${getUniqueId(text)}">${text}</h2>`)
+    .replace(/^# (.+)$/gim, (_, text) => `<h1 id="${getUniqueId(text)}">${text}</h1>`)
     .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/gim, '<em>$1</em>')
     .replace(/`([^`]+)`/gim, '<code>$1</code>')

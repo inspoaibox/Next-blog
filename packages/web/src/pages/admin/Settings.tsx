@@ -861,6 +861,7 @@ function MenuSettings() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
+  const [grandParentId, setGrandParentId] = useState<string | null>(null);
   const [form, setForm] = useState({ label: '', url: '', type: 'internal' as MenuItem['type'], visible: true });
 
   useEffect(() => {
@@ -892,28 +893,46 @@ function MenuSettings() {
     updateSettings.mutate({ navMenu: JSON.stringify(menuItems) });
   };
 
-  const handleAdd = (parentItemId?: string) => {
+  const handleAdd = (parentItemId?: string, grandParentItemId?: string) => {
     setEditingItem(null);
     setParentId(parentItemId || null);
+    setGrandParentId(grandParentItemId || null);
     setForm({ label: '', url: '', type: 'internal', visible: true });
     setIsModalOpen(true);
   };
 
-  const handleEdit = (item: MenuItem, parentItemId?: string) => {
+  const handleEdit = (item: MenuItem, parentItemId?: string, grandParentItemId?: string) => {
     setEditingItem(item);
     setParentId(parentItemId || null);
+    setGrandParentId(grandParentItemId || null);
     setForm({ label: item.label, url: item.url, type: item.type, visible: item.visible !== false });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string, parentItemId?: string) => {
-    if (parentItemId) {
+  const handleDelete = (id: string, parentItemId?: string, grandParentItemId?: string) => {
+    if (grandParentItemId) {
+      // 删除三级菜单
+      setMenuItems(menuItems.map(item => 
+        item.id === parentItemId 
+          ? { 
+              ...item, 
+              children: item.children?.map(child =>
+                child.id === grandParentItemId
+                  ? { ...child, children: child.children?.filter(c => c.id !== id) }
+                  : child
+              )
+            }
+          : item
+      ));
+    } else if (parentItemId) {
+      // 删除二级菜单
       setMenuItems(menuItems.map(item => 
         item.id === parentItemId 
           ? { ...item, children: item.children?.filter(c => c.id !== id) }
           : item
       ));
     } else {
+      // 删除一级菜单
       setMenuItems(menuItems.filter(item => item.id !== id));
     }
   };
@@ -926,8 +945,34 @@ function MenuSettings() {
       sortOrder: 0,
     };
 
-    if (parentId) {
-      // 添加/编辑子菜单
+    if (grandParentId) {
+      // 添加/编辑三级菜单
+      setMenuItems(menuItems.map(item => {
+        if (item.id === parentId) {
+          return {
+            ...item,
+            children: item.children?.map(child => {
+              if (child.id === grandParentId) {
+                if (editingItem) {
+                  return {
+                    ...child,
+                    children: child.children?.map(c => c.id === editingItem.id ? newItem : c),
+                  };
+                } else {
+                  return {
+                    ...child,
+                    children: [...(child.children || []), newItem],
+                  };
+                }
+              }
+              return child;
+            }),
+          };
+        }
+        return item;
+      }));
+    } else if (parentId) {
+      // 添加/编辑二级菜单
       setMenuItems(menuItems.map(item => {
         if (item.id === parentId) {
           if (editingItem) {
@@ -957,8 +1002,30 @@ function MenuSettings() {
     setIsModalOpen(false);
   };
 
-  const toggleVisibility = (id: string, parentItemId?: string) => {
-    if (parentItemId) {
+  const toggleVisibility = (id: string, parentItemId?: string, grandParentItemId?: string) => {
+    if (grandParentItemId) {
+      // 切换三级菜单可见性
+      setMenuItems(menuItems.map(item => {
+        if (item.id === parentItemId) {
+          return {
+            ...item,
+            children: item.children?.map(child => {
+              if (child.id === grandParentItemId) {
+                return {
+                  ...child,
+                  children: child.children?.map(c => 
+                    c.id === id ? { ...c, visible: c.visible === false ? true : false } : c
+                  ),
+                };
+              }
+              return child;
+            }),
+          };
+        }
+        return item;
+      }));
+    } else if (parentItemId) {
+      // 切换二级菜单可见性
       setMenuItems(menuItems.map(item => {
         if (item.id === parentItemId) {
           return {
@@ -971,18 +1038,40 @@ function MenuSettings() {
         return item;
       }));
     } else {
+      // 切换一级菜单可见性
       setMenuItems(menuItems.map(item => 
         item.id === id ? { ...item, visible: item.visible === false ? true : false } : item
       ));
     }
   };
 
-  const moveItem = (index: number, direction: 'up' | 'down', parentItemId?: string) => {
-    if (parentItemId) {
+  const moveItem = (index: number, direction: 'up' | 'down', parentItemId?: string, grandParentItemId?: string) => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (grandParentItemId) {
+      // 移动三级菜单
+      setMenuItems(menuItems.map(item => {
+        if (item.id === parentItemId) {
+          return {
+            ...item,
+            children: item.children?.map(child => {
+              if (child.id === grandParentItemId && child.children) {
+                const newChildren = [...child.children];
+                if (targetIndex < 0 || targetIndex >= newChildren.length) return child;
+                [newChildren[index], newChildren[targetIndex]] = [newChildren[targetIndex], newChildren[index]];
+                return { ...child, children: newChildren };
+              }
+              return child;
+            }),
+          };
+        }
+        return item;
+      }));
+    } else if (parentItemId) {
+      // 移动二级菜单
       setMenuItems(menuItems.map(item => {
         if (item.id === parentItemId && item.children) {
           const newChildren = [...item.children];
-          const targetIndex = direction === 'up' ? index - 1 : index + 1;
           if (targetIndex < 0 || targetIndex >= newChildren.length) return item;
           [newChildren[index], newChildren[targetIndex]] = [newChildren[targetIndex], newChildren[index]];
           return { ...item, children: newChildren };
@@ -990,8 +1079,8 @@ function MenuSettings() {
         return item;
       }));
     } else {
+      // 移动一级菜单
       const newItems = [...menuItems];
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
       if (targetIndex < 0 || targetIndex >= newItems.length) return;
       [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
       newItems.forEach((item, i) => item.sortOrder = i);
@@ -1002,61 +1091,72 @@ function MenuSettings() {
   // 显示在导航的页面
   const navPages = pages?.filter(p => p.showInNav) || [];
 
-  const renderMenuItem = (item: MenuItem, index: number, parentItemId?: string) => (
-    <div key={item.id} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
-      <div className={`flex items-center gap-4 p-3 ${parentItemId ? 'pl-10 bg-gray-50/50 dark:bg-gray-800/30' : 'bg-gray-50 dark:bg-gray-800'} rounded-lg ${item.visible === false ? 'opacity-50' : ''}`}>
-        <div className="flex flex-col gap-1">
-          <button
-            onClick={() => moveItem(index, 'up', parentItemId)}
-            disabled={index === 0}
-            className="text-gray-400 hover:text-gray-600 disabled:opacity-30 text-xs"
-          >
-            ▲
-          </button>
-          <button
-            onClick={() => moveItem(index, 'down', parentItemId)}
-            disabled={index === (parentItemId ? menuItems.find(m => m.id === parentItemId)?.children?.length || 0 : menuItems.length) - 1}
-            className="text-gray-400 hover:text-gray-600 disabled:opacity-30 text-xs"
-          >
-            ▼
-          </button>
-        </div>
-        <div className="flex-1">
-          <div className="font-medium flex items-center gap-2">
-            {parentItemId && <span className="text-gray-400">└</span>}
-            {item.label}
-            {item.visible === false && <span className="text-xs text-gray-400">(隐藏)</span>}
+  const renderMenuItem = (item: MenuItem, index: number, parentItemId?: string, grandParentId?: string) => {
+    const level = grandParentId ? 2 : parentItemId ? 1 : 0;
+    const bgClass = level === 0 ? 'bg-gray-50 dark:bg-gray-800' : level === 1 ? 'pl-10 bg-gray-50/50 dark:bg-gray-800/30' : 'pl-16 bg-gray-50/30 dark:bg-gray-800/20';
+    const parentItems = grandParentId 
+      ? menuItems.find(m => m.id === parentItemId)?.children?.find(c => c.id === grandParentId)?.children 
+      : parentItemId 
+        ? menuItems.find(m => m.id === parentItemId)?.children 
+        : menuItems;
+    const itemCount = parentItems?.length || 0;
+
+    return (
+      <div key={item.id} className="border-b border-gray-100 dark:border-gray-800 last:border-0">
+        <div className={`flex items-center gap-4 p-3 ${bgClass} rounded-lg ${item.visible === false ? 'opacity-50' : ''}`}>
+          <div className="flex flex-col gap-1">
+            <button
+              onClick={() => moveItem(index, 'up', parentItemId, grandParentId)}
+              disabled={index === 0}
+              className="text-gray-400 hover:text-gray-600 disabled:opacity-30 text-xs"
+            >
+              ▲
+            </button>
+            <button
+              onClick={() => moveItem(index, 'down', parentItemId, grandParentId)}
+              disabled={index === itemCount - 1}
+              className="text-gray-400 hover:text-gray-600 disabled:opacity-30 text-xs"
+            >
+              ▼
+            </button>
           </div>
-          <div className="text-sm text-gray-500">{item.url}</div>
-        </div>
-        <Badge variant={item.type === 'external' ? 'warning' : item.type === 'category' ? 'primary' : 'default'}>
-          {item.type === 'internal' ? '内部' : item.type === 'external' ? '外部' : item.type === 'category' ? '分类' : '页面'}
-        </Badge>
-        <div className="flex gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => toggleVisibility(item.id, parentItemId)}
-            className={item.visible === false ? 'text-green-600' : 'text-gray-500'}
-          >
-            {item.visible === false ? '显示' : '隐藏'}
-          </Button>
-          {!parentItemId && (
-            <Button variant="ghost" size="sm" onClick={() => handleAdd(item.id)}>
-              添加子菜单
+          <div className="flex-1">
+            <div className="font-medium flex items-center gap-2">
+              {level > 0 && <span className="text-gray-400">{'└'.repeat(level)}</span>}
+              {item.label}
+              {item.visible === false && <span className="text-xs text-gray-400">(隐藏)</span>}
+            </div>
+            <div className="text-sm text-gray-500">{item.url}</div>
+          </div>
+          <Badge variant={item.type === 'external' ? 'warning' : item.type === 'category' ? 'primary' : 'default'}>
+            {item.type === 'internal' ? '内部' : item.type === 'external' ? '外部' : item.type === 'category' ? '分类' : '页面'}
+          </Badge>
+          <div className="flex gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => toggleVisibility(item.id, parentItemId, grandParentId)}
+              className={item.visible === false ? 'text-green-600' : 'text-gray-500'}
+            >
+              {item.visible === false ? '显示' : '隐藏'}
             </Button>
-          )}
-          <Button variant="ghost" size="sm" onClick={() => handleEdit(item, parentItemId)}>编辑</Button>
-          <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete(item.id, parentItemId)}>删除</Button>
+            {level < 2 && (
+              <Button variant="ghost" size="sm" onClick={() => handleAdd(item.id, parentItemId)}>
+                添加子菜单
+              </Button>
+            )}
+            <Button variant="ghost" size="sm" onClick={() => handleEdit(item, parentItemId, grandParentId)}>编辑</Button>
+            <Button variant="ghost" size="sm" className="text-red-600" onClick={() => handleDelete(item.id, parentItemId, grandParentId)}>删除</Button>
+          </div>
         </div>
+        {item.children && item.children.length > 0 && (
+          <div className="ml-4">
+            {item.children.map((child, childIndex) => renderMenuItem(child, childIndex, parentItemId || item.id, parentItemId ? item.id : undefined))}
+          </div>
+        )}
       </div>
-      {item.children && item.children.length > 0 && (
-        <div className="ml-4">
-          {item.children.map((child, childIndex) => renderMenuItem(child, childIndex, item.id))}
-        </div>
-      )}
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -1075,7 +1175,7 @@ function MenuSettings() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold">导航菜单</h2>
-              <p className="text-sm text-gray-500 mt-1">支持二级菜单，点击"添加子菜单"创建下拉菜单</p>
+              <p className="text-sm text-gray-500 mt-1">支持三级菜单，点击"添加子菜单"创建下拉菜单</p>
             </div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => handleAdd()}>添加菜单项</Button>
@@ -1132,7 +1232,7 @@ function MenuSettings() {
         </p>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? '编辑菜单项' : (parentId ? '添加子菜单' : '添加菜单项')}>
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingItem ? '编辑菜单项' : (grandParentId ? '添加三级菜单' : parentId ? '添加二级菜单' : '添加菜单项')}>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             label="显示名称"
