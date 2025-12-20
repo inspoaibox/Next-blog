@@ -9,6 +9,7 @@ interface SearchBoxProps {
 export function SearchBox({ className = '', placeholder = '搜索文章...' }: SearchBoxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -21,7 +22,7 @@ export function SearchBox({ className = '', placeholder = '搜索文章...' }: S
   // 点击外部关闭
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -39,9 +40,10 @@ export function SearchBox({ className = '', placeholder = '搜索文章...' }: S
   };
 
   return (
-    <div className={`relative ${className}`}>
+    <div ref={containerRef} className={`relative ${className}`}>
       {/* 搜索图标按钮 */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
         aria-label="搜索"
@@ -55,7 +57,8 @@ export function SearchBox({ className = '', placeholder = '搜索文章...' }: S
       {isOpen && (
         <form
           onSubmit={handleSubmit}
-          className="absolute right-0 top-full mt-2 w-64 md:w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-50"
+          className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] max-w-xs sm:max-w-sm md:w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-2 z-50"
+          style={{ right: 'auto', left: '50%', transform: 'translateX(-50%)' }}
         >
           <div className="flex items-center gap-2">
             <input
@@ -64,11 +67,16 @@ export function SearchBox({ className = '', placeholder = '搜索文章...' }: S
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={placeholder}
-              className="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="flex-1 min-w-0 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSubmit(e);
+                }
+              }}
             />
             <button
               type="submit"
-              className="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 transition-colors"
+              className="flex-shrink-0 px-3 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700 transition-colors"
             >
               搜索
             </button>
