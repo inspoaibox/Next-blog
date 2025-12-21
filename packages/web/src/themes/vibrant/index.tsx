@@ -363,14 +363,14 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
   const cardEmoji = cardEmojis[hashCode(article.id) % cardEmojis.length];
 
   const cardClasses = {
-    glass: 'bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-2 border-white dark:border-slate-800 hover:bg-white/90 dark:hover:bg-slate-900/90',
-    solid: 'bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700',
+    glass: 'bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-2 border-white dark:border-slate-700 hover:bg-white/90 dark:hover:bg-slate-900/90',
+    solid: 'bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 hover:border-slate-200 dark:hover:border-slate-600',
     gradient: 'bg-white dark:bg-slate-900 border-2 border-transparent bg-clip-padding hover:shadow-xl',
   };
 
   return (
     <article
-      className={`group relative ${radius.card} overflow-hidden flex flex-col transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.02] hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.1)] ${cardClasses[config.cardStyle as keyof typeof cardClasses] || cardClasses.glass}`}
+      className={`group relative ${radius.card} overflow-hidden flex flex-col transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.02] hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.4)] ${cardClasses[config.cardStyle as keyof typeof cardClasses] || cardClasses.glass}`}
     >
       {/* 特色图片 */}
       {showFeaturedImage && article.featuredImage && (
@@ -380,14 +380,14 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
             alt={article.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-slate-900/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-slate-900/90 to-transparent" />
         </div>
       )}
 
       <div className={`p-6 md:p-8 flex flex-col flex-1 ${showFeaturedImage && article.featuredImage ? '' : ''}`}>
         {/* 卡片内部色彩点缀 */}
         <div
-          className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"
+          className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10 dark:opacity-20 group-hover:opacity-20 dark:group-hover:opacity-30 transition-opacity duration-500"
           style={{ backgroundColor: cardColor }}
         />
 
@@ -402,22 +402,22 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase leading-none mb-1">
+              <span className="text-[10px] font-black tracking-widest text-slate-500 dark:text-slate-400 uppercase leading-none mb-1">
                 Article
               </span>
-              <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tighter">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-tighter">
                 {article.category?.name || 'Blog'}
               </span>
             </div>
           </div>
-          <div className={`w-10 h-10 ${radius.button} bg-slate-50 dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:rotate-12 transition-transform`}>
-            <Sparkles size={16} className="text-slate-300 group-hover:text-amber-400" />
+          <div className={`w-10 h-10 ${radius.button} bg-slate-50 dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-slate-600 group-hover:rotate-12 transition-transform`}>
+            <Sparkles size={16} className="text-slate-300 dark:text-slate-500 group-hover:text-amber-400" />
           </div>
         </div>
 
         <Link href={`/article/${article.slug}`}>
           <h3
-            className="text-xl md:text-2xl font-black text-slate-800 dark:text-white mb-4 line-clamp-2 transition-colors duration-300"
+            className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 mb-4 line-clamp-2 transition-colors duration-300"
             style={{ 
               color: undefined 
             }}
@@ -432,7 +432,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
           </h3>
         </Link>
 
-        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8 md:mb-10 font-medium opacity-80 flex-1 line-clamp-3">
+        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-8 md:mb-10 font-medium flex-1 line-clamp-3">
           {truncate(article.excerpt || article.content, excerptLength)}
         </p>
 
@@ -442,7 +442,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
               <Link
                 key={tag.id}
                 href={`/tag/${tag.id}`}
-                className={`text-[9px] font-black px-3 py-1 bg-slate-100/50 dark:bg-slate-800/50 ${radius.tag} text-slate-400 uppercase tracking-wider hover:text-slate-600 dark:hover:text-slate-300 transition-colors`}
+                className={`text-[9px] font-black px-3 py-1 bg-slate-100/50 dark:bg-slate-800/70 ${radius.tag} text-slate-500 dark:text-slate-400 uppercase tracking-wider hover:text-slate-700 dark:hover:text-slate-200 transition-colors`}
               >
                 {tag.name}
               </Link>
@@ -450,7 +450,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center gap-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               <span className="flex items-center gap-1">
                 <Eye size={12} /> {article.viewCount || 0}
               </span>
@@ -568,7 +568,7 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
     <div>
       <div className="text-center mb-12 md:mb-16">
         <div
-          className={`inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 ${radius.tag} shadow-sm border border-slate-100 dark:border-slate-800 text-[10px] font-black mb-8 uppercase tracking-[0.3em]`}
+          className={`inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 ${radius.tag} shadow-sm border border-slate-100 dark:border-slate-700 text-[10px] font-black mb-8 uppercase tracking-[0.3em]`}
           style={{ color: colors.primary }}
         >
           <Folder size={14} /> Categories
@@ -585,10 +585,10 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
             <Link
               key={category.id}
               href={`/category/${category.slug}`}
-              className={`group relative ${radius.card} bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-2 border-white dark:border-slate-800 p-8 transition-all duration-500 hover:scale-[1.02] hover:shadow-xl ${isChild ? 'ml-4' : ''}`}
+              className={`group relative ${radius.card} bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-2 border-white dark:border-slate-700 p-8 transition-all duration-500 hover:scale-[1.02] hover:shadow-xl ${isChild ? 'ml-4' : ''}`}
             >
               <div
-                className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-20 group-hover:opacity-30 transition-opacity"
+                className="absolute -top-8 -right-8 w-24 h-24 rounded-full opacity-20 dark:opacity-30 group-hover:opacity-30 dark:group-hover:opacity-40 transition-opacity"
                 style={{ backgroundColor: cardColor }}
               />
               <div className="flex justify-between items-start mb-4 relative z-10">
@@ -598,18 +598,18 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
                 >
                   📁
                 </div>
-                <span className="text-4xl font-black text-slate-200 dark:text-slate-700 font-mono">
+                <span className="text-4xl font-black text-slate-200 dark:text-slate-600 font-mono">
                   {String(category._count?.articles || 0).padStart(2, '0')}
                 </span>
               </div>
               <h2
-                className={`text-xl font-black mb-2 group-hover:text-transparent group-hover:bg-clip-text transition-all`}
+                className={`text-xl font-black text-slate-800 dark:text-slate-100 mb-2 group-hover:text-transparent group-hover:bg-clip-text transition-all`}
                 style={{ backgroundImage: `linear-gradient(to right, ${cardColor}, ${colors.secondary})` }}
               >
-                {isChild && <span className="text-slate-300 mr-2">└</span>}
+                {isChild && <span className="text-slate-300 dark:text-slate-600 mr-2">└</span>}
                 {category.name}
               </h2>
-              <p className="text-sm text-slate-400 font-bold uppercase tracking-wider">
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
                 {category._count?.articles || 0} 篇文章
               </p>
             </Link>
@@ -629,7 +629,7 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
     <div>
       <div className="text-center mb-12 md:mb-16">
         <div
-          className={`inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 ${radius.tag} shadow-sm border border-slate-100 dark:border-slate-800 text-[10px] font-black mb-8 uppercase tracking-[0.3em]`}
+          className={`inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 ${radius.tag} shadow-sm border border-slate-100 dark:border-slate-700 text-[10px] font-black mb-8 uppercase tracking-[0.3em]`}
           style={{ color: colors.primary }}
         >
           <Tag size={14} /> Tags
@@ -639,7 +639,7 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
         </h1>
       </div>
 
-      <div className={`bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl ${radius.card} p-8 md:p-12 border-2 border-white dark:border-slate-800`}>
+      <div className={`bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl ${radius.card} p-8 md:p-12 border-2 border-white dark:border-slate-700`}>
         <div className="flex flex-wrap gap-4 justify-center">
           {tags.map((tag, index) => {
             const count = tag._count?.articles || 0;
@@ -649,11 +649,11 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
               <Link
                 key={tag.id}
                 href={`/tag/${tag.slug}`}
-                className={`${size} ${radius.tag} font-black uppercase bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md hover:scale-105 transition-all`}
+                className={`${size} ${radius.tag} font-black uppercase bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-600 hover:shadow-md hover:scale-105 transition-all`}
                 style={{ color: cardColor }}
               >
                 #{tag.name}
-                <span className="ml-2 text-slate-300 dark:text-slate-600">({count})</span>
+                <span className="ml-2 text-slate-400 dark:text-slate-500">({count})</span>
               </Link>
             );
           })}
@@ -675,12 +675,12 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
     <div>
       <div className="text-center mb-12">
         <div
-          className={`inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 ${radius.tag} shadow-sm border border-slate-100 dark:border-slate-800 text-[10px] font-black mb-8 uppercase tracking-[0.3em]`}
+          className={`inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-900 ${radius.tag} shadow-sm border border-slate-100 dark:border-slate-700 text-[10px] font-black mb-8 uppercase tracking-[0.3em]`}
           style={{ color: colors.primary }}
         >
           <Search size={14} /> Search Results
         </div>
-        <p className="text-lg font-bold text-slate-500">
+        <p className="text-lg font-bold text-slate-600 dark:text-slate-400">
           找到 <span style={{ color: colors.primary }}>{total}</span> 篇关于
           "<span style={{ color: colors.secondary }}>{query}</span>" 的文章
         </p>
@@ -693,18 +693,18 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
             <Link
               key={article.id}
               href={`/article/${article.slug}`}
-              className={`group ${radius.card} bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-2 border-white dark:border-slate-800 p-6 transition-all duration-500 hover:scale-[1.02] hover:shadow-xl`}
+              className={`group ${radius.card} bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-2 border-white dark:border-slate-700 p-6 transition-all duration-500 hover:scale-[1.02] hover:shadow-xl`}
             >
               <h2
-                className="font-black text-lg mb-3 group-hover:text-transparent group-hover:bg-clip-text transition-all line-clamp-2"
+                className="font-black text-lg text-slate-800 dark:text-slate-100 mb-3 group-hover:text-transparent group-hover:bg-clip-text transition-all line-clamp-2"
                 style={{ backgroundImage: `linear-gradient(to right, ${cardColor}, ${colors.secondary})` }}
               >
                 {article.title}
               </h2>
-              <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 mb-4">
+              <p className="text-slate-600 dark:text-slate-400 text-sm line-clamp-2 mb-4">
                 {truncate(article.excerpt || article.content, 100)}
               </p>
-              <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase">
+              <div className="flex items-center gap-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                 <span>{formatDate(article.publishedAt || article.createdAt).split(' ')[0]}</span>
                 {article.tags?.slice(0, 2).map((tag) => (
                   <span key={tag.id} className={`px-2 py-0.5 ${radius.tag}`} style={{ backgroundColor: `${cardColor}20`, color: cardColor }}>

@@ -8,8 +8,6 @@ import { useSiteSettingsContext } from '../../contexts/site-settings-context';
 import {
   Home,
   Hash,
-  Bell,
-  Mail,
   User,
   MoreHorizontal,
   Share,
@@ -55,6 +53,30 @@ const configOptions: ThemeConfigOption[] = [
     description: '整体品牌色调',
   },
   {
+    key: 'layoutWidth',
+    label: '布局宽度',
+    type: 'select',
+    options: [
+      { value: 'standard', label: '标准 (1200px)' },
+      { value: 'wide', label: '宽屏 (1400px)' },
+      { value: 'full', label: '全宽' },
+    ],
+    default: 'standard',
+    description: '页面整体宽度',
+  },
+  {
+    key: 'contentWidth',
+    label: '内容区宽度',
+    type: 'select',
+    options: [
+      { value: 'narrow', label: '窄 (550px)' },
+      { value: 'standard', label: '标准 (650px)' },
+      { value: 'wide', label: '宽 (750px)' },
+    ],
+    default: 'standard',
+    description: '中间信息流的宽度',
+  },
+  {
     key: 'layoutDensity',
     label: '内容密度',
     type: 'select',
@@ -64,6 +86,13 @@ const configOptions: ThemeConfigOption[] = [
     ],
     default: 'cozy',
     description: '信息流的间距密度',
+  },
+  {
+    key: 'showRightSidebar',
+    label: '显示右侧边栏',
+    type: 'boolean',
+    default: true,
+    description: '是否显示右侧边栏（热搜、AI助手等）',
   },
   {
     key: 'showTrending',
@@ -103,7 +132,7 @@ const configOptions: ThemeConfigOption[] = [
     label: '摘要长度',
     type: 'number',
     default: 150,
-    description: '文章摘要显示的字符数',
+    description: '文章摘要显示的字符数 (50-500)',
   },
   {
     key: 'showVerifiedBadge',
@@ -137,7 +166,10 @@ const configOptions: ThemeConfigOption[] = [
 
 const defaultConfig: ThemeConfig = {
   primaryColor: 'weibo-orange',
+  layoutWidth: 'standard',
+  contentWidth: 'standard',
   layoutDensity: 'cozy',
+  showRightSidebar: true,
   showTrending: true,
   showAiAssistant: true,
   showFeaturedImage: true,
@@ -181,7 +213,7 @@ function LeftSidebar({ config, siteName }: { config: ThemeConfig; siteName: stri
     : defaultNavItems;
 
   return (
-    <aside className="hidden lg:flex flex-col w-[260px] h-screen sticky top-0 py-4 px-4 gap-2 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111]">
+    <aside className="hidden lg:flex flex-col w-[260px] h-screen sticky top-0 py-4 px-4 gap-2 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f0f0f]">
       {/* Logo */}
       <Link href="/" className="mb-6 px-3">
         <div
@@ -197,8 +229,8 @@ function LeftSidebar({ config, siteName }: { config: ThemeConfig; siteName: stri
         <Link
           key={idx}
           href={item.href}
-          className={`flex items-center gap-4 px-4 py-3 rounded-full cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5 transition-all ${
-            item.active ? 'font-black' : 'font-medium opacity-70'
+          className={`flex items-center gap-4 px-4 py-3 rounded-full cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-700 dark:text-slate-300 ${
+            item.active ? 'font-black' : 'font-medium'
           }`}
           style={item.active ? { color: theme.primary } : {}}
         >
@@ -216,16 +248,22 @@ function LeftSidebar({ config, siteName }: { config: ThemeConfig; siteName: stri
         探索更多
       </Link>
 
+      {/* 主题切换 */}
+      <div className="mt-4 flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-full">
+        <span className="text-sm font-bold text-slate-600 dark:text-slate-400 hidden xl:block">主题</span>
+        <ThemeToggle />
+      </div>
+
       {/* 底部用户信息 */}
-      <div className="mt-auto p-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full cursor-pointer">
+      <div className="mt-auto p-3 flex items-center gap-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full cursor-pointer">
         <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex items-center justify-center">
-          <User size={20} className="text-slate-400" />
+          <User size={20} className="text-slate-400 dark:text-slate-500" />
         </div>
         <div className="hidden xl:block flex-1">
-          <p className="font-bold text-sm">{siteName}</p>
-          <p className="text-xs opacity-40">@blog_user</p>
+          <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{siteName}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">@blog_user</p>
         </div>
-        <MoreHorizontal size={18} className="ml-auto opacity-30 hidden xl:block" />
+        <MoreHorizontal size={18} className="ml-auto text-slate-400 hidden xl:block" />
       </div>
     </aside>
   );
@@ -255,9 +293,9 @@ function RightSidebar({ config }: { config: ThemeConfig }) {
 
       {/* 热搜榜 */}
       {config.showTrending && (
-        <div className="bg-slate-50 dark:bg-[#1a1a1a] rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-            <h3 className="font-black text-lg flex items-center gap-2">
+        <div className="bg-slate-50 dark:bg-[#151515] rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+          <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+            <h3 className="font-black text-lg flex items-center gap-2 text-slate-800 dark:text-slate-200">
               <TrendingUp size={18} className="text-red-500" /> {trendingTitle}
             </h3>
             <Sparkles size={16} className="text-amber-500 animate-pulse" />
@@ -266,27 +304,27 @@ function RightSidebar({ config }: { config: ThemeConfig }) {
             {trendingItems.map((item, i) => (
               <div
                 key={i}
-                className="px-4 py-3 hover:bg-slate-100 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center transition-colors"
+                className="px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex justify-between items-center transition-colors"
               >
                 <div className="flex gap-4 items-center">
-                  <span className={`font-bold italic ${i < 3 ? 'text-orange-500' : 'opacity-30'}`}>
+                  <span className={`font-bold italic ${i < 3 ? 'text-orange-500' : 'text-slate-400 dark:text-slate-500'}`}>
                     {i + 1}
                   </span>
-                  <span className="text-[15px] font-bold line-clamp-1">{item.label}</span>
+                  <span className="text-[15px] font-bold line-clamp-1 text-slate-700 dark:text-slate-300">{item.label}</span>
                 </div>
                 {item.hot ? (
                   <span className={`text-[10px] text-white px-1 rounded-sm font-black ${item.color}`}>
                     {item.hot}
                   </span>
                 ) : (
-                  <span className="text-[10px] opacity-30">{item.count}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">{item.count}</span>
                 )}
               </div>
             ))}
           </div>
           <Link
             href="/tags"
-            className="block p-4 text-sm font-medium transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-white/5"
+            className="block p-4 text-sm font-medium transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800"
             style={{ color: theme.primary }}
           >
             查看更多话题
@@ -296,14 +334,14 @@ function RightSidebar({ config }: { config: ThemeConfig }) {
 
       {/* AI 助手 */}
       {config.showAiAssistant && (
-        <div className="p-5 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 bg-gradient-to-br from-white to-slate-50 dark:from-[#111] dark:to-[#1a1a1a]">
+        <div className="p-5 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-gradient-to-br from-white to-slate-50 dark:from-[#0f0f0f] dark:to-[#151515]">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[10px] font-black uppercase tracking-widest opacity-40">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
               {aiTitle}
             </span>
           </div>
-          <p className="text-sm font-bold leading-relaxed">
+          <p className="text-sm font-bold leading-relaxed text-slate-700 dark:text-slate-300">
             欢迎来到博客！这里汇集了
             <span style={{ color: theme.primary }}> #技术分享# </span>
             和
@@ -320,12 +358,6 @@ function RightSidebar({ config }: { config: ThemeConfig }) {
           </Link>
         </div>
       )}
-
-      {/* 主题切换 */}
-      <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-[#1a1a1a] rounded-2xl">
-        <span className="text-sm font-bold opacity-60">主题模式</span>
-        <ThemeToggle />
-      </div>
     </aside>
   );
 }
@@ -339,21 +371,38 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 
   const siteName = settings.siteName || 'NextBlog';
   const navBrandText = config.navBrandText || '首页';
+  const showRightSidebar = config.showRightSidebar !== false;
+
+  // 布局宽度类
+  const layoutWidthMap: Record<string, string> = {
+    standard: 'max-w-[1200px]',
+    wide: 'max-w-[1400px]',
+    full: 'max-w-full px-4',
+  };
+  const layoutWidthClass = layoutWidthMap[config.layoutWidth as string] || layoutWidthMap.standard;
+
+  // 内容区宽度类
+  const contentWidthMap: Record<string, string> = {
+    narrow: 'max-w-[550px]',
+    standard: 'max-w-[650px]',
+    wide: 'max-w-[750px]',
+  };
+  const contentWidthClass = contentWidthMap[config.contentWidth as string] || contentWidthMap.standard;
 
   return (
-    <div className="min-h-screen bg-[#F2F2F2] dark:bg-[#000] text-[#333] dark:text-[#ccc] font-sans transition-all duration-300">
-      <div className="max-w-[1200px] mx-auto flex justify-center">
+    <div className="min-h-screen bg-[#F2F2F2] dark:bg-[#0a0a0a] text-slate-800 dark:text-slate-200 font-sans transition-all duration-300">
+      <div className={`${layoutWidthClass} mx-auto flex justify-center`}>
         {/* PC 左侧导航栏 */}
         <LeftSidebar config={config} siteName={siteName} />
 
         {/* 中间信息流 */}
-        <main className="flex-1 max-w-[600px] min-h-screen bg-white dark:bg-[#111] border-x border-slate-100 dark:border-slate-800">
+        <main className={`flex-1 ${contentWidthClass} min-h-screen bg-white dark:bg-[#0f0f0f] border-x border-slate-100 dark:border-slate-700`}>
           {/* 移动端顶部状态栏 */}
-          <div className="lg:hidden sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+          <div className="lg:hidden sticky top-0 z-50 bg-white/80 dark:bg-[#0f0f0f]/80 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-slate-100 dark:border-slate-700">
             <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-              <User size={16} className="text-slate-400" />
+              <User size={16} className="text-slate-400 dark:text-slate-500" />
             </div>
-            <div className="flex gap-6 font-bold text-sm">
+            <div className="flex gap-6 font-bold text-sm text-slate-800 dark:text-slate-200">
               <span className="border-b-4 pb-3" style={{ borderColor: theme.primary }}>
                 {navBrandText}
               </span>
@@ -363,20 +412,20 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
               className="p-1"
               aria-label="菜单"
             >
-              <MoreHorizontal size={20} className="opacity-40" />
+              <MoreHorizontal size={20} className="text-slate-500" />
             </button>
           </div>
 
           {/* 移动端菜单 */}
           {mobileMenuOpen && (
-            <div className="lg:hidden bg-white dark:bg-[#111] border-b border-slate-100 dark:border-slate-800 p-4">
+            <div className="lg:hidden bg-white dark:bg-[#0f0f0f] border-b border-slate-100 dark:border-slate-700 p-4">
               <div className="flex flex-col gap-2">
                 {navMenu.length > 0 ? (
                   navMenu.map((item, idx) => (
                     <Link
                       key={idx}
                       href={item.url}
-                      className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 font-medium"
+                      className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300"
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {item.label}
@@ -384,14 +433,14 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                   ))
                 ) : (
                   <>
-                    <Link href="/" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 font-medium" onClick={() => setMobileMenuOpen(false)}>首页</Link>
-                    <Link href="/categories" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 font-medium" onClick={() => setMobileMenuOpen(false)}>分类</Link>
-                    <Link href="/tags" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 font-medium" onClick={() => setMobileMenuOpen(false)}>标签</Link>
-                    <Link href="/about" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 font-medium" onClick={() => setMobileMenuOpen(false)}>关于</Link>
+                    <Link href="/" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>首页</Link>
+                    <Link href="/categories" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>分类</Link>
+                    <Link href="/tags" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>标签</Link>
+                    <Link href="/about" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>关于</Link>
                   </>
                 )}
                 <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm opacity-60">主题模式</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">主题模式</span>
                   <ThemeToggle />
                 </div>
               </div>
@@ -399,8 +448,8 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
           )}
 
           {/* PC 顶部标题栏 */}
-          <div className="hidden lg:flex sticky top-0 z-50 bg-white/80 dark:bg-[#111]/80 backdrop-blur-md px-6 h-14 items-center border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-xl font-black">{navBrandText}</h2>
+          <div className="hidden lg:flex sticky top-0 z-50 bg-white/80 dark:bg-[#0f0f0f]/80 backdrop-blur-md px-6 h-14 items-center border-b border-slate-100 dark:border-slate-700">
+            <h2 className="text-xl font-black text-slate-800 dark:text-slate-200">{navBrandText}</h2>
           </div>
 
           {/* 内容区域 */}
@@ -410,15 +459,15 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         </main>
 
         {/* 右侧边栏 */}
-        <RightSidebar config={config} />
+        {showRightSidebar && <RightSidebar config={config} />}
       </div>
 
       {/* 手机端底部导航 */}
-      <footer className="lg:hidden fixed bottom-0 left-0 w-full h-16 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 flex items-center justify-around z-50">
+      <footer className="lg:hidden fixed bottom-0 left-0 w-full h-16 bg-white/90 dark:bg-[#0f0f0f]/90 backdrop-blur-xl border-t border-slate-100 dark:border-slate-700 flex items-center justify-around z-50">
         <Link href="/" style={{ color: theme.primary }}>
           <Home size={26} />
         </Link>
-        <Link href="/categories" className="opacity-30">
+        <Link href="/categories" className="text-slate-400 dark:text-slate-500">
           <Hash size={26} />
         </Link>
         <Link
@@ -428,10 +477,10 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         >
           <Bookmark size={20} />
         </Link>
-        <Link href="/about" className="opacity-30">
+        <Link href="/about" className="text-slate-400 dark:text-slate-500">
           <User size={26} />
         </Link>
-        <Link href="/search" className="opacity-30">
+        <Link href="/search" className="text-slate-400 dark:text-slate-500">
           <Search size={26} />
         </Link>
       </footer>
@@ -469,16 +518,16 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
   };
 
   return (
-    <article className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+    <article className="p-4 md:p-6 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
       <div className="flex gap-3">
         {/* 头像 */}
         <div className="shrink-0">
           <div className="relative">
             <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden flex items-center justify-center">
-              <User size={24} className="text-slate-400" />
+              <User size={24} className="text-slate-400 dark:text-slate-500" />
             </div>
             {showVerifiedBadge && (
-              <div className="absolute -right-0.5 -bottom-0.5 w-4 h-4 bg-white dark:bg-[#111] rounded-full flex items-center justify-center">
+              <div className="absolute -right-0.5 -bottom-0.5 w-4 h-4 bg-white dark:bg-[#0f0f0f] rounded-full flex items-center justify-center">
                 <CheckCircle2 size={12} fill={theme.primary} className="text-white" />
               </div>
             )}
@@ -493,14 +542,14 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
               <span className="font-black text-[15px] hover:underline" style={{ color: theme.primary }}>
                 {article.category?.name || '博主'}
               </span>
-              <span className="text-[11px] opacity-40 flex items-center gap-1">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                 <Clock size={10} />
                 {formatDate(article.publishedAt || article.createdAt)}
               </span>
             </div>
             <Link
               href={`/category/${article.category?.id || ''}`}
-              className="px-4 py-1.5 rounded-full border font-bold text-xs transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+              className="px-4 py-1.5 rounded-full border font-bold text-xs transition-colors hover:bg-slate-50 dark:hover:bg-slate-800"
               style={{ borderColor: theme.primary, color: theme.primary }}
             >
               {article.category?.name || '分类'}
@@ -509,13 +558,13 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
 
           {/* 标题 */}
           <Link href={`/article/${article.slug}`}>
-            <h2 className="text-lg font-black mb-2 hover:underline line-clamp-2">
+            <h2 className="text-lg font-black mb-2 hover:underline line-clamp-2 text-slate-800 dark:text-slate-200">
               {article.title}
             </h2>
           </Link>
 
           {/* 摘要 */}
-          <div className="text-[15px] leading-relaxed mb-3 dark:text-[#ccc]">
+          <div className="text-[15px] leading-relaxed mb-3 text-slate-600 dark:text-slate-400">
             {truncate(article.excerpt || article.content, excerptLength)}
             <Link
               href={`/article/${article.slug}`}
@@ -548,7 +597,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
               {images.map((src, i) => (
                 <div
                   key={i}
-                  className={`relative bg-slate-100 dark:bg-white/5 rounded-lg overflow-hidden ${
+                  className={`relative bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden ${
                     images.length === 1 ? 'max-w-[400px] aspect-video' : 'aspect-square'
                   }`}
                 >
@@ -563,7 +612,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
           )}
 
           {/* 工具栏 */}
-          <div className="flex justify-between items-center max-w-md opacity-60">
+          <div className="flex justify-between items-center max-w-md text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-1 hover:text-blue-500 transition-colors cursor-pointer">
               <Repeat size={18} />
               <span className="text-xs font-bold">{Math.floor(Math.random() * 100) + 10}</span>
@@ -605,18 +654,18 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
       <div className="p-4 md:p-8 space-y-8">
         {/* 头部 */}
         <header className="space-y-6">
-          <h1 className="text-2xl md:text-4xl font-black leading-tight tracking-tight">
+          <h1 className="text-2xl md:text-4xl font-black leading-tight tracking-tight text-slate-800 dark:text-slate-100">
             {article.title}
           </h1>
 
           {/* 作者信息栏 */}
-          <div className="flex items-center gap-4 py-4 border-y border-slate-100 dark:border-slate-800">
+          <div className="flex items-center gap-4 py-4 border-y border-slate-100 dark:border-slate-700">
             <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 flex items-center justify-center">
-              <User size={24} className="text-slate-400" />
+              <User size={24} className="text-slate-400 dark:text-slate-500" />
             </div>
             <div className="flex-1">
-              <p className="font-black text-lg">{article.author?.username || '博主'}</p>
-              <p className="text-xs opacity-40 flex items-center gap-2">
+              <p className="font-black text-lg text-slate-800 dark:text-slate-200">{article.author?.username || '博主'}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
                 <Clock size={12} />
                 {formatDate(article.publishedAt || article.createdAt)}
                 <span>·</span>
@@ -638,18 +687,18 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
 
         {/* AI 内容摘要 */}
         {showAiAssistant && (
-          <div className="p-6 bg-slate-50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 relative overflow-hidden">
+          <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 relative overflow-hidden">
             <div
               className="absolute top-0 left-0 w-1 h-full"
               style={{ backgroundColor: theme.primary }}
             />
             <div className="flex items-center gap-2 mb-3">
               <Sparkles size={16} className="text-amber-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest opacity-40">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
                 AI 内容解析
               </span>
             </div>
-            <p className="text-sm font-bold italic opacity-70">
+            <p className="text-sm font-bold italic text-slate-600 dark:text-slate-400">
               "本文深度探讨了关于「{article.title}」的核心议题，
               {article.category && `属于${article.category.name}分类，`}
               建议从多角度切入思考。"
@@ -659,13 +708,13 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
 
         {/* 正文内容 */}
         <div
-          className="prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-[#333] dark:prose-p:text-[#bbb] prose-img:rounded-2xl prose-pre:rounded-2xl prose-headings:font-black"
+          className="prose prose-lg dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-img:rounded-2xl prose-pre:rounded-2xl prose-headings:font-black prose-headings:text-slate-800 dark:prose-headings:text-slate-200"
           dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
         />
 
         {/* 标签 */}
         {article.tags && article.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-6 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex flex-wrap gap-2 pt-6 border-t border-slate-100 dark:border-slate-700">
             {article.tags.map((tag) => (
               <Link
                 key={tag.id}
@@ -680,22 +729,22 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
         )}
 
         {/* 底部互动栏 */}
-        <footer className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <footer className="mt-12 pt-8 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
           <div className="flex gap-8 md:gap-12">
-            <div className="flex flex-col items-center gap-1 group cursor-pointer transition-colors hover:text-red-500">
+            <div className="flex flex-col items-center gap-1 group cursor-pointer transition-colors text-slate-500 dark:text-slate-400 hover:text-red-500">
               <Heart size={28} />
               <span className="text-xs font-black">{article.viewCount || 0} 赞</span>
             </div>
-            <div className="flex flex-col items-center gap-1 group cursor-pointer transition-colors hover:text-blue-500">
+            <div className="flex flex-col items-center gap-1 group cursor-pointer transition-colors text-slate-500 dark:text-slate-400 hover:text-blue-500">
               <Repeat size={28} />
               <span className="text-xs font-black">转发</span>
             </div>
-            <div className="flex flex-col items-center gap-1 group cursor-pointer transition-colors hover:text-green-500">
+            <div className="flex flex-col items-center gap-1 group cursor-pointer transition-colors text-slate-500 dark:text-slate-400 hover:text-green-500">
               <MessageCircle size={28} />
               <span className="text-xs font-black">评论</span>
             </div>
           </div>
-          <div className="p-3 bg-slate-100 dark:bg-white/5 rounded-full cursor-pointer hover:rotate-12 transition-all">
+          <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-full cursor-pointer hover:rotate-12 transition-all text-slate-600 dark:text-slate-400">
             <Share size={24} />
           </div>
         </footer>
@@ -721,21 +770,21 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
   return (
     <div>
       {/* 页面标题 */}
-      <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-white/5">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
         <div className="flex items-center gap-3 mb-2">
           <Folder size={24} style={{ color: theme.primary }} />
-          <h1 className="text-2xl font-black">分类目录</h1>
+          <h1 className="text-2xl font-black text-slate-800 dark:text-slate-200">分类目录</h1>
         </div>
-        <p className="text-sm opacity-60">浏览所有文章分类</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">浏览所有文章分类</p>
       </div>
 
       {/* 分类列表 */}
-      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
         {flatCategories.map(({ category, isChild }, i) => (
           <Link
             key={category.id}
             href={`/category/${category.slug}`}
-            className={`flex items-center justify-between p-4 md:p-6 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${
+            className={`flex items-center justify-between p-4 md:p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${
               isChild ? 'pl-8 md:pl-12' : ''
             }`}
           >
@@ -747,17 +796,17 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
                 {isChild ? '└' : String(i + 1).padStart(2, '0')}
               </div>
               <div>
-                <h3 className="font-black text-lg">{category.name}</h3>
+                <h3 className="font-black text-lg text-slate-800 dark:text-slate-200">{category.name}</h3>
                 {category.description && (
-                  <p className="text-sm opacity-60 line-clamp-1">{category.description}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-1">{category.description}</p>
                 )}
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl font-black opacity-20">
+              <span className="text-2xl font-black text-slate-300 dark:text-slate-600">
                 {category._count?.articles || 0}
               </span>
-              <ArrowRight size={20} className="opacity-30" />
+              <ArrowRight size={20} className="text-slate-400 dark:text-slate-500" />
             </div>
           </Link>
         ))}
@@ -765,8 +814,8 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
 
       {flatCategories.length === 0 && (
         <div className="p-12 text-center">
-          <Layers size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-lg font-bold opacity-40">暂无分类</p>
+          <Layers size={48} className="mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+          <p className="text-lg font-bold text-slate-400 dark:text-slate-500">暂无分类</p>
         </div>
       )}
     </div>
@@ -780,12 +829,12 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
   return (
     <div>
       {/* 页面标题 */}
-      <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-white/5">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
         <div className="flex items-center gap-3 mb-2">
           <Tag size={24} style={{ color: theme.primary }} />
-          <h1 className="text-2xl font-black">标签云</h1>
+          <h1 className="text-2xl font-black text-slate-800 dark:text-slate-200">标签云</h1>
         </div>
-        <p className="text-sm opacity-60">探索所有话题标签</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">探索所有话题标签</p>
       </div>
 
       {/* 标签云 */}
@@ -807,7 +856,7 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
                 }}
               >
                 #{tag.name}
-                <span className={`text-xs ${isHot ? 'opacity-70' : 'opacity-50'}`}>
+                <span className={`text-xs ${isHot ? 'text-white/80' : ''}`} style={!isHot ? { color: theme.primary, opacity: 0.7 } : {}}>
                   ({count})
                 </span>
                 {isHot && <TrendingUp size={14} />}
@@ -819,8 +868,8 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
 
       {tags.length === 0 && (
         <div className="p-12 text-center">
-          <Hash size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-lg font-bold opacity-40">暂无标签</p>
+          <Hash size={48} className="mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+          <p className="text-lg font-bold text-slate-400 dark:text-slate-500">暂无标签</p>
         </div>
       )}
     </div>
@@ -836,19 +885,19 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
   return (
     <div>
       {/* 搜索标题 */}
-      <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-white/5">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
         <div className="flex items-center gap-3 mb-2">
           <Search size={24} style={{ color: theme.primary }} />
-          <h1 className="text-2xl font-black">搜索结果</h1>
+          <h1 className="text-2xl font-black text-slate-800 dark:text-slate-200">搜索结果</h1>
         </div>
-        <p className="text-sm">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
           找到 <span style={{ color: theme.primary }} className="font-bold">{total}</span> 篇关于
           "<span style={{ color: theme.primary }} className="font-bold">{query}</span>" 的文章
         </p>
       </div>
 
       {/* 结果列表 */}
-      <div className="divide-y divide-slate-100 dark:divide-slate-800">
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
         {articles.map((article) => (
           <ArticleCard
             key={article.id}
@@ -865,9 +914,9 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
 
       {articles.length === 0 && (
         <div className="p-12 text-center">
-          <Search size={48} className="mx-auto mb-4 opacity-20" />
-          <p className="text-lg font-bold opacity-40">未找到相关文章</p>
-          <p className="text-sm opacity-40 mt-2">尝试使用其他关键词搜索</p>
+          <Search size={48} className="mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+          <p className="text-lg font-bold text-slate-400 dark:text-slate-500">未找到相关文章</p>
+          <p className="text-sm text-slate-400 dark:text-slate-500 mt-2">尝试使用其他关键词搜索</p>
         </div>
       )}
     </div>

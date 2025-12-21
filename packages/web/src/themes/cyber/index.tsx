@@ -262,14 +262,14 @@ function UptimeDisplay({ config }: { config: ThemeConfig }) {
   if (!config.showUptime) return null;
 
   return (
-    <div className="hidden xl:flex items-center gap-12 font-mono text-[10px] tracking-[0.2em] text-white/30">
+    <div className="hidden xl:flex items-center gap-12 font-mono text-[10px] tracking-[0.2em] text-white/40">
       <div className="flex items-center gap-3">
         <Activity size={16} className={`${colors.text} animate-pulse`} />
-        <span className="text-white/60 uppercase">LATENCY: {latency}MS</span>
+        <span className="text-white/70 uppercase">LATENCY: {latency}MS</span>
       </div>
       <div className="flex items-center gap-3">
-        <Clock size={16} />
-        <span className="text-white/60 uppercase font-bold tracking-widest">{uptime}</span>
+        <Clock size={16} className="text-white/50" />
+        <span className="text-white/70 uppercase font-bold tracking-widest">{uptime}</span>
       </div>
     </div>
   );
@@ -438,10 +438,10 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
               <IconComponent size={20} />
             </div>
             <div>
-              <span className={`text-[10px] font-mono tracking-[0.2em] ${colors.text}/60 uppercase block`}>
+              <span className={`text-[10px] font-mono tracking-[0.2em] ${colors.text}/80 uppercase block`}>
                 Article_File
               </span>
-              <span className="text-[9px] font-mono text-white/30 uppercase">
+              <span className="text-[9px] font-mono text-white/50 uppercase">
                 {article.category?.name || 'UNCATEGORIZED'}
               </span>
             </div>
@@ -457,7 +457,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
           </h3>
         </Link>
 
-        <p className="text-slate-400 text-sm leading-relaxed mb-8 font-light flex-1 line-clamp-3">
+        <p className="text-slate-300 text-sm leading-relaxed mb-8 font-light flex-1 line-clamp-3">
           {truncate(article.excerpt || article.content, excerptLength)}
         </p>
 
@@ -469,13 +469,13 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
                 <Link
                   key={tag.id}
                   href={`/tag/${tag.id}`}
-                  className="text-[9px] font-mono px-2 py-0.5 bg-white/5 border border-white/10 text-slate-500 uppercase hover:text-white transition-colors"
+                  className="text-[9px] font-mono px-2 py-0.5 bg-white/5 border border-white/10 text-slate-400 uppercase hover:text-white transition-colors"
                 >
                   {tag.name}
                 </Link>
               ))}
             </div>
-            <div className="flex gap-6 font-mono text-[10px] text-white/40">
+            <div className="flex gap-6 font-mono text-[10px] text-white/50">
               <span className="flex items-center gap-1.5">
                 <Eye size={12} className={colors.text} /> {article.viewCount || 0}
               </span>
@@ -490,7 +490,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
         </div>
 
         {/* 装饰性背景文字 */}
-        <div className={`absolute -bottom-4 -right-4 text-[80px] md:text-[120px] font-mono font-black text-white/[0.01] select-none pointer-events-none group-hover:${colors.text}/[0.03] transition-all duration-700 italic`}>
+        <div className={`absolute -bottom-4 -right-4 text-[80px] md:text-[120px] font-mono font-black text-white/[0.02] select-none pointer-events-none group-hover:${colors.text}/[0.05] transition-all duration-700 italic`}>
           {article.id.slice(-2).toUpperCase()}
         </div>
       </div>
@@ -514,7 +514,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
           {article.title}
         </h1>
 
-        <div className="flex flex-wrap items-center gap-6 text-[11px] font-mono text-white/40 uppercase tracking-widest">
+        <div className="flex flex-wrap items-center gap-6 text-[11px] font-mono text-white/60 uppercase tracking-widest">
           {article.category && (
             <span className={`px-3 py-1 ${colors.bg}/10 ${colors.text} border ${colors.border}/20`}>
               {article.category.name}
@@ -537,7 +537,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
       {/* 内容区域 */}
       <div className="border border-white/10 bg-white/[0.02] backdrop-blur-xl p-6 md:p-12 shadow-2xl">
         <div
-          className="prose prose-lg prose-invert max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-a:text-emerald-400 prose-code:text-emerald-400 prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10"
+          className="prose prose-lg prose-invert max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-p:text-slate-300 prose-a:text-emerald-400 prose-code:text-emerald-400 prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10 prose-li:text-slate-300"
           dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
         />
       </div>
@@ -549,7 +549,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
             <Link
               key={tag.id}
               href={`/tag/${tag.id}`}
-              className={`px-4 py-2 border border-white/10 bg-white/[0.02] text-sm font-mono uppercase hover:${colors.border}/50 hover:${colors.text} transition-all`}
+              className={`px-4 py-2 border border-white/10 bg-white/[0.02] text-sm font-mono uppercase text-slate-300 hover:${colors.border}/50 hover:${colors.text} transition-all`}
             >
               # {tag.name}
             </Link>
@@ -596,15 +596,15 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
               <div className={`w-12 h-12 flex items-center justify-center ${colors.bg}/10 border ${colors.border}/20 ${colors.text}`}>
                 <Database size={24} />
               </div>
-              <span className="text-4xl font-black text-white/10 font-mono">
+              <span className="text-4xl font-black text-white/20 font-mono">
                 {String(category._count?.articles || 0).padStart(2, '0')}
               </span>
             </div>
             <h2 className={`text-xl font-black text-white group-hover:${colors.text} transition-colors uppercase mb-2`}>
-              {isChild && <span className="text-white/30 mr-2">└</span>}
+              {isChild && <span className="text-white/40 mr-2">└</span>}
               {category.name}
             </h2>
-            <p className="text-sm text-slate-500 font-mono uppercase tracking-wider">
+            <p className="text-sm text-slate-400 font-mono uppercase tracking-wider">
               {category._count?.articles || 0} Articles
             </p>
           </Link>
@@ -638,11 +638,11 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
               <Link
                 key={tag.id}
                 href={`/tag/${tag.slug}`}
-                className={`${size} border border-white/10 bg-white/[0.02] font-mono uppercase hover:${colors.border}/50 hover:${colors.text} transition-all group`}
+                className={`${size} border border-white/10 bg-white/[0.02] font-mono uppercase text-slate-300 hover:${colors.border}/50 hover:${colors.text} transition-all group`}
               >
                 <span className={`${colors.text} mr-1`}>#</span>
                 {tag.name}
-                <span className="ml-2 text-white/30 group-hover:text-white/50">({count})</span>
+                <span className="ml-2 text-white/40 group-hover:text-white/60">({count})</span>
               </Link>
             );
           })}
@@ -665,7 +665,7 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
         <div className={`inline-flex items-center gap-3 px-4 py-1.5 ${colors.bg}/5 border ${colors.border}/20 ${colors.text} text-[10px] font-mono mb-8 uppercase tracking-[0.5em]`}>
           <Search size={14} /> Search_Results
         </div>
-        <p className="text-lg font-mono text-white/60">
+        <p className="text-lg font-mono text-white/70">
           找到 <span className={`${colors.text} font-bold`}>{total}</span> 篇关于
           "<span className={`${colors.text}`}>{query}</span>" 的文章
         </p>
@@ -681,10 +681,10 @@ function SearchResults({ articles, total, query, config = defaultConfig }: Searc
             <h2 className={`font-bold text-lg text-white group-hover:${colors.text} transition-colors uppercase mb-3`}>
               {article.title}
             </h2>
-            <p className="text-slate-400 text-sm line-clamp-2 mb-4">
+            <p className="text-slate-300 text-sm line-clamp-2 mb-4">
               {truncate(article.excerpt || article.content, 100)}
             </p>
-            <div className="flex items-center gap-4 text-[10px] font-mono text-white/40 uppercase">
+            <div className="flex items-center gap-4 text-[10px] font-mono text-white/50 uppercase">
               <span>{formatDate(article.publishedAt || article.createdAt)}</span>
               {article.tags?.slice(0, 2).map((tag) => (
                 <span key={tag.id} className={`px-2 py-0.5 ${colors.bg}/10 ${colors.text}`}>
