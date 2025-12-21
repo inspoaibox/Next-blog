@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 interface MarkdownEditorProps {
   value: string;
@@ -16,8 +16,11 @@ export function MarkdownEditor({
   className,
 }: MarkdownEditorProps) {
   const [isPreview, setIsPreview] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editorContainerRef = useRef<HTMLDivElement>(null);
 
   const insertText = useCallback((before: string, after: string = '') => {
     const textarea = textareaRef.current;
@@ -38,6 +41,77 @@ export function MarkdownEditor({
     }, 0);
   }, [value, onChange]);
 
+  // 处理图片上传
+  const handleImageFile = useCallback(async (file: File) => {
+    if (!onImageUpload) return;
+    if (!file.type.startsWith('image/')) {
+      alert('只支持上传图片文件');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const url = await onImageUpload(file);
+      insertText(`![${file.name}](${url})`);
+    } catch (error) {
+      console.error('图片上传失败:', error);
+      alert('图片上传失败');
+    } finally {
+      setIsUploading(false);
+    }
+  }, [onImageUpload, insertText]);
+
+  // 处理粘贴事件
+  const handlePaste = useCallback(async (e: React.ClipboardEvent) => {
+    if (!onImageUpload) return;
+
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          await handleImageFile(file);
+        }
+        return;
+      }
+    }
+  }, [onImageUpload, handleImageFile]);
+
+  // 处理拖拽事件
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (onImageUpload) {
+      setIsDragging(true);
+    }
+  }, [onImageUpload]);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (!onImageUpload) return;
+
+    const files = e.dataTransfer?.files;
+    if (!files?.length) return;
+
+    for (const file of Array.from(files)) {
+      if (file.type.startsWith('image/')) {
+        await handleImageFile(file);
+      }
+    }
+  }, [onImageUpload, handleImageFile]);
+
   const handleBold = () => insertText('**', '**');
   const handleItalic = () => insertText('*', '*');
   const handleHeading = () => insertText('## ');
@@ -50,15 +124,8 @@ export function MarkdownEditor({
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !onImageUpload) return;
-
-    try {
-      const url = await onImageUpload(file);
-      insertText(`![${file.name}](${url})`);
-    } catch (error) {
-      console.error('图片上传失败:', error);
-    }
-
+    if (!file) return;
+    await handleImageFile(file);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -77,7 +144,32 @@ export function MarkdownEditor({
   ];
 
   return (
-    <div className={className}>
+    <div 
+      ref={editorContainerRef}
+      className={`relative ${className}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* 拖拽遮罩 */}
+      {isDragging && (
+        <div className="absolute inset-0 z-50 bg-primary-500/20 border-2 border-dashed border-primary-500 rounded-lg flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 px-6 py-4 rounded-lg shadow-lg">
+            <p className="text-primary-600 dark:text-primary-400 font-medium">释放以上传图片</p>
+          </div>
+        </div>
+      )}
+
+      {/* 上传中遮罩 */}
+      {isUploading && (
+        <div className="absolute inset-0 z-50 bg-black/30 rounded-lg flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-700 dark:text-gray-300 font-medium">上传中...</p>
+          </div>
+        </div>
+      )}
+
       {/* 工具栏 */}
       <div className="flex items-center gap-1 p-2 border border-gray-300 dark:border-gray-600 rounded-t-lg bg-gray-50 dark:bg-gray-800">
         {toolbarButtons.map((btn, index) => (
@@ -104,7 +196,7 @@ export function MarkdownEditor({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              title="上传图片"
+              title="上传图片 (支持粘贴/拖拽)"
               className="px-2 py-1 text-sm hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
             >
               🖼️
@@ -113,6 +205,12 @@ export function MarkdownEditor({
         )}
 
         <div className="flex-1" />
+        
+        {onImageUpload && (
+          <span className="text-xs text-gray-400 mr-2 hidden sm:inline">
+            支持粘贴/拖拽图片
+          </span>
+        )}
         
         <button
           type="button"
@@ -137,6 +235,7 @@ export function MarkdownEditor({
           ref={textareaRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          onPaste={handlePaste}
           placeholder={placeholder}
           className="w-full p-4 border border-t-0 border-gray-300 dark:border-gray-600 rounded-b-lg min-h-[400px] font-mono text-sm resize-y focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-white"
         />

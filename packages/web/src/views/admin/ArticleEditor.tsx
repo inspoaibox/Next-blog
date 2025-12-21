@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useArticle, useCreateArticle, useUpdateArticle } from '../../hooks/useArticles';
 import { useCategoriesFlat } from '../../hooks/useCategories';
@@ -23,6 +23,8 @@ export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
   const updateArticle = useUpdateArticle();
 
   const [newTagName, setNewTagName] = useState('');
+  const [featuredImageDragging, setFeaturedImageDragging] = useState(false);
+  const [featuredImageUploading, setFeaturedImageUploading] = useState(false);
   const [form, setForm] = useState({
     title: '',
     content: '',
@@ -78,11 +80,57 @@ export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
   const handleFeaturedImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
-    const result = await api.upload<{ url: string }>('/media/upload', formData);
-    handleChange('featuredImage', result.url);
+    await uploadFeaturedImage(file);
   };
+
+  const uploadFeaturedImage = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('只支持上传图片文件');
+      return;
+    }
+    setFeaturedImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const result = await api.upload<{ url: string }>('/media/upload', formData);
+      handleChange('featuredImage', result.url);
+    } catch (error) {
+      console.error('上传失败:', error);
+      alert('图片上传失败');
+    } finally {
+      setFeaturedImageUploading(false);
+    }
+  };
+
+  const handleFeaturedImageDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFeaturedImageDragging(false);
+
+    const files = e.dataTransfer?.files;
+    if (!files?.length) return;
+
+    const file = files[0];
+    if (file.type.startsWith('image/')) {
+      await uploadFeaturedImage(file);
+    }
+  }, []);
+
+  const handleFeaturedImagePaste = useCallback(async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          await uploadFeaturedImage(file);
+        }
+        return;
+      }
+    }
+  }, []);
 
   const handleAddTag = async () => {
     if (!newTagName.trim()) return;
@@ -197,32 +245,61 @@ export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
           <Card>
             <CardContent className="space-y-4">
               <h3 className="font-semibold">特色图</h3>
-              {form.featuredImage ? (
-                <div className="relative">
-                  <img
-                    src={form.featuredImage}
-                    alt="特色图"
-                    className="w-full h-40 object-cover rounded"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleChange('featuredImage', '')}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+              <div
+                onDragOver={(e) => { e.preventDefault(); setFeaturedImageDragging(true); }}
+                onDragLeave={(e) => { e.preventDefault(); setFeaturedImageDragging(false); }}
+                onDrop={handleFeaturedImageDrop}
+                onPaste={handleFeaturedImagePaste}
+                tabIndex={0}
+                className="relative"
+              >
+                {featuredImageUploading && (
+                  <div className="absolute inset-0 z-10 bg-black/30 rounded flex items-center justify-center">
+                    <div className="bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm">上传中...</span>
+                    </div>
+                  </div>
+                )}
+                {form.featuredImage ? (
+                  <div className="relative">
+                    <img
+                      src={form.featuredImage}
+                      alt="特色图"
+                      className="w-full h-40 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleChange('featuredImage', '')}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <label 
+                    className={`block border-2 border-dashed rounded p-4 text-center cursor-pointer transition-colors ${
+                      featuredImageDragging 
+                        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' 
+                        : 'border-gray-300 dark:border-gray-600 hover:border-primary-500'
+                    }`}
                   >
-                    ×
-                  </button>
-                </div>
-              ) : (
-                <label className="block border-2 border-dashed border-gray-300 dark:border-gray-600 rounded p-4 text-center cursor-pointer hover:border-primary-500">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleFeaturedImageUpload}
-                  />
-                  <span className="text-gray-500">点击上传特色图</span>
-                </label>
-              )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleFeaturedImageUpload}
+                    />
+                    <div className="space-y-2">
+                      <div className="text-3xl">🖼️</div>
+                      <span className="text-gray-500 block">
+                        {featuredImageDragging ? '释放以上传' : '点击、拖拽或粘贴上传特色图'}
+                      </span>
+                      <span className="text-xs text-gray-400">支持 JPG、PNG、GIF、WebP</span>
+                    </div>
+                  </label>
+                )}
+              </div>
             </CardContent>
           </Card>
 

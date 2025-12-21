@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import type { Media } from '../../types';
@@ -11,6 +11,7 @@ export function MediaPage() {
   const [selectedMedia, setSelectedMedia] = useState<Media | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   const { data: mediaList, isLoading } = useQuery({
     queryKey: ['media'],
@@ -54,18 +55,71 @@ export function MediaPage() {
     },
   });
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files?.length) return;
-
+  // 处理文件上传
+  const handleFilesUpload = useCallback(async (files: FileList | File[]) => {
     for (const file of Array.from(files)) {
       await uploadMedia.mutateAsync(file);
     }
-    
+  }, [uploadMedia]);
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    await handleFilesUpload(files);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+
+  // 处理拖拽上传
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer?.files;
+    if (files?.length) {
+      await handleFilesUpload(files);
+    }
+  }, [handleFilesUpload]);
+
+  // 处理粘贴上传
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      const files: File[] = [];
+      for (const item of Array.from(items)) {
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) {
+            files.push(file);
+          }
+        }
+      }
+
+      if (files.length > 0) {
+        e.preventDefault();
+        await handleFilesUpload(files);
+      }
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [handleFilesUpload]);
 
   const handleDelete = async () => {
     if (selectedMedia && confirm('确定要删除这个文件吗？')) {
@@ -117,7 +171,25 @@ export function MediaPage() {
   const acceptTypes = allowedTypes.split(',').map((t: string) => t.trim()).join(',');
 
   return (
-    <div>
+    <div
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className="relative"
+    >
+      {/* 拖拽遮罩 */}
+      {isDragging && (
+        <div className="fixed inset-0 z-50 bg-primary-500/20 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-800 px-8 py-6 rounded-2xl shadow-2xl border-2 border-dashed border-primary-500">
+            <div className="text-center">
+              <div className="text-5xl mb-4">📁</div>
+              <p className="text-xl font-bold text-primary-600 dark:text-primary-400">释放以上传文件</p>
+              <p className="text-sm text-gray-500 mt-2">支持多文件同时上传</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">媒体库</h1>
         <div className="flex gap-2">
@@ -157,6 +229,13 @@ export function MediaPage() {
             </>
           )}
         </div>
+      </div>
+
+      {/* 上传提示 */}
+      <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <p className="text-sm text-blue-700 dark:text-blue-300">
+          💡 提示：支持拖拽文件到页面任意位置上传，也可以直接粘贴剪贴板中的图片
+        </p>
       </div>
 
       <Card>
