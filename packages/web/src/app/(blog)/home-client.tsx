@@ -9,12 +9,14 @@ interface HomeClientProps {
   articles: any[];
   total: number;
   page: number;
+  pageSize: number;
   categoryId?: string;
   tagId?: string;
 }
 
 // 网格列数映射 (Magazine 主题)
 const gridClasses: Record<string, string> = {
+  '1': 'grid-cols-1',
   '2': 'grid-cols-1 md:grid-cols-2',
   '3': 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
   '4': 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
@@ -26,12 +28,12 @@ const articlesPerRowClasses: Record<string, string> = {
   '2': 'grid-cols-1 md:grid-cols-2',
 };
 
-export function HomeClient({ articles, total, page, categoryId, tagId }: HomeClientProps) {
+export function HomeClient({ articles, total, page, pageSize, categoryId, tagId }: HomeClientProps) {
   const { theme, themeConfig, themeName } = useThemeContext();
   const { sliderItems, isSliderEnabled, sliderStyle } = useSiteSettingsContext();
   const { ArticleCard } = theme;
 
-  const totalPages = Math.ceil(total / 10);
+  const totalPages = Math.ceil(total / pageSize);
 
   // 只在首页第一页且没有筛选条件时显示幻灯片
   const showSlider = isSliderEnabled && sliderItems.length > 0 && page === 1 && !categoryId && !tagId;

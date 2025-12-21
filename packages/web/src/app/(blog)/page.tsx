@@ -16,13 +16,16 @@ interface HomePageProps {
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
+  const settings = await getPublicSettings();
+  const pageSize = Number(settings?.homeArticleCount) || 12;
+  
   const page = Number(searchParams.page) || 1;
   const categoryId = searchParams.category;
   const tagId = searchParams.tag;
   
   const articlesData = await getArticles({ 
     page, 
-    limit: 10,
+    limit: pageSize,
     categoryId,
     tagId,
   });
@@ -32,6 +35,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       articles={articlesData?.items || []} 
       total={articlesData?.total || 0}
       page={page}
+      pageSize={pageSize}
       categoryId={categoryId}
       tagId={tagId}
     />

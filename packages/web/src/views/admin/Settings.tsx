@@ -94,6 +94,7 @@ function SiteSettings() {
     socialWeibo: '',
     allowedMediaTypes: '',
     commentEnabled: 'true',
+    homeArticleCount: '12',
   });
 
   useEffect(() => {
@@ -113,6 +114,7 @@ function SiteSettings() {
         socialWeibo: settings.socialWeibo || '',
         allowedMediaTypes: settings.allowedMediaTypes || 'image/jpeg,image/png,image/gif,image/webp,image/svg+xml,application/pdf',
         commentEnabled: settings.commentEnabled ?? 'true',
+        homeArticleCount: settings.homeArticleCount || '12',
       });
     }
   }, [settings]);
@@ -203,6 +205,16 @@ function SiteSettings() {
               onChange={(e) => setForm({ ...form, footerText: e.target.value })}
               placeholder="© {year} NextBlog. All rights reserved.（{year} 会自动替换为当前年份）"
             />
+            <Input
+              label="首页文章数量"
+              type="number"
+              value={form.homeArticleCount}
+              onChange={(e) => setForm({ ...form, homeArticleCount: e.target.value })}
+              placeholder="12"
+            />
+            <p className="text-xs text-gray-500 -mt-2">
+              首页每页显示的文章数量，默认为 12 篇
+            </p>
           </CardContent>
         </Card>
 
