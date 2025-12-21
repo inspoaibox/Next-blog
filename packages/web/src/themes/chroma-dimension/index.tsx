@@ -703,8 +703,7 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
           <div className="flex flex-wrap gap-6 md:gap-12 pt-8 md:pt-12 items-center border-t border-white/10">
             <div className="flex gap-3 md:gap-4 items-center">
               <div
-                className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border-2 md:border-4 flex items-center justify-center ${p.glass} ${p.darkGlass}`}
-                style={{ borderColor: p.primary }}
+                className={`w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden border-2 md:border-4 flex items-center justify-center ${p.glass} ${p.darkGlass} border-white/30`}
               >
                 <span className={`text-lg md:text-2xl font-black ${p.title} ${p.darkTitle}`}>
                   {(article.author?.username || 'A')[0].toUpperCase()}
