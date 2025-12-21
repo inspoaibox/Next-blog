@@ -1,7 +1,6 @@
 // Chroma Dimension 主题 - 幻彩维度：极致多巴胺美学，未来波普排版
 import { ReactNode, useState } from 'react';
 import Link from 'next/link';
-import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
 import { DesktopNavMenu, MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
@@ -348,12 +347,10 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         />
         <div className="hidden lg:flex items-center gap-4">
           <SearchBox />
-          <ThemeToggle />
         </div>
 
         {/* 移动端菜单按钮 */}
         <div className="flex lg:hidden items-center gap-3">
-          <ThemeToggle />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className={`w-10 h-10 rounded-xl ${p.glass} ${p.darkGlass} border border-white/20 flex items-center justify-center`}

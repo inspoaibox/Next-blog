@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useThemeContext } from '@/contexts/theme-context';
 import { useSiteSettingsStore } from '@/stores/site-settings.store';
 import { Card, CardContent } from '@/components/ui';
@@ -17,11 +17,36 @@ interface ArticleDetailClientProps {
   article: any;
 }
 
-export function ArticleDetailClient({ article }: ArticleDetailClientProps) {
+export function ArticleDetailClient({ article: initialArticle }: ArticleDetailClientProps) {
   const { theme, themeConfig, themeName } = useThemeContext();
   const { isCommentEnabled } = useSiteSettingsStore();
   const { ArticleDetail } = theme;
   const [tocOpen, setTocOpen] = useState(false);
+  const [article, setArticle] = useState(initialArticle);
+
+  // 客户端获取最新的阅读量
+  useEffect(() => {
+    const fetchLatestViewCount = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/articles/${initialArticle.slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data) {
+            setArticle((prev: any) => ({
+              ...prev,
+              viewCount: data.data.viewCount,
+            }));
+          }
+        }
+      } catch {
+        // 忽略错误，使用初始数据
+      }
+    };
+
+    // 延迟获取，确保后端已经增加了阅读量
+    const timer = setTimeout(fetchLatestViewCount, 500);
+    return () => clearTimeout(timer);
+  }, [initialArticle.slug]);
 
   // 使用后端返回的目录
   const toc = article.toc && article.toc.length > 0 

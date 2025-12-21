@@ -89,12 +89,43 @@ const themeColors = {
     buttonActive: 'bg-blue-500 text-white',
     buttonHover: 'hover:border-blue-500',
   },
-  'chroma-dimension': {
-    gradient: 'from-fuchsia-500 via-purple-500 to-cyan-500',
-    accentText: 'text-fuchsia-500 dark:text-fuchsia-400',
-    accentBg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
+};
+
+// chroma-dimension 主题的 vibeMode 配色方案
+const chromaDimensionPalettes: Record<string, {
+  gradient: string;
+  accentText: string;
+  accentBg: string;
+  buttonActive: string;
+  buttonHover: string;
+}> = {
+  'electric-candy': {
+    gradient: 'from-[#FF00FF] via-[#7000FF] to-[#00FFFF]',
+    accentText: 'text-fuchsia-500',
+    accentBg: 'bg-fuchsia-500/20',
     buttonActive: 'bg-fuchsia-600 text-white',
     buttonHover: 'hover:border-fuchsia-500',
+  },
+  'acid-sun': {
+    gradient: 'from-[#CCFF00] via-[#FF5E00] to-[#00E5FF]',
+    accentText: 'text-lime-400',
+    accentBg: 'bg-lime-500/20',
+    buttonActive: 'bg-lime-500 text-black',
+    buttonHover: 'hover:border-lime-500',
+  },
+  'holographic': {
+    gradient: 'from-blue-400 via-pink-400 to-yellow-400',
+    accentText: 'text-blue-500',
+    accentBg: 'bg-blue-500/20',
+    buttonActive: 'bg-blue-500 text-white',
+    buttonHover: 'hover:border-blue-500',
+  },
+  'hyper-white': {
+    gradient: 'from-[#00FF41] via-slate-900 to-[#00FF41]',
+    accentText: 'text-emerald-500',
+    accentBg: 'bg-emerald-500/20',
+    buttonActive: 'bg-emerald-500 text-black',
+    buttonHover: 'hover:border-emerald-500',
   },
 };
 
@@ -111,9 +142,13 @@ const defaultConfig: ProjectsPageConfig = {
 export function ProjectsClient({ projects, categories }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { themeName } = useThemeContext();
+  const { themeName, themeConfig } = useThemeContext();
   const { settings } = useSiteSettingsContext();
-  const colors = themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
+  
+  // 获取颜色配置：chroma-dimension 主题根据 vibeMode 动态选择
+  const colors = themeName === 'chroma-dimension'
+    ? chromaDimensionPalettes[(themeConfig?.vibeMode as string) || 'electric-candy'] || chromaDimensionPalettes['electric-candy']
+    : themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
 
   // 解析页面配置
   let config: ProjectsPageConfig = defaultConfig;

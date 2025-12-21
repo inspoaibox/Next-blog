@@ -81,11 +81,38 @@ const themeColors = {
     accentText: 'text-blue-500 dark:text-blue-400',
     accentBg: 'bg-blue-50 dark:bg-blue-900/20',
   },
-  'chroma-dimension': {
+};
+
+// chroma-dimension 主题的 vibeMode 配色方案
+const chromaDimensionPalettes: Record<string, {
+  gradient: string;
+  accentText: string;
+  accentBg: string;
+  accent: string;
+}> = {
+  'electric-candy': {
+    gradient: 'from-[#FF00FF] via-[#7000FF] to-[#00FFFF]',
+    accentText: 'text-fuchsia-500',
+    accentBg: 'bg-fuchsia-500/20',
     accent: 'fuchsia',
-    gradient: 'from-fuchsia-500 via-purple-500 to-cyan-500',
-    accentText: 'text-fuchsia-500 dark:text-fuchsia-400',
-    accentBg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
+  },
+  'acid-sun': {
+    gradient: 'from-[#CCFF00] via-[#FF5E00] to-[#00E5FF]',
+    accentText: 'text-lime-400',
+    accentBg: 'bg-lime-500/20',
+    accent: 'lime',
+  },
+  'holographic': {
+    gradient: 'from-blue-400 via-pink-400 to-yellow-400',
+    accentText: 'text-blue-500',
+    accentBg: 'bg-blue-500/20',
+    accent: 'blue',
+  },
+  'hyper-white': {
+    gradient: 'from-[#00FF41] via-slate-900 to-[#00FF41]',
+    accentText: 'text-emerald-500',
+    accentBg: 'bg-emerald-500/20',
+    accent: 'emerald',
   },
 };
 
@@ -121,8 +148,12 @@ const defaultConfig: FriendsPageConfig = {
 
 export function FriendsClient({ links }: Props) {
   const { settings } = useSiteSettingsContext();
-  const { themeName } = useThemeContext();
-  const colors = themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
+  const { themeName, themeConfig } = useThemeContext();
+  
+  // 获取颜色配置：chroma-dimension 主题根据 vibeMode 动态选择
+  const colors = themeName === 'chroma-dimension'
+    ? chromaDimensionPalettes[(themeConfig?.vibeMode as string) || 'electric-candy'] || chromaDimensionPalettes['electric-candy']
+    : themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
 
   // 解析页面配置
   let config: FriendsPageConfig = defaultConfig;
