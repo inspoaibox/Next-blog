@@ -114,6 +114,18 @@ const chromaDimensionPalettes: Record<string, {
     accentBg: 'bg-emerald-500/20',
     accent: 'emerald',
   },
+  'cyber-pulse': {
+    gradient: 'from-[#00FFFF] via-[#FF00FF] to-[#FFFF00]',
+    accentText: 'text-cyan-400',
+    accentBg: 'bg-cyan-500/20',
+    accent: 'cyan',
+  },
+  'rainbow-vortex': {
+    gradient: 'from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500',
+    accentText: 'text-purple-400',
+    accentBg: 'bg-purple-500/20',
+    accent: 'purple',
+  },
 };
 
 // 根据字符串生成稳定的渐变色

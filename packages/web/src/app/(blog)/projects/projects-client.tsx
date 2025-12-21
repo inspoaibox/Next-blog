@@ -127,6 +127,20 @@ const chromaDimensionPalettes: Record<string, {
     buttonActive: 'bg-emerald-500 text-black',
     buttonHover: 'hover:border-emerald-500',
   },
+  'cyber-pulse': {
+    gradient: 'from-[#00FFFF] via-[#FF00FF] to-[#FFFF00]',
+    accentText: 'text-cyan-400',
+    accentBg: 'bg-cyan-500/20',
+    buttonActive: 'bg-cyan-500 text-black',
+    buttonHover: 'hover:border-cyan-500',
+  },
+  'rainbow-vortex': {
+    gradient: 'from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500',
+    accentText: 'text-purple-400',
+    accentBg: 'bg-purple-500/20',
+    buttonActive: 'bg-purple-500 text-white',
+    buttonHover: 'hover:border-purple-500',
+  },
 };
 
 // 默认配置

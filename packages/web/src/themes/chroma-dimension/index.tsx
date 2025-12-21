@@ -49,6 +49,8 @@ const configOptions: ThemeConfigOption[] = [
       { value: 'acid-sun', label: '酸性烈日 (黄/橙/绿)' },
       { value: 'holographic', label: '全息极光 (炫彩明亮)' },
       { value: 'hyper-white', label: '超维白感 (白/荧光)' },
+      { value: 'cyber-pulse', label: '赛博脉冲 (动态霓虹)' },
+      { value: 'rainbow-vortex', label: '彩虹漩涡 (动态彩虹)' },
     ],
     default: 'electric-candy',
     description: '整体色彩风格',
@@ -167,6 +169,8 @@ const palettes: Record<string, {
   darkGlass: string;
   gradient: string;
   isLightTheme: boolean;
+  isDynamic?: boolean;
+  animationType?: 'pulse' | 'vortex';
 }> = {
   'electric-candy': {
     primary: '#FF00FF',
@@ -228,6 +232,40 @@ const palettes: Record<string, {
     gradient: 'from-[#00FF41] via-slate-900 to-[#00FF41]',
     isLightTheme: true,
   },
+  'cyber-pulse': {
+    primary: '#00FFFF',
+    secondary: '#FF00FF',
+    accent: '#FFFF00',
+    bg: 'bg-[#050510]',
+    darkBg: 'dark:bg-black',
+    text: 'text-cyan-400',
+    darkText: 'dark:text-cyan-300',
+    title: 'text-white',
+    darkTitle: 'dark:text-white',
+    glass: 'bg-white/5',
+    darkGlass: 'dark:bg-white/5',
+    gradient: 'from-[#00FFFF] via-[#FF00FF] to-[#FFFF00]',
+    isLightTheme: false,
+    isDynamic: true,
+    animationType: 'pulse',
+  },
+  'rainbow-vortex': {
+    primary: '#FF0000',
+    secondary: '#00FF00',
+    accent: '#0000FF',
+    bg: 'bg-[#0a0a15]',
+    darkBg: 'dark:bg-black',
+    text: 'text-purple-300',
+    darkText: 'dark:text-purple-200',
+    title: 'text-white',
+    darkTitle: 'dark:text-white',
+    glass: 'bg-white/5',
+    darkGlass: 'dark:bg-white/5',
+    gradient: 'from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500',
+    isLightTheme: false,
+    isDynamic: true,
+    animationType: 'vortex',
+  },
 };
 
 // ============ 液态流动背景 ============
@@ -235,7 +273,128 @@ function LiquidBackground({ config }: { config: ThemeConfig }) {
   const p = palettes[config.vibeMode as string] || palettes['electric-candy'];
   const motion = config.liquidMotion || 'vibrant';
   const animationDuration = motion === 'gentle' ? '20s' : motion === 'insane' ? '5s' : '10s';
+  const paletteAny = p as any;
+  const isDynamic = paletteAny.isDynamic;
+  const animationType = paletteAny.animationType;
 
+  // 赛博脉冲 - 霓虹闪烁动画
+  if (isDynamic && animationType === 'pulse') {
+    return (
+      <div className={`fixed inset-0 -z-10 ${p.bg} ${p.darkBg} transition-colors duration-1000 overflow-hidden`}>
+        {/* 动态霓虹脉冲光斑 */}
+        <div
+          className="absolute top-[-20%] left-[-20%] w-[100vw] h-[100vw] rounded-full blur-[150px] opacity-50 animate-cyber-pulse-1"
+          style={{ backgroundColor: '#00FFFF' }}
+        />
+        <div
+          className="absolute bottom-[-20%] right-[-20%] w-[80vw] h-[80vw] rounded-full blur-[120px] opacity-40 animate-cyber-pulse-2"
+          style={{ backgroundColor: '#FF00FF' }}
+        />
+        <div
+          className="absolute top-1/3 right-1/4 w-[50vw] h-[50vw] rounded-full blur-[100px] opacity-30 animate-cyber-pulse-3"
+          style={{ backgroundColor: '#FFFF00' }}
+        />
+        {/* 扫描线效果 */}
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,rgba(0,255,255,0.03)_2px,rgba(0,255,255,0.03)_4px)] animate-scan-lines" />
+        {/* 网格装饰 */}
+        <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#0ff_1px,transparent_1px)] [background-size:30px_30px]" />
+        {/* 动态CSS */}
+        <style jsx>{`
+          @keyframes cyber-pulse-1 {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+          }
+          @keyframes cyber-pulse-2 {
+            0%, 100% { opacity: 0.4; transform: scale(1) rotate(0deg); }
+            50% { opacity: 0.7; transform: scale(1.15) rotate(10deg); }
+          }
+          @keyframes cyber-pulse-3 {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            33% { opacity: 0.6; transform: scale(1.2); }
+            66% { opacity: 0.4; transform: scale(0.9); }
+          }
+          @keyframes scan-lines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+          }
+          .animate-cyber-pulse-1 { animation: cyber-pulse-1 3s ease-in-out infinite; }
+          .animate-cyber-pulse-2 { animation: cyber-pulse-2 4s ease-in-out infinite; }
+          .animate-cyber-pulse-3 { animation: cyber-pulse-3 5s ease-in-out infinite; }
+          .animate-scan-lines { animation: scan-lines 0.1s linear infinite; }
+        `}</style>
+      </div>
+    );
+  }
+
+  // 彩虹漩涡 - 彩虹旋转流动动画
+  if (isDynamic && animationType === 'vortex') {
+    return (
+      <div className={`fixed inset-0 -z-10 ${p.bg} ${p.darkBg} transition-colors duration-1000 overflow-hidden`}>
+        {/* 彩虹漩涡中心 */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150vw] h-[150vw] animate-rainbow-spin">
+          <div className="absolute inset-0 rounded-full blur-[200px] opacity-30 bg-[conic-gradient(from_0deg,#ff0000,#ff8800,#ffff00,#00ff00,#00ffff,#0088ff,#8800ff,#ff00ff,#ff0000)]" />
+        </div>
+        {/* 外圈光环 */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vw] animate-rainbow-spin-reverse">
+          <div className="absolute inset-0 rounded-full blur-[150px] opacity-20 bg-[conic-gradient(from_180deg,#ff00ff,#00ffff,#ffff00,#ff00ff)]" />
+        </div>
+        {/* 流动粒子效果 */}
+        <div className="absolute inset-0">
+          <div className="absolute top-[20%] left-[10%] w-4 h-4 rounded-full bg-red-500 blur-sm opacity-60 animate-float-1" />
+          <div className="absolute top-[40%] right-[15%] w-3 h-3 rounded-full bg-yellow-400 blur-sm opacity-60 animate-float-2" />
+          <div className="absolute bottom-[30%] left-[20%] w-5 h-5 rounded-full bg-green-400 blur-sm opacity-60 animate-float-3" />
+          <div className="absolute top-[60%] right-[25%] w-4 h-4 rounded-full bg-blue-400 blur-sm opacity-60 animate-float-4" />
+          <div className="absolute bottom-[20%] right-[10%] w-3 h-3 rounded-full bg-purple-500 blur-sm opacity-60 animate-float-5" />
+        </div>
+        {/* 网格装饰 */}
+        <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:40px_40px]" />
+        {/* 动态CSS */}
+        <style jsx>{`
+          @keyframes rainbow-spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+          }
+          @keyframes rainbow-spin-reverse {
+            0% { transform: translate(-50%, -50%) rotate(360deg); }
+            100% { transform: translate(-50%, -50%) rotate(0deg); }
+          }
+          @keyframes float-1 {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+            25% { transform: translate(100px, -50px) scale(1.5); opacity: 0.8; }
+            50% { transform: translate(50px, 100px) scale(1); opacity: 0.4; }
+            75% { transform: translate(-50px, 50px) scale(1.3); opacity: 0.7; }
+          }
+          @keyframes float-2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-80px, 60px) scale(1.4); }
+            66% { transform: translate(60px, -40px) scale(0.8); }
+          }
+          @keyframes float-3 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(120px, -80px); }
+          }
+          @keyframes float-4 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-60px, -60px) scale(1.2); }
+            75% { transform: translate(40px, 80px) scale(0.9); }
+          }
+          @keyframes float-5 {
+            0%, 100% { transform: translate(0, 0); opacity: 0.6; }
+            50% { transform: translate(-100px, -60px); opacity: 0.9; }
+          }
+          .animate-rainbow-spin { animation: rainbow-spin 20s linear infinite; }
+          .animate-rainbow-spin-reverse { animation: rainbow-spin-reverse 30s linear infinite; }
+          .animate-float-1 { animation: float-1 8s ease-in-out infinite; }
+          .animate-float-2 { animation: float-2 10s ease-in-out infinite; }
+          .animate-float-3 { animation: float-3 12s ease-in-out infinite; }
+          .animate-float-4 { animation: float-4 9s ease-in-out infinite; }
+          .animate-float-5 { animation: float-5 11s ease-in-out infinite; }
+        `}</style>
+      </div>
+    );
+  }
+
+  // 默认静态背景
   return (
     <div className={`fixed inset-0 -z-10 ${p.bg} ${p.darkBg} transition-colors duration-1000 overflow-hidden`}>
       {/* 动态流体光斑 */}
