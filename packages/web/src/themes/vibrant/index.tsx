@@ -295,7 +295,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 
           <DesktopNavMenu
             items={navMenu}
-            itemClassName="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap"
+            itemClassName="px-3 py-2 text-sm font-bold uppercase tracking-wider text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap"
           />
 
           <div className="flex items-center gap-2 md:gap-4">

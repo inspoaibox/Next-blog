@@ -347,7 +347,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
             <Link
               key={i}
               href={item.url}
-              className="text-[10px] font-black uppercase tracking-[0.4em] hover:opacity-100 opacity-40 transition-all relative group"
+              className="text-sm font-black uppercase tracking-[0.2em] hover:opacity-100 opacity-50 transition-all relative group"
             >
               {item.label}
               <span

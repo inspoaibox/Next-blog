@@ -86,14 +86,14 @@ export function DesktopNavMenu({ items, className = '', itemClassName = '' }: Na
                 href={child.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 px-4 py-2.5 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 {child.label}
               </a>
             ) : (
               <Link
                 href={child.url}
-                className="flex-1 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex-1 px-4 py-2.5 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 {child.label}
               </Link>
@@ -106,7 +106,7 @@ export function DesktopNavMenu({ items, className = '', itemClassName = '' }: Na
           </div>
           {openSubDropdown === child.id && (
             <div 
-              className="absolute left-full top-0 py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 min-w-[140px] z-50"
+              className="absolute left-full top-0 py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 min-w-[160px] z-50"
               style={{ marginLeft: '2px' }}
             >
               {child.children!.map((grandChild) => (
@@ -116,14 +116,14 @@ export function DesktopNavMenu({ items, className = '', itemClassName = '' }: Na
                       href={grandChild.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      className="block px-4 py-2.5 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       {grandChild.label}
                     </a>
                   ) : (
                     <Link
                       href={grandChild.url}
-                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      className="block px-4 py-2.5 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
                       {grandChild.label}
                     </Link>
@@ -143,14 +143,14 @@ export function DesktopNavMenu({ items, className = '', itemClassName = '' }: Na
             href={child.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="block px-4 py-2.5 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             {child.label}
           </a>
         ) : (
           <Link
             href={child.url}
-            className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="block px-4 py-2.5 text-base text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             {child.label}
           </Link>
@@ -180,7 +180,7 @@ export function DesktopNavMenu({ items, className = '', itemClassName = '' }: Na
               </button>
               {openDropdown === item.id && (
                 <div 
-                  className="absolute top-full left-0 py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 min-w-[140px] z-50"
+                  className="absolute top-full left-0 py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 min-w-[160px] z-50"
                   style={{ marginTop: '4px' }}
                 >
                   {item.children!.map((child) => renderDropdownItem(child))}
@@ -208,7 +208,7 @@ export function MobileNavMenu({ items, onClose }: { items: NavMenuItem[]; onClos
 
   const renderLink = (item: NavMenuItem, level: number = 0) => {
     const paddingClass = level === 0 ? 'pl-4' : level === 1 ? 'pl-8' : 'pl-12';
-    const baseClass = `block px-4 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${paddingClass}`;
+    const baseClass = `block px-4 py-3 text-base text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${paddingClass}`;
     
     if (item.type === 'external') {
       return (
@@ -247,7 +247,7 @@ export function MobileNavMenu({ items, onClose }: { items: NavMenuItem[]; onClos
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={onClose}
-                  className="flex-1 px-4 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-4 py-3 text-base text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   {item.label}
                 </a>
@@ -255,7 +255,7 @@ export function MobileNavMenu({ items, onClose }: { items: NavMenuItem[]; onClos
                 <Link
                   href={item.url}
                   onClick={onClose}
-                  className="flex-1 px-4 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-4 py-3 text-base text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   {item.label}
                 </Link>
@@ -263,7 +263,7 @@ export function MobileNavMenu({ items, onClose }: { items: NavMenuItem[]; onClos
               {/* 展开/收起按钮 */}
               <button
                 onClick={() => toggleExpand(item.id)}
-                className="px-4 py-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="px-4 py-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               >
                 <svg
                   className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}

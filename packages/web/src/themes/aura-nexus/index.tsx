@@ -341,7 +341,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 
         <DesktopNavMenu
           items={navMenu}
-          itemClassName="px-3 md:px-4 py-2 text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.4em] text-slate-400 hover:text-current transition-all relative group whitespace-nowrap"
+          itemClassName="px-3 md:px-4 py-2 text-xs md:text-sm font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-slate-400 hover:text-current transition-all relative group whitespace-nowrap"
         />
 
         <div className="flex items-center gap-2 md:gap-4">

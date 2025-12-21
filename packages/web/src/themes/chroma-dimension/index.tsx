@@ -21,9 +21,7 @@ import {
   Layers,
   Smile,
   Globe,
-  Clock,
   Folder,
-  Tag,
   Search,
   Hash,
   Menu,
@@ -347,7 +345,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
             <Link
               key={i}
               href={item.url}
-              className={`text-[10px] font-black uppercase tracking-[0.2em] xl:tracking-[0.3em] hover:opacity-100 opacity-50 transition-all relative group ${p.text} ${p.darkText}`}
+              className={`text-sm font-black uppercase tracking-[0.15em] xl:tracking-[0.2em] hover:opacity-100 opacity-60 transition-all relative group ${p.text} ${p.darkText}`}
             >
               {item.label}
               <span
@@ -663,27 +661,22 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
           <div
             className={`prose prose-lg md:prose-2xl max-w-none
               prose-headings:font-black prose-headings:tracking-tighter
-              prose-headings:${p.isLightTheme ? 'text-slate-900' : 'text-white'}
-              dark:prose-headings:text-white
+              prose-h1:text-slate-900 prose-h2:text-slate-900 prose-h3:text-slate-900 prose-h4:text-slate-900
+              dark:prose-h1:text-white dark:prose-h2:text-white dark:prose-h3:text-white dark:prose-h4:text-white
               prose-p:font-medium prose-p:leading-relaxed prose-p:mb-8
-              prose-p:${p.isLightTheme ? 'text-slate-700' : 'text-slate-300'}
-              dark:prose-p:text-slate-300
-              prose-strong:${p.isLightTheme ? 'text-slate-900' : 'text-white'}
-              dark:prose-strong:text-white
+              prose-p:text-slate-700 dark:prose-p:text-slate-300
+              prose-strong:text-slate-900 dark:prose-strong:text-white
               prose-a:text-pink-500 dark:prose-a:text-pink-400
               prose-blockquote:border-l-[8px] md:prose-blockquote:border-l-[16px]
-              prose-blockquote:${p.isLightTheme ? 'border-slate-300 bg-slate-100' : 'border-pink-500 bg-white/5'}
+              prose-blockquote:border-pink-500 prose-blockquote:bg-white/5
               dark:prose-blockquote:border-pink-500 dark:prose-blockquote:bg-white/5
               prose-blockquote:p-6 md:prose-blockquote:p-12 prose-blockquote:rounded-r-2xl md:prose-blockquote:rounded-r-[3rem] prose-blockquote:italic
-              prose-blockquote:${p.isLightTheme ? 'text-slate-600' : 'text-slate-300'}
-              dark:prose-blockquote:text-slate-300
+              prose-blockquote:text-slate-600 dark:prose-blockquote:text-slate-300
               prose-img:rounded-2xl md:prose-img:rounded-[3rem] prose-img:border-4 md:prose-img:border-8 prose-img:border-white/5
-              prose-code:${p.isLightTheme ? 'text-pink-600' : 'text-pink-400'}
-              dark:prose-code:text-pink-400
-              prose-pre:${p.isLightTheme ? 'bg-slate-100' : 'bg-slate-900'}
-              dark:prose-pre:bg-slate-900 prose-pre:rounded-2xl
-              prose-li:${p.isLightTheme ? 'text-slate-700' : 'text-slate-300'}
-              dark:prose-li:text-slate-300`}
+              prose-code:text-pink-600 dark:prose-code:text-pink-400
+              prose-pre:bg-slate-100 dark:prose-pre:bg-slate-900 prose-pre:rounded-2xl prose-pre:overflow-x-auto
+              prose-li:text-slate-700 dark:prose-li:text-slate-300
+              ${p.isLightTheme ? '' : '[&_h1]:!text-white [&_h2]:!text-white [&_h3]:!text-white [&_h4]:!text-white [&_p]:!text-slate-300 [&_li]:!text-slate-300 [&_strong]:!text-white [&_blockquote]:!text-slate-300'}`}
             dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
           />
         </div>

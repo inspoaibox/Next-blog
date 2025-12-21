@@ -310,7 +310,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 
           <DesktopNavMenu 
             items={navMenu} 
-            itemClassName="px-4 py-2 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40 hover:text-white transition-all"
+            itemClassName="px-4 py-2 text-sm font-mono uppercase tracking-[0.15em] text-white/50 hover:text-white transition-all"
           />
 
           <UptimeDisplay config={config} />
