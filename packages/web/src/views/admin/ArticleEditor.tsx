@@ -11,6 +11,12 @@ interface ArticleEditorPageProps {
   articleId?: string;
 }
 
+interface LocalizeResult {
+  original: string;
+  local: string | null;
+  error?: string;
+}
+
 export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
   const router = useRouter();
   const isNew = !articleId;
@@ -25,6 +31,9 @@ export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
   const [newTagName, setNewTagName] = useState('');
   const [featuredImageDragging, setFeaturedImageDragging] = useState(false);
   const [featuredImageUploading, setFeaturedImageUploading] = useState(false);
+  const [isLocalizing, setIsLocalizing] = useState(false);
+  const [localizeResults, setLocalizeResults] = useState<LocalizeResult[] | null>(null);
+  const [autoLocalizeEnabled, setAutoLocalizeEnabled] = useState(false);
   const [form, setForm] = useState({
     title: '',
     content: '',
@@ -60,12 +69,34 @@ export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    let finalForm = { ...form };
+
+    // 如果开启了自动本地化，保存前先本地化图片
+    if (autoLocalizeEnabled && form.content.trim()) {
+      try {
+        setIsLocalizing(true);
+        const result = await api.post<{ content: string; results: LocalizeResult[] }>(
+          '/media/localize-content',
+          { content: form.content }
+        );
+        if (result.results.length > 0) {
+          finalForm.content = result.content;
+          setLocalizeResults(result.results);
+        }
+      } catch (error) {
+        console.error('自动本地化失败:', error);
+        // 继续保存，不阻止
+      } finally {
+        setIsLocalizing(false);
+      }
+    }
+
     try {
       if (isNew) {
-        await createArticle.mutateAsync(form);
+        await createArticle.mutateAsync(finalForm);
       } else {
-        await updateArticle.mutateAsync({ id: articleId!, data: form });
+        await updateArticle.mutateAsync({ id: articleId!, data: finalForm });
       }
       router.push('/admin/articles');
     } catch (error) {
@@ -139,6 +170,47 @@ export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
     setNewTagName('');
   };
 
+  // 一键本地化远程图片
+  const handleLocalizeImages = async () => {
+    if (!form.content.trim()) {
+      alert('文章内容为空');
+      return;
+    }
+
+    setIsLocalizing(true);
+    setLocalizeResults(null);
+
+    try {
+      const result = await api.post<{ content: string; results: LocalizeResult[] }>(
+        '/media/localize-content',
+        { content: form.content }
+      );
+
+      if (result.results.length === 0) {
+        alert('未发现需要本地化的远程图片');
+        return;
+      }
+
+      // 更新内容
+      handleChange('content', result.content);
+      setLocalizeResults(result.results);
+
+      const successCount = result.results.filter((r) => r.local).length;
+      const failCount = result.results.filter((r) => !r.local).length;
+
+      if (failCount === 0) {
+        alert(`成功本地化 ${successCount} 张图片`);
+      } else {
+        alert(`本地化完成: ${successCount} 成功, ${failCount} 失败`);
+      }
+    } catch (error) {
+      console.error('本地化失败:', error);
+      alert('图片本地化失败');
+    } finally {
+      setIsLocalizing(false);
+    }
+  };
+
   if (!isNew && isLoading) {
     return <div className="p-8 text-center">加载中...</div>;
   }
@@ -177,6 +249,28 @@ export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   内容 (Markdown)
                 </label>
+                <div className="flex items-center gap-2 mb-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleLocalizeImages}
+                    loading={isLocalizing}
+                    title="将文章中的远程图片下载到本地服务器"
+                  >
+                    📥 图片本地化
+                  </Button>
+                  {localizeResults && (
+                    <span className="text-xs text-gray-500">
+                      {localizeResults.filter((r) => r.local).length} 成功
+                      {localizeResults.some((r) => !r.local) && (
+                        <span className="text-red-500 ml-1">
+                          , {localizeResults.filter((r) => !r.local).length} 失败
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
                 <MarkdownEditor
                   value={form.content}
                   onChange={(value) => handleChange('content', value)}
@@ -239,6 +333,22 @@ export function ArticleEditorPage({ articleId }: ArticleEditorPageProps) {
                   ...buildCategoryOptions(categories || []),
                 ]}
               />
+              <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoLocalizeEnabled}
+                    onChange={(e) => setAutoLocalizeEnabled(e.target.checked)}
+                    className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    保存时自动本地化图片
+                  </span>
+                </label>
+                <p className="text-xs text-gray-500 mt-1 ml-6">
+                  自动下载远程图片到本地服务器
+                </p>
+              </div>
             </CardContent>
           </Card>
 

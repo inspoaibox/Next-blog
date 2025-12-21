@@ -163,4 +163,50 @@ router.delete('/:id', authenticate, async (req: AuthRequest, res: Response, next
   }
 });
 
+/**
+ * POST /api/media/download-url
+ * 从远程 URL 下载图片并保存到本地
+ */
+router.post('/download-url', authenticate, async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { url } = req.body;
+    if (!url) {
+      return next(createError('请提供图片 URL', 400, 'VALIDATION_ERROR'));
+    }
+
+    const media = await mediaService.downloadFromUrl(url);
+    res.status(201).json({
+      success: true,
+      data: {
+        ...media,
+        url: `/api/media/${media.id}/file`,
+        path: `/api/media/${media.id}/file`,
+      },
+    });
+  } catch (error) {
+    next(error instanceof Error ? createError(error.message, 400, 'DOWNLOAD_ERROR') : error);
+  }
+});
+
+/**
+ * POST /api/media/localize-content
+ * 本地化内容中的所有远程图片
+ */
+router.post('/localize-content', authenticate, async (req: AuthRequest, res: Response, next) => {
+  try {
+    const { content } = req.body;
+    if (!content) {
+      return next(createError('请提供内容', 400, 'VALIDATION_ERROR'));
+    }
+
+    const result = await mediaService.localizeContentImages(content);
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

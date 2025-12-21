@@ -7,6 +7,18 @@ import * as crypto from 'crypto';
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 const THUMBNAIL_DIR = path.join(UPLOAD_DIR, 'thumbnails');
 
+// 支持的图片类型映射
+const MIME_TYPE_MAP: Record<string, string> = {
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.png': 'image/png',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+  '.svg': 'image/svg+xml',
+  '.bmp': 'image/bmp',
+  '.ico': 'image/x-icon',
+};
+
 export interface UploadFileInput {
   originalName: string;
   mimeType: string;
@@ -139,6 +151,169 @@ export class MediaService {
       return { buffer, media };
     } catch {
       return null;
+    }
+  }
+
+  /**
+   * 从远程 URL 下载图片并保存到本地
+   */
+  async downloadFromUrl(url: string): Promise<Media> {
+    await this.ensureDirectories();
+
+    // 验证 URL
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      throw new Error('无效的 URL');
+    }
+
+    // 只允许 http/https
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      throw new Error('只支持 HTTP/HTTPS 协议');
+    }
+
+    // 下载图片
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`下载失败: ${response.status} ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) {
+      throw new Error('URL 不是有效的图片');
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer());
+
+    // 限制文件大小 (10MB)
+    if (buffer.length > 10 * 1024 * 1024) {
+      throw new Error('图片大小超过 10MB 限制');
+    }
+
+    // 从 URL 或 content-type 推断扩展名
+    let ext = path.extname(parsedUrl.pathname).toLowerCase();
+    if (!ext || !MIME_TYPE_MAP[ext]) {
+      // 从 content-type 推断
+      const mimeExt = Object.entries(MIME_TYPE_MAP).find(([, mime]) => contentType.includes(mime));
+      ext = mimeExt ? mimeExt[0] : '.jpg';
+    }
+
+    const mimeType = MIME_TYPE_MAP[ext] || 'image/jpeg';
+    const originalName = path.basename(parsedUrl.pathname) || `image${ext}`;
+
+    // 生成唯一文件名
+    const hash = crypto.createHash('md5').update(buffer).digest('hex');
+    const filename = `${Date.now()}-${hash.substring(0, 8)}${ext}`;
+    const filePath = path.join(UPLOAD_DIR, filename);
+
+    // 检查是否已存在相同内容的图片（通过 hash）
+    const existingMedia = await prisma.media.findFirst({
+      where: {
+        filename: { contains: hash.substring(0, 8) },
+      },
+    });
+
+    if (existingMedia) {
+      return existingMedia;
+    }
+
+    // 保存文件
+    await fs.writeFile(filePath, buffer);
+
+    // 生成缩略图
+    const thumbnailPath = await this.generateThumbnail(buffer, filename);
+
+    // 保存到数据库
+    return prisma.media.create({
+      data: {
+        filename,
+        originalName,
+        mimeType,
+        size: buffer.length,
+        path: filePath,
+        thumbnailPath,
+      },
+    });
+  }
+
+  /**
+   * 批量本地化文章内容中的远程图片
+   * 返回替换后的内容和替换结果
+   */
+  async localizeContentImages(content: string): Promise<{
+    content: string;
+    results: Array<{ original: string; local: string | null; error?: string }>;
+  }> {
+    // 匹配 Markdown 图片语法和 HTML img 标签
+    const mdImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+    const htmlImageRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+
+    const results: Array<{ original: string; local: string | null; error?: string }> = [];
+    const urlMap = new Map<string, string>();
+
+    // 收集所有远程图片 URL
+    const remoteUrls = new Set<string>();
+
+    let match;
+    while ((match = mdImageRegex.exec(content)) !== null) {
+      const url = match[2];
+      if (this.isRemoteUrl(url)) {
+        remoteUrls.add(url);
+      }
+    }
+
+    while ((match = htmlImageRegex.exec(content)) !== null) {
+      const url = match[1];
+      if (this.isRemoteUrl(url)) {
+        remoteUrls.add(url);
+      }
+    }
+
+    // 下载并本地化每个远程图片
+    for (const url of remoteUrls) {
+      try {
+        const media = await this.downloadFromUrl(url);
+        const localUrl = `/api/media/${media.id}/file`;
+        urlMap.set(url, localUrl);
+        results.push({ original: url, local: localUrl });
+      } catch (error) {
+        results.push({
+          original: url,
+          local: null,
+          error: error instanceof Error ? error.message : '下载失败',
+        });
+      }
+    }
+
+    // 替换内容中的 URL
+    let newContent = content;
+    for (const [original, local] of urlMap) {
+      newContent = newContent.split(original).join(local);
+    }
+
+    return { content: newContent, results };
+  }
+
+  /**
+   * 判断是否为远程 URL
+   */
+  private isRemoteUrl(url: string): boolean {
+    if (!url) return false;
+    // 排除本地路径和 data URL
+    if (url.startsWith('/') || url.startsWith('data:') || url.startsWith('#')) {
+      return false;
+    }
+    try {
+      const parsed = new URL(url);
+      return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+      return false;
     }
   }
 }
