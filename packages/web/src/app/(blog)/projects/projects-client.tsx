@@ -54,6 +54,27 @@ const themeColors = {
     buttonActive: 'bg-violet-600 text-white',
     buttonHover: 'hover:border-violet-500',
   },
+  cyber: {
+    gradient: 'from-emerald-500 via-cyan-500 to-emerald-400',
+    accentText: 'text-emerald-500',
+    accentBg: 'bg-emerald-500/10',
+    buttonActive: 'bg-emerald-600 text-white',
+    buttonHover: 'hover:border-emerald-500',
+  },
+  vibrant: {
+    gradient: 'from-indigo-500 via-pink-500 to-lime-400',
+    accentText: 'text-indigo-600 dark:text-indigo-400',
+    accentBg: 'bg-indigo-50 dark:bg-indigo-900/20',
+    buttonActive: 'bg-indigo-600 text-white',
+    buttonHover: 'hover:border-indigo-500',
+  },
+  'aura-nexus': {
+    gradient: 'from-red-500 via-orange-500 to-cyan-500',
+    accentText: 'text-red-500 dark:text-red-400',
+    accentBg: 'bg-red-50 dark:bg-red-900/20',
+    buttonActive: 'bg-red-600 text-white',
+    buttonHover: 'hover:border-red-500',
+  },
 };
 
 // 默认配置

@@ -30,22 +30,29 @@ export function ArticleDetailClient({ article }: ArticleDetailClientProps) {
 
   // 根据主题确定目录样式
   const isCyberTheme = themeName === 'cyber';
-  const tocCardClass = isCyberTheme 
+  const isAuraNexusTheme = themeName === 'aura-nexus';
+  const isDarkTheme = isCyberTheme || isAuraNexusTheme;
+  
+  const tocCardClass = isDarkTheme 
     ? 'bg-white/[0.02] border border-white/10 backdrop-blur-xl' 
     : '';
-  const tocTitleClass = isCyberTheme 
+  const tocTitleClass = isDarkTheme 
     ? 'text-white/60 font-mono uppercase tracking-wider' 
     : '';
   const tocLinkClass = isCyberTheme
     ? 'text-slate-400 hover:text-emerald-400'
+    : isAuraNexusTheme
+    ? 'text-slate-400 hover:text-red-400'
     : 'text-gray-800 dark:text-gray-200 hover:text-primary-600';
   const tocSubLinkClass = isCyberTheme
     ? 'text-slate-500 hover:text-emerald-400'
+    : isAuraNexusTheme
+    ? 'text-slate-500 hover:text-red-400'
     : 'text-gray-600 dark:text-gray-400 hover:text-primary-600';
-  const tocBorderClass = isCyberTheme
+  const tocBorderClass = isDarkTheme
     ? 'border-white/10'
     : 'border-gray-200 dark:border-gray-700';
-  const mobileToggleClass = isCyberTheme
+  const mobileToggleClass = isDarkTheme
     ? 'bg-white/[0.02] border-white/10 text-slate-300'
     : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700';
 

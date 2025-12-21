@@ -51,6 +51,24 @@ const themeColors = {
     accentText: 'text-violet-600 dark:text-violet-400',
     accentBg: 'bg-violet-50 dark:bg-violet-900/20',
   },
+  cyber: {
+    accent: 'emerald',
+    gradient: 'from-emerald-500 via-cyan-500 to-emerald-400',
+    accentText: 'text-emerald-500',
+    accentBg: 'bg-emerald-500/10',
+  },
+  vibrant: {
+    accent: 'indigo',
+    gradient: 'from-indigo-500 via-pink-500 to-lime-400',
+    accentText: 'text-indigo-600 dark:text-indigo-400',
+    accentBg: 'bg-indigo-50 dark:bg-indigo-900/20',
+  },
+  'aura-nexus': {
+    accent: 'red',
+    gradient: 'from-red-500 via-orange-500 to-cyan-500',
+    accentText: 'text-red-500 dark:text-red-400',
+    accentBg: 'bg-red-50 dark:bg-red-900/20',
+  },
 };
 
 // 根据字符串生成稳定的渐变色

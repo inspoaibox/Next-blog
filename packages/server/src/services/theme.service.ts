@@ -172,6 +172,16 @@ export class ThemeService {
           description: '幻彩流体背景，明亮色调，圆润卡片，充满活力与创意',
         }),
       },
+      {
+        name: 'aura-nexus',
+        version: '1.0.0',
+        path: '/themes/aura-nexus',
+        isActive: false,
+        config: JSON.stringify({
+          displayName: '灵气枢纽 Pro',
+          description: '多维排版增强版：支持社论、网格、极简等多种风格，所有参数均可自定义',
+        }),
+      },
     ];
 
     const results: Theme[] = [];

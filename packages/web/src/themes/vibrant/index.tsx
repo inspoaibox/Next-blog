@@ -67,6 +67,13 @@ const configOptions: ThemeConfigOption[] = [
     description: '在文章卡片中显示特色图片',
   },
   {
+    key: 'showEmoji',
+    label: '显示表情装饰',
+    type: 'boolean',
+    default: true,
+    description: '在文章卡片中显示随机表情',
+  },
+  {
     key: 'cardStyle',
     label: '卡片样式',
     type: 'select',
@@ -103,6 +110,13 @@ const configOptions: ThemeConfigOption[] = [
     description: '文章卡片的列数',
   },
   {
+    key: 'excerptLength',
+    label: '摘要长度',
+    type: 'number',
+    default: 120,
+    description: '文章摘要显示的字符数',
+  },
+  {
     key: 'showClock',
     label: '显示时钟',
     type: 'boolean',
@@ -137,9 +151,11 @@ const defaultConfig: ThemeConfig = {
   showBlobs: true,
   showDots: true,
   showFeaturedImage: true,
+  showEmoji: true,
   cardStyle: 'glass',
   cardRadius: 'large',
   gridColumns: '3',
+  excerptLength: 120,
   showClock: true,
   heroEmoji: '✨',
   heroTitle: 'Bright Thinking.',
@@ -330,6 +346,9 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { config?: ThemeConfig }) {
   const colors = colorSchemes[config.colorScheme] || colorSchemes.rainbow;
   const radius = radiusClasses[config.cardRadius] || radiusClasses.large;
+  const excerptLength = config.excerptLength || 120;
+  const showEmoji = config.showEmoji !== false;
+  const showFeaturedImage = config.showFeaturedImage !== false;
 
   // 基于文章 ID 生成稳定的颜色和表情
   const hashCode = (str: string) => {
@@ -351,86 +370,102 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
 
   return (
     <article
-      className={`group relative ${radius.card} overflow-hidden flex flex-col p-6 md:p-8 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.02] hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.1)] ${cardClasses[config.cardStyle as keyof typeof cardClasses] || cardClasses.glass}`}
+      className={`group relative ${radius.card} overflow-hidden flex flex-col transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:scale-[1.02] hover:shadow-[0_30px_60px_-12px_rgba(0,0,0,0.1)] ${cardClasses[config.cardStyle as keyof typeof cardClasses] || cardClasses.glass}`}
     >
-      {/* 卡片内部色彩点缀 */}
-      <div
-        className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"
-        style={{ backgroundColor: cardColor }}
-      />
+      {/* 特色图片 */}
+      {showFeaturedImage && article.featuredImage && (
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={article.featuredImage}
+            alt={article.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-white/80 dark:from-slate-900/80 to-transparent" />
+        </div>
+      )}
 
-      <div className="flex justify-between items-center mb-6 md:mb-8 relative z-10">
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-12 h-12 ${radius.button} flex items-center justify-center text-2xl shadow-inner`}
-            style={{ backgroundColor: `${cardColor}20` }}
+      <div className={`p-6 md:p-8 flex flex-col flex-1 ${showFeaturedImage && article.featuredImage ? '' : ''}`}>
+        {/* 卡片内部色彩点缀 */}
+        <div
+          className="absolute -top-10 -right-10 w-32 h-32 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"
+          style={{ backgroundColor: cardColor }}
+        />
+
+        <div className="flex justify-between items-center mb-6 md:mb-8 relative z-10">
+          <div className="flex items-center gap-3">
+            {showEmoji && (
+              <div
+                className={`w-12 h-12 ${radius.button} flex items-center justify-center text-2xl shadow-inner`}
+                style={{ backgroundColor: `${cardColor}20` }}
+              >
+                {cardEmoji}
+              </div>
+            )}
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase leading-none mb-1">
+                Article
+              </span>
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tighter">
+                {article.category?.name || 'Blog'}
+              </span>
+            </div>
+          </div>
+          <div className={`w-10 h-10 ${radius.button} bg-slate-50 dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:rotate-12 transition-transform`}>
+            <Sparkles size={16} className="text-slate-300 group-hover:text-amber-400" />
+          </div>
+        </div>
+
+        <Link href={`/article/${article.slug}`}>
+          <h3
+            className="text-xl md:text-2xl font-black text-slate-800 dark:text-white mb-4 line-clamp-2 transition-colors duration-300"
+            style={{ 
+              color: undefined 
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = cardColor;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '';
+            }}
           >
-            {cardEmoji}
+            {article.title}
+          </h3>
+        </Link>
+
+        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8 md:mb-10 font-medium opacity-80 flex-1 line-clamp-3">
+          {truncate(article.excerpt || article.content, excerptLength)}
+        </p>
+
+        <div className="mt-auto flex flex-col gap-4 md:gap-6">
+          <div className="flex flex-wrap gap-2">
+            {article.tags?.slice(0, 3).map((tag) => (
+              <Link
+                key={tag.id}
+                href={`/tag/${tag.id}`}
+                className={`text-[9px] font-black px-3 py-1 bg-slate-100/50 dark:bg-slate-800/50 ${radius.tag} text-slate-400 uppercase tracking-wider hover:text-slate-600 dark:hover:text-slate-300 transition-colors`}
+              >
+                {tag.name}
+              </Link>
+            ))}
           </div>
-          <div className="flex flex-col">
-            <span className="text-[10px] font-black tracking-widest text-slate-400 uppercase leading-none mb-1">
-              Article
-            </span>
-            <span className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tighter">
-              {article.category?.name || 'Blog'}
-            </span>
-          </div>
-        </div>
-        <div className={`w-10 h-10 ${radius.button} bg-slate-50 dark:bg-slate-800 flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover:rotate-12 transition-transform`}>
-          <Sparkles size={16} className="text-slate-300 group-hover:text-amber-400" />
-        </div>
-      </div>
 
-      <Link href={`/article/${article.slug}`}>
-        <h3
-          className="text-xl md:text-2xl font-black text-slate-800 dark:text-white mb-4 line-clamp-2 transition-colors duration-300"
-          style={{ 
-            color: undefined 
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = cardColor;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = '';
-          }}
-        >
-          {article.title}
-        </h3>
-      </Link>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span className="flex items-center gap-1">
+                <Eye size={12} /> {article.viewCount || 0}
+              </span>
+              <span>{formatDate(article.publishedAt || article.createdAt).split(' ')[0]}</span>
+            </div>
 
-      <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8 md:mb-10 font-medium opacity-80 flex-1 line-clamp-3">
-        {truncate(article.excerpt || article.content, 120)}
-      </p>
-
-      <div className="mt-auto flex flex-col gap-4 md:gap-6">
-        <div className="flex flex-wrap gap-2">
-          {article.tags?.slice(0, 3).map((tag) => (
             <Link
-              key={tag.id}
-              href={`/tag/${tag.id}`}
-              className={`text-[9px] font-black px-3 py-1 bg-slate-100/50 dark:bg-slate-800/50 ${radius.tag} text-slate-400 uppercase tracking-wider hover:text-slate-600 dark:hover:text-slate-300 transition-colors`}
+              href={`/article/${article.slug}`}
+              className={`px-4 py-2 ${radius.button} flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative overflow-hidden group/btn`}
+              style={{ backgroundColor: `${cardColor}15`, color: cardColor }}
             >
-              {tag.name}
+              <span className="relative z-10">Read</span>
+              <ChevronRight size={14} className="relative z-10 group-hover/btn:translate-x-1 transition-transform" />
             </Link>
-          ))}
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-            <span className="flex items-center gap-1">
-              <Eye size={12} /> {article.viewCount || 0}
-            </span>
-            <span>{formatDate(article.publishedAt || article.createdAt).split(' ')[0]}</span>
           </div>
-
-          <Link
-            href={`/article/${article.slug}`}
-            className={`px-4 py-2 ${radius.button} flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative overflow-hidden group/btn`}
-            style={{ backgroundColor: `${cardColor}15`, color: cardColor }}
-          >
-            <span className="relative z-10">Read</span>
-            <ChevronRight size={14} className="relative z-10 group-hover/btn:translate-x-1 transition-transform" />
-          </Link>
         </div>
       </div>
     </article>
@@ -487,7 +522,10 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
       {/* 内容区域 */}
       <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl ${radius.card} p-6 md:p-12 shadow-xl border border-white dark:border-slate-800`}>
         <div
-          className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-black prose-a:text-pink-500 prose-code:text-indigo-500 prose-pre:bg-slate-100 dark:prose-pre:bg-slate-800 prose-pre:rounded-2xl"
+          className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-black prose-code:text-indigo-500 prose-pre:bg-slate-100 dark:prose-pre:bg-slate-800 prose-pre:rounded-2xl"
+          style={{ 
+            ['--tw-prose-links' as string]: colors.primary,
+          }}
           dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
         />
       </div>

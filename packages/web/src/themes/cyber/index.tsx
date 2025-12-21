@@ -79,6 +79,13 @@ const configOptions: ThemeConfigOption[] = [
     description: '在文章卡片中显示特色图片',
   },
   {
+    key: 'showInteractiveGlow',
+    label: '显示互动光效',
+    type: 'boolean',
+    default: true,
+    description: '鼠标悬停时显示动态光圈效果',
+  },
+  {
     key: 'cardStyle',
     label: '卡片样式',
     type: 'select',
@@ -101,6 +108,13 @@ const configOptions: ThemeConfigOption[] = [
     ],
     default: '2',
     description: '文章卡片的列数',
+  },
+  {
+    key: 'excerptLength',
+    label: '摘要长度',
+    type: 'number',
+    default: 120,
+    description: '文章摘要显示的字符数',
   },
   {
     key: 'heroTitle',
@@ -138,8 +152,10 @@ const defaultConfig: ThemeConfig = {
   showGrid: true,
   showUptime: true,
   showFeaturedImage: true,
+  showInteractiveGlow: true,
   cardStyle: 'glass',
   gridColumns: '2',
+  excerptLength: 120,
   heroTitle: 'CORE_PRISM',
   heroSubtitle: '// 正在同步数字化资产... 这是一个融合了精密逻辑架构与感官视觉美学的实验性节点。',
   showHeroStats: true,
@@ -356,8 +372,12 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { config?: ThemeConfig }) {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const colors = accentColors[config.accentColor] || accentColors.emerald;
+  const excerptLength = config.excerptLength || 120;
+  const showFeaturedImage = config.showFeaturedImage !== false;
+  const showInteractiveGlow = config.showInteractiveGlow !== false;
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (!showInteractiveGlow) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setMousePos({
       x: e.clientX - rect.left,
@@ -385,78 +405,94 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
 
   return (
     <article
-      className={`group relative p-6 md:p-8 flex flex-col transition-all duration-500 overflow-hidden shadow-2xl ${cardClasses[config.cardStyle as keyof typeof cardClasses] || cardClasses.glass}`}
+      className={`group relative flex flex-col transition-all duration-500 overflow-hidden shadow-2xl ${cardClasses[config.cardStyle as keyof typeof cardClasses] || cardClasses.glass}`}
       onMouseMove={handleMouseMove}
     >
-      {/* 动态互动光圈 */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-0 group-hover:opacity-100"
-        style={{
-          background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, ${colors.glow}, transparent 80%)`,
-        }}
-      />
+      {/* 特色图片 */}
+      {showFeaturedImage && article.featuredImage && (
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={article.featuredImage}
+            alt={article.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0d1117] to-transparent" />
+        </div>
+      )}
 
-      {/* 标题与状态 */}
-      <div className="flex justify-between items-start mb-6 relative z-10">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 flex items-center justify-center ${colors.bg}/10 border ${colors.border}/20 ${colors.text}`}>
-            <IconComponent size={20} />
+      <div className="p-6 md:p-8 flex flex-col flex-1">
+        {/* 动态互动光圈 */}
+        {showInteractiveGlow && (
+          <div
+            className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-0 group-hover:opacity-100"
+            style={{
+              background: `radial-gradient(400px circle at ${mousePos.x}px ${mousePos.y}px, ${colors.glow}, transparent 80%)`,
+            }}
+          />
+        )}
+
+        {/* 标题与状态 */}
+        <div className="flex justify-between items-start mb-6 relative z-10">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 flex items-center justify-center ${colors.bg}/10 border ${colors.border}/20 ${colors.text}`}>
+              <IconComponent size={20} />
+            </div>
+            <div>
+              <span className={`text-[10px] font-mono tracking-[0.2em] ${colors.text}/60 uppercase block`}>
+                Article_File
+              </span>
+              <span className="text-[9px] font-mono text-white/30 uppercase">
+                {article.category?.name || 'UNCATEGORIZED'}
+              </span>
+            </div>
           </div>
-          <div>
-            <span className={`text-[10px] font-mono tracking-[0.2em] ${colors.text}/60 uppercase block`}>
-              Article_File
-            </span>
-            <span className="text-[9px] font-mono text-white/30 uppercase">
-              {article.category?.name || 'UNCATEGORIZED'}
-            </span>
+          <div className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-tighter border ${colors.border}/30 ${colors.text}`}>
+            {formatDate(article.publishedAt || article.createdAt).split(' ')[0]}
           </div>
         </div>
-        <div className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-tighter border ${colors.border}/30 ${colors.text}`}>
-          {formatDate(article.publishedAt || article.createdAt).split(' ')[0]}
-        </div>
-      </div>
 
-      <Link href={`/article/${article.slug}`}>
-        <h3 className={`font-black text-white group-hover:${colors.text} transition-colors uppercase leading-tight mb-4 text-xl md:text-2xl line-clamp-2`}>
-          {article.title}
-        </h3>
-      </Link>
-
-      <p className="text-slate-400 text-sm leading-relaxed mb-8 font-light flex-1 line-clamp-3">
-        {truncate(article.excerpt || article.content, 120)}
-      </p>
-
-      {/* 底部数据展示 */}
-      <div className="mt-auto flex items-end justify-between relative z-10">
-        <div className="space-y-4">
-          <div className="flex gap-2 flex-wrap">
-            {article.tags?.slice(0, 3).map((tag) => (
-              <Link
-                key={tag.id}
-                href={`/tag/${tag.id}`}
-                className="text-[9px] font-mono px-2 py-0.5 bg-white/5 border border-white/10 text-slate-500 uppercase hover:text-white transition-colors"
-              >
-                {tag.name}
-              </Link>
-            ))}
-          </div>
-          <div className="flex gap-6 font-mono text-[10px] text-white/40">
-            <span className="flex items-center gap-1.5">
-              <Eye size={12} className={colors.text} /> {article.viewCount || 0}
-            </span>
-          </div>
-        </div>
-        <Link
-          href={`/article/${article.slug}`}
-          className={`w-12 h-12 flex items-center justify-center border border-white/10 group-hover:${colors.border}/50 group-hover:${colors.bg} group-hover:text-black transition-all`}
-        >
-          <ArrowUpRight size={20} />
+        <Link href={`/article/${article.slug}`}>
+          <h3 className={`font-black text-white group-hover:${colors.text} transition-colors uppercase leading-tight mb-4 text-xl md:text-2xl line-clamp-2`}>
+            {article.title}
+          </h3>
         </Link>
-      </div>
 
-      {/* 装饰性背景文字 */}
-      <div className={`absolute -bottom-4 -right-4 text-[80px] md:text-[120px] font-mono font-black text-white/[0.01] select-none pointer-events-none group-hover:${colors.text}/[0.03] transition-all duration-700 italic`}>
-        {article.id.slice(-2).toUpperCase()}
+        <p className="text-slate-400 text-sm leading-relaxed mb-8 font-light flex-1 line-clamp-3">
+          {truncate(article.excerpt || article.content, excerptLength)}
+        </p>
+
+        {/* 底部数据展示 */}
+        <div className="mt-auto flex items-end justify-between relative z-10">
+          <div className="space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              {article.tags?.slice(0, 3).map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`/tag/${tag.id}`}
+                  className="text-[9px] font-mono px-2 py-0.5 bg-white/5 border border-white/10 text-slate-500 uppercase hover:text-white transition-colors"
+                >
+                  {tag.name}
+                </Link>
+              ))}
+            </div>
+            <div className="flex gap-6 font-mono text-[10px] text-white/40">
+              <span className="flex items-center gap-1.5">
+                <Eye size={12} className={colors.text} /> {article.viewCount || 0}
+              </span>
+            </div>
+          </div>
+          <Link
+            href={`/article/${article.slug}`}
+            className={`w-12 h-12 flex items-center justify-center border border-white/10 group-hover:${colors.border}/50 group-hover:${colors.bg} group-hover:text-black transition-all`}
+          >
+            <ArrowUpRight size={20} />
+          </Link>
+        </div>
+
+        {/* 装饰性背景文字 */}
+        <div className={`absolute -bottom-4 -right-4 text-[80px] md:text-[120px] font-mono font-black text-white/[0.01] select-none pointer-events-none group-hover:${colors.text}/[0.03] transition-all duration-700 italic`}>
+          {article.id.slice(-2).toUpperCase()}
+        </div>
       </div>
     </article>
   );

@@ -76,6 +76,24 @@ const themeColors = {
     accentBg: 'bg-violet-50 dark:bg-violet-900/20',
     statsBg: 'bg-gradient-to-r from-violet-600 to-fuchsia-600',
   },
+  cyber: {
+    gradient: 'from-emerald-500 to-cyan-500',
+    accentText: 'text-emerald-500',
+    accentBg: 'bg-emerald-500/10',
+    statsBg: 'bg-gradient-to-r from-emerald-600 to-cyan-600',
+  },
+  vibrant: {
+    gradient: 'from-indigo-500 via-pink-500 to-lime-400',
+    accentText: 'text-indigo-600 dark:text-indigo-400',
+    accentBg: 'bg-indigo-50 dark:bg-indigo-900/20',
+    statsBg: 'bg-gradient-to-r from-indigo-500 via-pink-500 to-lime-400',
+  },
+  'aura-nexus': {
+    gradient: 'from-red-500 via-orange-500 to-cyan-500',
+    accentText: 'text-red-500 dark:text-red-400',
+    accentBg: 'bg-red-50 dark:bg-red-900/20',
+    statsBg: 'bg-gradient-to-r from-red-500 to-cyan-500',
+  },
 };
 
 // 图标映射

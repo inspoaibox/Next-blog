@@ -4,6 +4,7 @@ import { MinimalTheme } from './minimal';
 import { MagazineTheme } from './magazine';
 import { CyberTheme } from './cyber';
 import { VibrantTheme } from './vibrant';
+import { AuraNexusTheme } from './aura-nexus';
 
 export interface ArticleCardProps {
   article: {
@@ -118,6 +119,7 @@ export const themes: Record<string, ThemeComponents> = {
   magazine: MagazineTheme,
   cyber: CyberTheme,
   vibrant: VibrantTheme,
+  'aura-nexus': AuraNexusTheme,
 };
 
 // 获取主题
