@@ -3,6 +3,7 @@ import { ReactNode, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
+import { MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
 import { useSiteSettingsContext } from '../../contexts/site-settings-context';
 import {
@@ -395,35 +396,17 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
             </button>
           </div>
 
-          {/* 移动端菜单 */}
+          {/* 移动端菜单 - 使用支持多级菜单的组件 */}
           {mobileMenuOpen && (
-            <div className="lg:hidden bg-white dark:bg-[#0f0f0f] border-b border-slate-100 dark:border-slate-700 p-4">
-              <div className="flex flex-col gap-2">
-                {navMenu.length > 0 ? (
-                  navMenu.map((item, idx) => (
-                    <Link
-                      key={idx}
-                      href={item.url}
-                      className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
-                  ))
-                ) : (
-                  <>
-                    <Link href="/" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>首页</Link>
-                    <Link href="/categories" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>分类</Link>
-                    <Link href="/tags" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>标签</Link>
-                    <Link href="/about" className="px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 font-medium text-slate-700 dark:text-slate-300" onClick={() => setMobileMenuOpen(false)}>关于</Link>
-                  </>
-                )}
-                <div className="flex items-center justify-between px-4 py-3">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">主题模式</span>
-                  <ThemeToggle />
-                </div>
-              </div>
-            </div>
+            <MobileNavMenu 
+              items={navMenu.length > 0 ? navMenu : [
+                { id: '1', label: '首页', url: '/', type: 'internal' },
+                { id: '2', label: '分类', url: '/categories', type: 'internal' },
+                { id: '3', label: '标签', url: '/tags', type: 'internal' },
+                { id: '4', label: '关于', url: '/about', type: 'internal' },
+              ]} 
+              onClose={() => setMobileMenuOpen(false)} 
+            />
           )}
 
           {/* PC 顶部标题栏 */}

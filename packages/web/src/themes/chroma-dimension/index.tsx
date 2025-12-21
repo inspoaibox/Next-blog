@@ -3,6 +3,7 @@ import { ReactNode, useState } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
+import { DesktopNavMenu, MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
 import { useSiteSettingsContext } from '../../contexts/site-settings-context';
 import {
@@ -26,6 +27,7 @@ import {
   Hash,
   Menu,
   X,
+  Clock,
 } from 'lucide-react';
 import type {
   ThemeComponents,
@@ -339,20 +341,13 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
           </div>
         </Link>
 
-        {/* 桌面导航 */}
-        <div className="hidden lg:flex items-center gap-6 xl:gap-10">
-          {navItems.map((item, i) => (
-            <Link
-              key={i}
-              href={item.url}
-              className={`text-sm font-black uppercase tracking-[0.15em] xl:tracking-[0.2em] hover:opacity-100 opacity-60 transition-all relative group ${p.text} ${p.darkText}`}
-            >
-              {item.label}
-              <span
-                className={`absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r ${p.gradient} group-hover:w-full transition-all duration-500`}
-              />
-            </Link>
-          ))}
+        {/* 桌面导航 - 使用支持多级菜单的组件 */}
+        <DesktopNavMenu
+          items={navItems}
+          className="hidden lg:flex items-center gap-6 xl:gap-10"
+          itemClassName={`text-sm font-black uppercase tracking-[0.15em] xl:tracking-[0.2em] hover:opacity-100 opacity-60 transition-all relative ${p.text} ${p.darkText}`}
+        />
+        <div className="hidden lg:flex items-center gap-4">
           <SearchBox />
           <ThemeToggle />
         </div>
@@ -370,25 +365,9 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         </div>
       </nav>
 
-      {/* 移动端菜单 */}
+      {/* 移动端菜单 - 使用支持多级菜单的组件 */}
       {mobileMenuOpen && (
-        <div className={`fixed inset-0 z-[90] pt-24 px-6 ${p.bg} ${p.darkBg} backdrop-blur-xl lg:hidden`}>
-          <div className="flex flex-col gap-4">
-            {navItems.map((item, i) => (
-              <Link
-                key={i}
-                href={item.url}
-                className={`text-lg font-black py-4 border-b border-white/10 ${p.title} ${p.darkTitle}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <div className="pt-4">
-              <SearchBox />
-            </div>
-          </div>
-        </div>
+        <MobileNavMenu items={navItems} onClose={() => setMobileMenuOpen(false)} />
       )}
 
       {/* Hero 区域 */}
@@ -442,113 +421,94 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 }
 
 
-// ============ 文章卡片：海报/全息双态 ============
+// ============ 文章卡片：常规列表卡片布局 ============
 function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { config?: ThemeConfig }) {
   const p = palettes[config.vibeMode as string] || palettes['electric-candy'];
   const showFeaturedImage = config.showFeaturedImage !== false;
   const excerptLength = config.excerptLength || 120;
-  const exploreBtn = config.exploreBtn || 'SYNC DIMENSION';
-  const noImageTag = config.noImageTag || 'RAW_CORE_DATA';
-  const viewMetric = config.viewMetric || 'ENERGY';
-  const siteMood = config.siteMood || 'PURE_ENERGY';
-
-  const hasImage = showFeaturedImage && article.featuredImage;
 
   return (
-    <article className="group relative mb-16 md:mb-32 flex flex-col lg:flex-row gap-8 md:gap-16 items-center">
-      {/* 视觉主体 */}
-      <div className="relative w-full lg:w-[50%] shrink-0 transition-all duration-700 group-hover:scale-[1.02]">
-        {hasImage ? (
-          <div className="relative aspect-[16/11] overflow-hidden rounded-2xl md:rounded-[3rem] shadow-2xl border-2 md:border-4 border-white/10">
-            <img
-              src={article.featuredImage!}
-              alt={article.title}
-              className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
-            />
-            <div className={`absolute inset-0 bg-gradient-to-br ${p.gradient} mix-blend-color opacity-30`} />
-            <div className="absolute inset-0 bg-black/20" />
-            {/* 浮动标签 */}
-            <div className="absolute top-4 md:top-8 left-4 md:left-8 px-4 md:px-6 py-1.5 md:py-2 bg-white text-black rounded-full font-black text-[9px] md:text-[10px] tracking-widest shadow-xl">
-              {siteMood}
-            </div>
-          </div>
-        ) : (
-          /* 无图海报模式 */
-          <div
-            className={`relative aspect-[16/11] rounded-2xl md:rounded-[3rem] bg-gradient-to-br ${p.gradient} p-6 md:p-12 flex flex-col justify-between overflow-hidden shadow-2xl`}
-          >
-            <div className="absolute -top-8 md:-top-12 -right-8 md:-right-12 text-[8rem] md:text-[20rem] font-black text-white/10 select-none leading-none">
-              CORE
-            </div>
-            <div className="relative z-10">
-              <div className="w-8 md:w-12 h-px bg-white/40 mb-4 md:mb-6" />
-              <span className="text-[9px] md:text-[10px] font-black tracking-[0.4em] text-white/60 mb-3 md:mb-4 block uppercase">
-                {noImageTag}
-              </span>
-              <h3 className="text-2xl md:text-5xl lg:text-7xl font-black text-white leading-none tracking-tighter uppercase line-clamp-3">
-                {article.title}
-              </h3>
-            </div>
-            <div className="flex justify-between items-end relative z-10">
-              <Box size={40} className="text-white/20 md:w-[60px] md:h-[60px]" />
-              <div className="text-right">
-                <p className="text-[9px] md:text-[10px] font-black text-white/40 uppercase">Chroma Node</p>
-                <p className="text-white font-black text-xs md:text-sm">
-                  {article.category?.name || 'INFINITE'}
-                </p>
-              </div>
+    <article className={`group relative mb-8 p-6 md:p-8 rounded-2xl md:rounded-3xl ${p.glass} ${p.darkGlass} border border-white/10 backdrop-blur-sm transition-all duration-500 hover:border-white/30 hover:shadow-xl`}>
+      {/* 背景发光效果 */}
+      <div
+        className={`absolute -inset-1 bg-gradient-to-br ${p.gradient} rounded-3xl -z-10 opacity-0 group-hover:opacity-20 blur-xl transition-opacity`}
+      />
+      
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* 特色图片 */}
+        {showFeaturedImage && article.featuredImage && (
+          <div className="md:w-48 lg:w-56 shrink-0">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-xl md:rounded-2xl">
+              <img
+                src={article.featuredImage}
+                alt={article.title}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              />
+              <div className={`absolute inset-0 bg-gradient-to-br ${p.gradient} mix-blend-color opacity-20`} />
             </div>
           </div>
         )}
-        {/* 卡片背后的发光层 */}
-        <div
-          className={`absolute -inset-4 bg-gradient-to-br ${p.gradient} rounded-[3rem] md:rounded-[4rem] -z-10 opacity-20 blur-3xl group-hover:opacity-40 transition-opacity`}
-        />
-      </div>
 
-      {/* 文字主体 */}
-      <div className="flex-1 space-y-4 md:space-y-8 py-4 md:py-6">
-        <div className={`flex items-center gap-4 md:gap-6 text-[9px] md:text-[10px] font-black uppercase tracking-[0.3em] md:tracking-[0.5em] opacity-50 ${p.text} ${p.darkText}`}>
-          <span className="flex items-center gap-2">
-            <Orbit size={12} style={{ color: p.primary }} />
-            {article.category?.name || 'INFINITE'}
-          </span>
-          <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full" style={{ backgroundColor: p.primary }} />
-          <span>
-            {viewMetric}: {article.viewCount || 0}
-          </span>
-        </div>
-        <Link href={`/article/${article.slug}`}>
-          <h2
-            className={`text-2xl md:text-5xl lg:text-7xl font-black tracking-tighter leading-[0.9] ${p.title} ${p.darkTitle} transition-all duration-500 group-hover:italic line-clamp-3`}
-          >
-            {article.title}
-          </h2>
-        </Link>
-        <p className={`text-base md:text-xl lg:text-2xl font-bold opacity-50 italic leading-snug max-w-xl ${p.text} ${p.darkText}`}>
-          "{truncate(article.excerpt || article.content, excerptLength)}"
-        </p>
-        {/* 标签 */}
-        {article.tags && article.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {article.tags.slice(0, 3).map((tag) => (
-              <Link
-                key={tag.id}
-                href={`/tag/${tag.id}`}
-                className={`text-[9px] md:text-[10px] font-black px-3 py-1 rounded-full border border-white/20 ${p.glass} ${p.darkGlass} hover:border-white/40 transition-colors`}
-              >
-                #{tag.name}
-              </Link>
-            ))}
+        {/* 内容区域 */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between">
+          {/* 元信息 */}
+          <div className={`flex items-center gap-3 text-xs font-bold uppercase tracking-wider opacity-60 mb-3 ${p.text} ${p.darkText}`}>
+            <span className="flex items-center gap-1.5">
+              <Orbit size={14} style={{ color: p.primary }} />
+              {article.category?.name || '未分类'}
+            </span>
+            <span className="w-1 h-1 rounded-full" style={{ backgroundColor: p.primary }} />
+            <span className="flex items-center gap-1">
+              <Clock size={12} />
+              {formatDate(article.publishedAt || article.createdAt).split(' ')[0]}
+            </span>
+            <span className="flex items-center gap-1">
+              <Eye size={12} />
+              {article.viewCount || 0}
+            </span>
           </div>
-        )}
-        <Link
-          href={`/article/${article.slug}`}
-          className="inline-flex h-14 md:h-16 px-8 md:px-12 rounded-full bg-white text-black font-black text-[10px] md:text-xs tracking-[0.3em] hover:scale-105 active:scale-95 transition-all shadow-lg items-center gap-3 md:gap-4"
-        >
-          {exploreBtn}
-          <ArrowUpRight size={16} />
-        </Link>
+
+          {/* 标题 */}
+          <Link href={`/article/${article.slug}`}>
+            <h2 className={`text-xl md:text-2xl font-black tracking-tight leading-tight mb-3 ${p.title} ${p.darkTitle} group-hover:opacity-80 transition-opacity line-clamp-2`}>
+              {article.title}
+            </h2>
+          </Link>
+
+          {/* 摘要 */}
+          <p className={`text-sm md:text-base opacity-60 leading-relaxed mb-4 line-clamp-2 ${p.text} ${p.darkText}`}>
+            {truncate(article.excerpt || article.content, excerptLength)}
+          </p>
+
+          {/* 底部：标签和阅读更多 */}
+          <div className="flex items-center justify-between gap-4">
+            {/* 标签 */}
+            {article.tags && article.tags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {article.tags.slice(0, 3).map((tag) => (
+                  <Link
+                    key={tag.id}
+                    href={`/tag/${tag.id}`}
+                    className={`text-xs font-bold px-3 py-1 rounded-full border border-white/20 ${p.glass} hover:border-white/40 transition-colors`}
+                    style={{ color: p.primary }}
+                  >
+                    #{tag.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* 阅读更多 */}
+            <Link
+              href={`/article/${article.slug}`}
+              className="shrink-0 flex items-center gap-2 text-xs font-black uppercase tracking-wider group-hover:gap-3 transition-all"
+              style={{ color: p.primary }}
+            >
+              阅读全文
+              <ArrowUpRight size={14} />
+            </Link>
+          </div>
+        </div>
       </div>
     </article>
   );

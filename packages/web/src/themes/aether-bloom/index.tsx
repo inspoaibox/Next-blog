@@ -3,6 +3,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
+import { DesktopNavMenu, MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
 import { useSiteSettingsContext } from '../../contexts/site-settings-context';
 import {
@@ -341,21 +342,13 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
           </span>
         </Link>
 
-        {/* 桌面导航 */}
-        <div className="hidden md:flex items-center gap-10">
-          {navItems.map((item, i) => (
-            <Link
-              key={i}
-              href={item.url}
-              className="text-sm font-black uppercase tracking-[0.2em] hover:opacity-100 opacity-50 transition-all relative group"
-            >
-              {item.label}
-              <span
-                className="absolute -bottom-1 left-0 w-0 h-0.5 transition-all group-hover:w-full"
-                style={{ backgroundColor: style.primary }}
-              />
-            </Link>
-          ))}
+        {/* 桌面导航 - 使用支持多级菜单的组件 */}
+        <DesktopNavMenu
+          items={navItems}
+          className="hidden md:flex items-center gap-10"
+          itemClassName="text-sm font-black uppercase tracking-[0.2em] hover:opacity-100 opacity-50 transition-all relative"
+        />
+        <div className="hidden md:flex items-center gap-4">
           <SearchBox />
           <ThemeToggle />
         </div>
@@ -374,25 +367,9 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         </div>
       </nav>
 
-      {/* 移动端菜单 */}
+      {/* 移动端菜单 - 使用支持多级菜单的组件 */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 pt-24 px-6 bg-white/95 dark:bg-slate-950/95 backdrop-blur-xl md:hidden">
-          <div className="flex flex-col gap-4">
-            {navItems.map((item, i) => (
-              <Link
-                key={i}
-                href={item.url}
-                className={`text-lg font-bold py-3 border-b border-stone-200/50 dark:border-slate-700/50 ${style.title} ${style.darkTitle}`}
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <div className="pt-4">
-              <SearchBox />
-            </div>
-          </div>
-        </div>
+        <MobileNavMenu items={navItems} onClose={() => setMobileMenuOpen(false)} />
       )}
 
       {/* 网站 Hero */}

@@ -559,17 +559,17 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
         <div
           className="prose prose-lg md:prose-2xl max-w-none 
             prose-headings:font-black prose-headings:tracking-tight
-            prose-h1:text-slate-900 prose-h2:text-slate-900 prose-h3:text-slate-900 prose-h4:text-slate-900
-            dark:prose-h1:text-white dark:prose-h2:text-white dark:prose-h3:text-white dark:prose-h4:text-white
-            prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-p:leading-relaxed 
-            prose-strong:text-slate-900 dark:prose-strong:text-white
-            prose-a:text-red-500 dark:prose-a:text-red-400
-            prose-blockquote:text-slate-600 dark:prose-blockquote:text-slate-400
+            prose-h1:!text-white prose-h2:!text-white prose-h3:!text-white prose-h4:!text-white prose-h5:!text-white prose-h6:!text-white
+            prose-p:!text-slate-200 prose-p:leading-relaxed 
+            prose-strong:!text-white
+            prose-a:text-red-400
+            prose-blockquote:!text-slate-300
             prose-blockquote:border-l-[10px] prose-blockquote:border-red-500
-            prose-code:text-red-600 dark:prose-code:text-red-400
-            prose-pre:bg-slate-100 dark:prose-pre:bg-slate-800
-            prose-li:text-slate-700 dark:prose-li:text-slate-300
-            prose-img:rounded-[2rem] md:prose-img:rounded-[3rem]"
+            prose-code:text-red-400
+            prose-pre:bg-slate-800
+            prose-li:!text-slate-200
+            prose-img:rounded-[2rem] md:prose-img:rounded-[3rem]
+            [&_*]:!text-inherit"
           dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
         />
 
@@ -611,15 +611,15 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
         <div
           className="prose prose-lg md:prose-xl max-w-none 
             prose-headings:font-bold prose-headings:tracking-tight
-            prose-h1:text-slate-900 prose-h2:text-slate-900 prose-h3:text-slate-900 prose-h4:text-slate-900
-            dark:prose-h1:text-white dark:prose-h2:text-white dark:prose-h3:text-white dark:prose-h4:text-white
-            prose-p:font-serif prose-p:italic prose-p:text-slate-600 dark:prose-p:text-slate-300
-            prose-strong:text-slate-900 dark:prose-strong:text-white
-            prose-a:text-indigo-600 dark:prose-a:text-indigo-400
-            prose-blockquote:text-slate-500 dark:prose-blockquote:text-slate-400
-            prose-code:text-rose-600 dark:prose-code:text-rose-400
-            prose-pre:bg-slate-100 dark:prose-pre:bg-slate-800
-            prose-li:text-slate-600 dark:prose-li:text-slate-300"
+            prose-h1:!text-white prose-h2:!text-white prose-h3:!text-white prose-h4:!text-white prose-h5:!text-white prose-h6:!text-white
+            prose-p:font-serif prose-p:italic prose-p:!text-slate-200
+            prose-strong:!text-white
+            prose-a:text-indigo-400
+            prose-blockquote:!text-slate-300
+            prose-code:text-rose-400
+            prose-pre:bg-slate-800
+            prose-li:!text-slate-200
+            [&_*]:!text-inherit"
           dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
         />
 
@@ -679,15 +679,15 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
       <div
         className="lg:w-2/3 prose prose-lg md:prose-2xl max-w-none
           prose-headings:font-black prose-headings:tracking-tight
-          prose-h1:text-slate-900 prose-h2:text-slate-900 prose-h3:text-slate-900 prose-h4:text-slate-900
-          dark:prose-h1:text-white dark:prose-h2:text-white dark:prose-h3:text-white dark:prose-h4:text-white
-          prose-p:text-slate-700 dark:prose-p:text-slate-300
-          prose-strong:text-slate-900 dark:prose-strong:text-white
-          prose-a:text-purple-600 dark:prose-a:text-purple-400
-          prose-blockquote:text-slate-600 dark:prose-blockquote:text-slate-400
-          prose-code:text-cyan-600 dark:prose-code:text-cyan-400
-          prose-pre:bg-slate-100 dark:prose-pre:bg-slate-800
-          prose-li:text-slate-700 dark:prose-li:text-slate-300"
+          prose-h1:!text-white prose-h2:!text-white prose-h3:!text-white prose-h4:!text-white prose-h5:!text-white prose-h6:!text-white
+          prose-p:!text-slate-200
+          prose-strong:!text-white
+          prose-a:text-purple-400
+          prose-blockquote:!text-slate-300
+          prose-code:text-cyan-400
+          prose-pre:bg-slate-800
+          prose-li:!text-slate-200
+          [&_*]:!text-inherit"
         dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
       />
     </div>
