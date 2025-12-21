@@ -652,8 +652,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
                 <Link
                   key={tag.id}
                   href={`/tag/${tag.id}`}
-                  className={`text-xs font-bold px-3 py-1 rounded-full border border-white/20 ${p.glass} hover:border-white/40 transition-colors`}
-                  style={{ color: p.primary }}
+                  className={`text-xs font-bold px-3 py-1 rounded-full border border-white/20 ${p.glass} hover:border-white/40 transition-colors ${p.text} ${p.darkText} opacity-70 hover:opacity-100`}
                 >
                   #{tag.name}
                 </Link>
@@ -664,8 +663,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
           {/* 阅读更多 */}
           <Link
             href={`/article/${article.slug}`}
-            className="shrink-0 flex items-center gap-2 text-xs font-black uppercase tracking-wider group-hover:gap-3 transition-all"
-            style={{ color: p.primary }}
+            className={`shrink-0 flex items-center gap-2 text-xs font-black uppercase tracking-wider group-hover:gap-3 transition-all ${p.text} ${p.darkText} opacity-80 hover:opacity-100`}
           >
             阅读全文
             <ArrowUpRight size={14} />

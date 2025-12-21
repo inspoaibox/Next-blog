@@ -10,6 +10,9 @@ export interface CreateProjectInput {
   githubUrl?: string;
   demoUrl?: string;
   docsUrl?: string;
+  chromeUrl?: string;
+  firefoxUrl?: string;
+  npmUrl?: string;
   featuredImage?: string;
   status?: string;
   isRecommended?: boolean;
@@ -27,6 +30,9 @@ export interface UpdateProjectInput {
   githubUrl?: string;
   demoUrl?: string;
   docsUrl?: string;
+  chromeUrl?: string;
+  firefoxUrl?: string;
+  npmUrl?: string;
   featuredImage?: string;
   status?: string;
   isRecommended?: boolean;
@@ -63,6 +69,9 @@ export class ProjectService {
         githubUrl: input.githubUrl,
         demoUrl: input.demoUrl,
         docsUrl: input.docsUrl,
+        chromeUrl: input.chromeUrl,
+        firefoxUrl: input.firefoxUrl,
+        npmUrl: input.npmUrl,
         featuredImage: input.featuredImage,
         status: input.status ?? 'DRAFT',
         isRecommended: input.isRecommended ?? false,
@@ -130,6 +139,9 @@ export class ProjectService {
     if (input.githubUrl !== undefined) data.githubUrl = input.githubUrl;
     if (input.demoUrl !== undefined) data.demoUrl = input.demoUrl;
     if (input.docsUrl !== undefined) data.docsUrl = input.docsUrl;
+    if (input.chromeUrl !== undefined) data.chromeUrl = input.chromeUrl;
+    if (input.firefoxUrl !== undefined) data.firefoxUrl = input.firefoxUrl;
+    if (input.npmUrl !== undefined) data.npmUrl = input.npmUrl;
     if (input.featuredImage !== undefined) data.featuredImage = input.featuredImage;
     if (input.status !== undefined) data.status = input.status;
     if (input.isRecommended !== undefined) data.isRecommended = input.isRecommended;
