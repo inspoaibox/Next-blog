@@ -557,8 +557,10 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
         </header>
 
         <div
-          className="prose prose-lg md:prose-2xl dark:prose-invert max-w-none 
-            prose-headings:text-slate-900 dark:prose-headings:text-white
+          className="prose prose-lg md:prose-2xl max-w-none 
+            prose-headings:font-black prose-headings:tracking-tight
+            prose-h1:text-slate-900 prose-h2:text-slate-900 prose-h3:text-slate-900 prose-h4:text-slate-900
+            dark:prose-h1:text-white dark:prose-h2:text-white dark:prose-h3:text-white dark:prose-h4:text-white
             prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-p:leading-relaxed 
             prose-strong:text-slate-900 dark:prose-strong:text-white
             prose-a:text-red-500 dark:prose-a:text-red-400
@@ -607,8 +609,10 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
         </header>
 
         <div
-          className="prose prose-lg md:prose-xl dark:prose-invert max-w-none 
-            prose-headings:text-slate-900 dark:prose-headings:text-white
+          className="prose prose-lg md:prose-xl max-w-none 
+            prose-headings:font-bold prose-headings:tracking-tight
+            prose-h1:text-slate-900 prose-h2:text-slate-900 prose-h3:text-slate-900 prose-h4:text-slate-900
+            dark:prose-h1:text-white dark:prose-h2:text-white dark:prose-h3:text-white dark:prose-h4:text-white
             prose-p:font-serif prose-p:italic prose-p:text-slate-600 dark:prose-p:text-slate-300
             prose-strong:text-slate-900 dark:prose-strong:text-white
             prose-a:text-indigo-600 dark:prose-a:text-indigo-400
@@ -673,8 +677,10 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
       </header>
 
       <div
-        className="lg:w-2/3 prose prose-lg md:prose-2xl dark:prose-invert max-w-none
-          prose-headings:text-slate-900 dark:prose-headings:text-white
+        className="lg:w-2/3 prose prose-lg md:prose-2xl max-w-none
+          prose-headings:font-black prose-headings:tracking-tight
+          prose-h1:text-slate-900 prose-h2:text-slate-900 prose-h3:text-slate-900 prose-h4:text-slate-900
+          dark:prose-h1:text-white dark:prose-h2:text-white dark:prose-h3:text-white dark:prose-h4:text-white
           prose-p:text-slate-700 dark:prose-p:text-slate-300
           prose-strong:text-slate-900 dark:prose-strong:text-white
           prose-a:text-purple-600 dark:prose-a:text-purple-400
