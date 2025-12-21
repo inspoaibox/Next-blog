@@ -162,3 +162,22 @@ export async function getFriendLinks() {
     tags: ['friend-links'],
   });
 }
+
+// 公开统计数据
+export interface PublicStats {
+  totalArticles: number;
+  totalViews: number;
+  totalCategories: number;
+  totalTags: number;
+  totalComments: number;
+  recentArticlesCount: number;
+  runningDays: number;
+  lastUpdated: string;
+}
+
+export async function getPublicStats() {
+  return fetchAPI<PublicStats>('/stats/public', {
+    revalidate: CACHE_TIME.settings,
+    tags: ['stats'],
+  });
+}

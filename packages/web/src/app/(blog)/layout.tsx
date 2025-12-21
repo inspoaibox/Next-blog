@@ -1,4 +1,4 @@
-import { getPublicSettings, getActiveTheme } from '@/lib/api-server';
+import { getPublicSettings, getActiveTheme, getPublicStats } from '@/lib/api-server';
 import { BlogLayoutWrapper } from './layout-wrapper';
 
 export default async function BlogLayout({
@@ -6,9 +6,10 @@ export default async function BlogLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [settings, theme] = await Promise.all([
+  const [settings, theme, stats] = await Promise.all([
     getPublicSettings(),
     getActiveTheme(),
+    getPublicStats(),
   ]);
 
   return (
@@ -16,6 +17,7 @@ export default async function BlogLayout({
       settings={settings || {}} 
       theme={theme?.name || 'classic'}
       themeConfig={theme?.config ? JSON.parse(theme.config) : {}}
+      stats={stats || undefined}
     >
       {children}
     </BlogLayoutWrapper>

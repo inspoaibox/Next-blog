@@ -100,6 +100,58 @@ export class StatsService {
   }
 
   /**
+   * 获取公开统计数据（供前台主题使用）
+   */
+  async getPublicStats() {
+    const [
+      totalArticles,
+      totalViews,
+      totalCategories,
+      totalTags,
+      totalComments,
+      recentArticlesCount,
+      serverStartTime,
+    ] = await Promise.all([
+      prisma.article.count({ where: { status: 'PUBLISHED', deletedAt: null } }),
+      prisma.pageView.count(),
+      prisma.category.count(),
+      prisma.tag.count(),
+      prisma.comment.count({ where: { status: 'APPROVED' } }),
+      // 最近30天发布的文章数
+      prisma.article.count({
+        where: {
+          status: 'PUBLISHED',
+          deletedAt: null,
+          publishedAt: { gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+        },
+      }),
+      // 获取最早的文章发布时间作为"运行时间"参考
+      prisma.article.findFirst({
+        where: { status: 'PUBLISHED', deletedAt: null },
+        orderBy: { publishedAt: 'asc' },
+        select: { publishedAt: true },
+      }),
+    ]);
+
+    // 计算运行天数（从第一篇文章发布开始）
+    const firstPublishDate = serverStartTime?.publishedAt;
+    const runningDays = firstPublishDate 
+      ? Math.floor((Date.now() - firstPublishDate.getTime()) / (24 * 60 * 60 * 1000))
+      : 0;
+
+    return {
+      totalArticles,
+      totalViews,
+      totalCategories,
+      totalTags,
+      totalComments,
+      recentArticlesCount,
+      runningDays,
+      lastUpdated: new Date().toISOString(),
+    };
+  }
+
+  /**
    * 获取最近访问记录
    */
   async getRecentViews(limit: number = 100): Promise<PageView[]> {

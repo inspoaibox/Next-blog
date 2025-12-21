@@ -242,9 +242,13 @@ function AuroraBackground({ config }: { config: ThemeConfig }) {
 
 // ============ 运行时间显示 ============
 function UptimeDisplay({ config }: { config: ThemeConfig }) {
-  const [uptime, setUptime] = useState('00:00:00');
-  const [latency, setLatency] = useState(4);
+  const [sessionTime, setSessionTime] = useState('00:00:00');
   const colors = accentColors[config.accentColor] || accentColors.emerald;
+  
+  // 从配置中获取真实统计数据
+  const stats = (config as any)._stats;
+  const runningDays = stats?.runningDays || 0;
+  const totalViews = stats?.totalViews || 0;
 
   useEffect(() => {
     const start = Date.now();
@@ -253,8 +257,7 @@ function UptimeDisplay({ config }: { config: ThemeConfig }) {
       const h = Math.floor(diff / 3600).toString().padStart(2, '0');
       const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
       const s = (diff % 60).toString().padStart(2, '0');
-      setUptime(`${h}:${m}:${s}`);
-      setLatency(Math.floor(Math.random() * 5) + 2);
+      setSessionTime(`${h}:${m}:${s}`);
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -262,14 +265,18 @@ function UptimeDisplay({ config }: { config: ThemeConfig }) {
   if (!config.showUptime) return null;
 
   return (
-    <div className="hidden xl:flex items-center gap-12 font-mono text-[10px] tracking-[0.2em] text-white/40">
+    <div className="hidden xl:flex items-center gap-8 font-mono text-[10px] tracking-[0.2em] text-white/40">
       <div className="flex items-center gap-3">
         <Activity size={16} className={`${colors.text} animate-pulse`} />
-        <span className="text-white/70 uppercase">LATENCY: {latency}MS</span>
+        <span className="text-white/70 uppercase">DAYS: {runningDays}</span>
+      </div>
+      <div className="flex items-center gap-3">
+        <Eye size={16} className="text-white/50" />
+        <span className="text-white/70 uppercase">VIEWS: {totalViews.toLocaleString()}</span>
       </div>
       <div className="flex items-center gap-3">
         <Clock size={16} className="text-white/50" />
-        <span className="text-white/70 uppercase font-bold tracking-widest">{uptime}</span>
+        <span className="text-white/70 uppercase font-bold tracking-widest">{sessionTime}</span>
       </div>
     </div>
   );

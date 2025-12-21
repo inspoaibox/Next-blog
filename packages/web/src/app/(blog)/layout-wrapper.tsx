@@ -6,12 +6,14 @@ import { useBlogThemeStore } from '@/stores/blog-theme.store';
 import { getTheme } from '@/themes';
 import { ThemeProvider } from '@/contexts/theme-context';
 import { SiteSettingsProvider } from '@/contexts/site-settings-context';
+import type { PublicStats } from '@/lib/api-server';
 
 interface BlogLayoutWrapperProps {
   children: React.ReactNode;
   settings: Record<string, string>;
   theme: string;
   themeConfig: Record<string, any>;
+  stats?: PublicStats;
 }
 
 export function BlogLayoutWrapper({ 
@@ -19,6 +21,7 @@ export function BlogLayoutWrapper({
   settings, 
   theme,
   themeConfig,
+  stats,
 }: BlogLayoutWrapperProps) {
   const { setSettings } = useSiteSettingsStore();
   const { setTheme, setConfig, setHydrated } = useBlogThemeStore();
@@ -34,10 +37,16 @@ export function BlogLayoutWrapper({
   const themeComponents = getTheme(theme);
   const { BlogLayout } = themeComponents;
 
+  // 将统计数据合并到主题配置中
+  const configWithStats = {
+    ...themeConfig,
+    _stats: stats,
+  };
+
   return (
     <SiteSettingsProvider settings={settings}>
-      <ThemeProvider themeName={theme} themeConfig={themeConfig}>
-        <BlogLayout config={themeConfig}>{children}</BlogLayout>
+      <ThemeProvider themeName={theme} themeConfig={configWithStats}>
+        <BlogLayout config={configWithStats}>{children}</BlogLayout>
       </ThemeProvider>
     </SiteSettingsProvider>
   );

@@ -4,6 +4,19 @@ import { authenticate, AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 
+/**
+ * GET /api/stats/public
+ * 获取公开统计数据（无需认证，供前台主题使用）
+ */
+router.get('/public', async (_req, res, next) => {
+  try {
+    const stats = await statsService.getPublicStats();
+    res.json({ success: true, data: stats });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get('/', authenticate, async (_req, res, next) => {
   try {
     const stats = await statsService.getOverallStats();

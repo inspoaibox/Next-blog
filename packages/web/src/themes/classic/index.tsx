@@ -66,6 +66,13 @@ const configOptions: ThemeConfigOption[] = [
     description: '在侧边栏显示快速链接',
   },
   {
+    key: 'showSiteStats',
+    label: '显示站点统计',
+    type: 'boolean',
+    default: true,
+    description: '在侧边栏显示站点统计数据',
+  },
+  {
     key: 'quickLinks',
     label: '快速链接',
     type: 'json',
@@ -116,6 +123,7 @@ const defaultConfig: ThemeConfig = {
   authorAvatar: '',
   authorBio: '热爱技术，热爱生活',
   showQuickLinks: true,
+  showSiteStats: true,
   quickLinks: JSON.stringify([
     { label: '所有分类', url: '/categories' },
     { label: '标签云', url: '/tags' },
@@ -234,6 +242,34 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                       );
                     })()}
                   </div>
+                </div>
+              )}
+              {config.showSiteStats && (config as any)._stats && (
+                <div className="bg-white dark:bg-stone-800 rounded-lg p-6 shadow-sm border border-stone-200 dark:border-stone-700">
+                  <h3 className="font-serif font-bold text-lg mb-4 pb-2 border-b border-stone-200 dark:border-stone-700">📊 站点统计</h3>
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <p className={`text-2xl font-bold ${colors.text}`}>{(config as any)._stats.totalArticles}</p>
+                      <p className="text-xs text-stone-500">文章</p>
+                    </div>
+                    <div>
+                      <p className={`text-2xl font-bold ${colors.text}`}>{(config as any)._stats.totalCategories}</p>
+                      <p className="text-xs text-stone-500">分类</p>
+                    </div>
+                    <div>
+                      <p className={`text-2xl font-bold ${colors.text}`}>{(config as any)._stats.totalTags}</p>
+                      <p className="text-xs text-stone-500">标签</p>
+                    </div>
+                    <div>
+                      <p className={`text-2xl font-bold ${colors.text}`}>{((config as any)._stats.totalViews || 0).toLocaleString()}</p>
+                      <p className="text-xs text-stone-500">访问</p>
+                    </div>
+                  </div>
+                  {(config as any)._stats.runningDays > 0 && (
+                    <p className="text-xs text-stone-400 text-center mt-4 pt-3 border-t border-stone-200 dark:border-stone-700">
+                      🎂 已运行 {(config as any)._stats.runningDays} 天
+                    </p>
+                  )}
                 </div>
               )}
             </aside>

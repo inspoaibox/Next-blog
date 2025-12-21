@@ -278,6 +278,7 @@ function MagazineSidebar({
   rounded: { card: string; button: string };
 }) {
   const { settings } = useSiteSettingsContext();
+  const stats = (config as any)._stats;
 
   return (
     <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
@@ -291,6 +292,36 @@ function MagazineSidebar({
           <p className="text-gray-500 text-sm mt-2">{settings.siteDescription || '一个现代化的博客'}</p>
         </div>
       </div>
+
+      {/* 站点统计 */}
+      {stats && (
+        <div className={`bg-white dark:bg-gray-900 ${rounded.card} p-6 shadow-sm`}>
+          <h4 className={`font-bold mb-4 ${colors.text}`}>📊 站点统计</h4>
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className={`text-xl font-bold ${colors.text}`}>{stats.totalArticles}</p>
+              <p className="text-xs text-gray-500">文章</p>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className={`text-xl font-bold ${colors.text}`}>{stats.totalCategories}</p>
+              <p className="text-xs text-gray-500">分类</p>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className={`text-xl font-bold ${colors.text}`}>{stats.totalTags}</p>
+              <p className="text-xs text-gray-500">标签</p>
+            </div>
+            <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+              <p className={`text-xl font-bold ${colors.text}`}>{(stats.totalViews || 0).toLocaleString()}</p>
+              <p className="text-xs text-gray-500">访问</p>
+            </div>
+          </div>
+          {stats.runningDays > 0 && (
+            <p className="text-xs text-gray-400 text-center mt-4 pt-3 border-t border-gray-100 dark:border-gray-800">
+              🎂 已运行 {stats.runningDays} 天
+            </p>
+          )}
+        </div>
+      )}
 
       {/* 快捷导航 */}
       <div className={`bg-white dark:bg-gray-900 ${rounded.card} p-6 shadow-sm`}>
