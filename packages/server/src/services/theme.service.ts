@@ -202,6 +202,16 @@ export class ThemeService {
           description: '有机感博客主题：自然呼吸的排版体验，支持多种卡片布局、详情页排版与响应式宽度定义',
         }),
       },
+      {
+        name: 'chroma-dimension',
+        version: '1.0.0',
+        path: '/themes/chroma-dimension',
+        isActive: false,
+        config: JSON.stringify({
+          displayName: '幻彩维度',
+          description: '极致多巴胺美学：未来波普排版、液态金属背景，支持有图全息与无图海报双重前卫视觉',
+        }),
+      },
     ];
 
     const results: Theme[] = [];

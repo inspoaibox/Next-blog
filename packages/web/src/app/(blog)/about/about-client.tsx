@@ -106,6 +106,12 @@ const themeColors = {
     accentBg: 'bg-blue-50 dark:bg-blue-900/20',
     statsBg: 'bg-gradient-to-r from-blue-400 via-teal-400 to-amber-300',
   },
+  'chroma-dimension': {
+    gradient: 'from-fuchsia-500 via-purple-500 to-cyan-500',
+    accentText: 'text-fuchsia-500 dark:text-fuchsia-400',
+    accentBg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
+    statsBg: 'bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500',
+  },
 };
 
 // 图标映射

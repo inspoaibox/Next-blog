@@ -81,6 +81,12 @@ const themeColors = {
     accentText: 'text-blue-500 dark:text-blue-400',
     accentBg: 'bg-blue-50 dark:bg-blue-900/20',
   },
+  'chroma-dimension': {
+    accent: 'fuchsia',
+    gradient: 'from-fuchsia-500 via-purple-500 to-cyan-500',
+    accentText: 'text-fuchsia-500 dark:text-fuchsia-400',
+    accentBg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
+  },
 };
 
 // 根据字符串生成稳定的渐变色

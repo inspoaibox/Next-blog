@@ -89,6 +89,13 @@ const themeColors = {
     buttonActive: 'bg-blue-500 text-white',
     buttonHover: 'hover:border-blue-500',
   },
+  'chroma-dimension': {
+    gradient: 'from-fuchsia-500 via-purple-500 to-cyan-500',
+    accentText: 'text-fuchsia-500 dark:text-fuchsia-400',
+    accentBg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
+    buttonActive: 'bg-fuchsia-600 text-white',
+    buttonHover: 'hover:border-fuchsia-500',
+  },
 };
 
 // 默认配置
