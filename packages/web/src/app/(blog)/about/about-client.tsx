@@ -15,8 +15,8 @@ import {
   Music,
   Camera,
   Heart,
-  ExternalLink,
 } from 'lucide-react';
+import { useBlogThemeStore } from '@/stores/blog-theme.store';
 
 interface AboutConfig {
   // 基本信息
@@ -62,6 +62,70 @@ interface Props {
   template: string;
 }
 
+// 主题配色方案
+const themeStyles = {
+  classic: {
+    pageBg: 'bg-stone-50 dark:bg-stone-900',
+    headerGradient: 'from-amber-600 to-amber-800',
+    cardBg: 'bg-white dark:bg-stone-800',
+    border: 'border-stone-200 dark:border-stone-700',
+    text: 'text-stone-900 dark:text-white',
+    textMuted: 'text-stone-600 dark:text-stone-400',
+    accent: 'text-amber-600 dark:text-amber-400',
+    accentBg: 'bg-amber-100 dark:bg-amber-900/30',
+    iconBg: 'bg-stone-100 dark:bg-stone-700',
+    iconHover: 'hover:bg-amber-600 hover:text-white',
+    tagBg: 'bg-stone-50 dark:bg-stone-700',
+    tagBorder: 'border-stone-100 dark:border-stone-700',
+    timelineAccent: 'border-amber-500 text-amber-500',
+    statsBg: 'bg-amber-600',
+    statsShadow: 'shadow-amber-500/20',
+    ctaBg: 'bg-stone-800 dark:bg-amber-900/20',
+    ctaBorder: 'border-stone-700',
+    ctaButton: 'bg-amber-600 hover:bg-amber-500',
+  },
+  minimal: {
+    pageBg: 'bg-white dark:bg-black',
+    headerGradient: 'from-gray-600 to-gray-800',
+    cardBg: 'bg-white dark:bg-gray-950',
+    border: 'border-gray-100 dark:border-gray-900',
+    text: 'text-gray-900 dark:text-gray-100',
+    textMuted: 'text-gray-500 dark:text-gray-400',
+    accent: 'text-gray-700 dark:text-gray-300',
+    accentBg: 'bg-gray-100 dark:bg-gray-900',
+    iconBg: 'bg-gray-100 dark:bg-gray-900',
+    iconHover: 'hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900',
+    tagBg: 'bg-gray-50 dark:bg-gray-900',
+    tagBorder: 'border-gray-100 dark:border-gray-900',
+    timelineAccent: 'border-gray-500 text-gray-500',
+    statsBg: 'bg-gray-900 dark:bg-white',
+    statsShadow: 'shadow-gray-500/10',
+    ctaBg: 'bg-gray-900 dark:bg-gray-900',
+    ctaBorder: 'border-gray-800',
+    ctaButton: 'bg-gray-700 hover:bg-gray-600 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-100',
+  },
+  magazine: {
+    pageBg: 'bg-gray-100 dark:bg-gray-950',
+    headerGradient: 'from-violet-600 to-fuchsia-700',
+    cardBg: 'bg-white dark:bg-gray-900',
+    border: 'border-gray-200 dark:border-gray-800',
+    text: 'text-gray-900 dark:text-white',
+    textMuted: 'text-gray-500 dark:text-gray-400',
+    accent: 'text-violet-600 dark:text-violet-400',
+    accentBg: 'bg-violet-100 dark:bg-violet-900/30',
+    iconBg: 'bg-gray-100 dark:bg-gray-800',
+    iconHover: 'hover:bg-violet-600 hover:text-white',
+    tagBg: 'bg-gray-50 dark:bg-gray-800',
+    tagBorder: 'border-gray-100 dark:border-gray-800',
+    timelineAccent: 'border-violet-500 text-violet-500',
+    statsBg: 'bg-gradient-to-r from-violet-600 to-fuchsia-600',
+    statsShadow: 'shadow-violet-500/20',
+    ctaBg: 'bg-gray-900 dark:bg-violet-900/20',
+    ctaBorder: 'border-gray-800',
+    ctaButton: 'bg-violet-600 hover:bg-violet-500',
+  },
+};
+
 // 图标映射
 const iconMap: Record<string, React.ReactNode> = {
   code: <Code2 className="text-blue-500" />,
@@ -72,10 +136,26 @@ const iconMap: Record<string, React.ReactNode> = {
   camera: <Camera size={20} />,
 };
 
-const hobbyColorMap: Record<string, string> = {
-  coffee: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400',
-  music: 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400',
-  camera: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
+const getHobbyColor = (icon: string, currentTheme: string) => {
+  const colorsByTheme: Record<string, Record<string, string>> = {
+    classic: {
+      coffee: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400',
+      music: 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-400',
+      camera: 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400',
+    },
+    minimal: {
+      coffee: 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400',
+      music: 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400',
+      camera: 'bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-400',
+    },
+    magazine: {
+      coffee: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400',
+      music: 'bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400',
+      camera: 'bg-fuchsia-50 dark:bg-fuchsia-900/20 text-fuchsia-600 dark:text-fuchsia-400',
+    },
+  };
+  const colors = colorsByTheme[currentTheme] || colorsByTheme.magazine;
+  return colors[icon] || 'bg-gray-50 dark:bg-gray-800 text-gray-600';
 };
 
 // 默认配置
@@ -112,6 +192,9 @@ const defaultConfig: AboutConfig = {
 };
 
 export function AboutClient({ content, template }: Props) {
+  const { currentTheme } = useBlogThemeStore();
+  const theme = themeStyles[currentTheme as keyof typeof themeStyles] || themeStyles.magazine;
+
   // 解析配置
   let config: AboutConfig = defaultConfig;
   try {
@@ -134,39 +217,39 @@ export function AboutClient({ content, template }: Props) {
         : 'max-w-4xl mx-auto';
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+    <div className={`min-h-screen ${theme.pageBg} transition-colors duration-300`}>
       {/* 顶部背景 */}
-      <div className="relative h-64 bg-gradient-to-r from-blue-600 to-indigo-700 overflow-hidden">
+      <div className={`relative h-64 bg-gradient-to-r ${theme.headerGradient} overflow-hidden`}>
         <div className="absolute inset-0 opacity-10 bg-grid-pattern" />
       </div>
 
       <div className={`${containerClass} px-4 sm:px-6 lg:px-8 -mt-32 relative z-10 pb-20`}>
         {/* 个人名片 */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-xl border border-slate-200 dark:border-slate-800 text-center sm:text-left">
+        <div className={`${theme.cardBg} rounded-3xl p-8 shadow-xl border ${theme.border} text-center sm:text-left`}>
           <div className="flex flex-col sm:flex-row items-center gap-8">
             <div className="relative">
-              <div className="h-32 w-32 rounded-3xl overflow-hidden ring-4 ring-white dark:ring-slate-800 shadow-2xl">
+              <div className={`h-32 w-32 rounded-3xl overflow-hidden ring-4 ${currentTheme === 'classic' ? 'ring-white dark:ring-stone-800' : currentTheme === 'minimal' ? 'ring-white dark:ring-gray-900' : 'ring-white dark:ring-gray-800'} shadow-2xl`}>
                 {config.avatar ? (
                   <img src={config.avatar} alt={config.name} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="h-full w-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl font-bold">
+                  <div className={`h-full w-full bg-gradient-to-br ${theme.headerGradient} flex items-center justify-center text-white text-4xl font-bold`}>
                     {config.name?.[0] || '?'}
                   </div>
                 )}
               </div>
-              <div className="absolute -bottom-2 -right-2 bg-green-500 h-6 w-6 rounded-full border-4 border-white dark:border-slate-900 shadow-sm" title="在线" />
+              <div className="absolute -bottom-2 -right-2 bg-green-500 h-6 w-6 rounded-full border-4 border-white dark:border-gray-900 shadow-sm" title="在线" />
             </div>
 
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              <h1 className={`text-3xl font-bold ${theme.text} mb-2 ${currentTheme === 'minimal' ? 'font-extralight tracking-wide' : ''}`}>
                 {config.name}
               </h1>
               {config.slogan && (
-                <p className="text-slate-600 dark:text-slate-400 mb-4 font-medium italic">
+                <p className={`${theme.textMuted} mb-4 font-medium italic`}>
                   {config.slogan}
                 </p>
               )}
-              <div className="flex flex-wrap justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400">
+              <div className={`flex flex-wrap justify-center sm:justify-start gap-4 text-sm ${theme.textMuted}`}>
                 {config.location && (
                   <div className="flex items-center gap-1.5">
                     <MapPin size={16} /> {config.location}
@@ -178,7 +261,7 @@ export function AboutClient({ content, template }: Props) {
                   </div>
                 )}
                 {config.email && (
-                  <a href={`mailto:${config.email}`} className="flex items-center gap-1.5 text-blue-500 hover:underline">
+                  <a href={`mailto:${config.email}`} className={`flex items-center gap-1.5 ${theme.accent} hover:underline`}>
                     <Mail size={16} /> {config.email}
                   </a>
                 )}
@@ -191,7 +274,7 @@ export function AboutClient({ content, template }: Props) {
                   href={config.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                  className={`p-3 ${theme.iconBg} rounded-xl ${theme.textMuted} ${theme.iconHover} transition-all shadow-sm`}
                 >
                   <Github size={20} />
                 </a>
@@ -201,7 +284,7 @@ export function AboutClient({ content, template }: Props) {
                   href={config.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-blue-400 hover:text-white transition-all shadow-sm"
+                  className={`p-3 ${theme.iconBg} rounded-xl ${theme.textMuted} ${theme.iconHover} transition-all shadow-sm`}
                 >
                   <Twitter size={20} />
                 </a>
@@ -216,11 +299,11 @@ export function AboutClient({ content, template }: Props) {
           <div className="lg:col-span-2 space-y-8">
             {/* 关于我描述 */}
             {config.bio && (
-              <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <section className={`${theme.cardBg} rounded-3xl p-8 border ${theme.border} shadow-sm`}>
+                <h2 className={`text-xl font-bold ${theme.text} mb-4 flex items-center gap-2 ${currentTheme === 'minimal' ? 'font-light' : ''}`}>
                   <Heart size={20} className="text-red-500" /> 简介
                 </h2>
-                <div className="text-slate-600 dark:text-slate-400 space-y-4 leading-relaxed text-sm whitespace-pre-line">
+                <div className={`${theme.textMuted} space-y-4 leading-relaxed text-sm whitespace-pre-line`}>
                   {config.bio}
                 </div>
               </section>
@@ -228,16 +311,16 @@ export function AboutClient({ content, template }: Props) {
 
             {/* 技术栈 */}
             {config.skills && config.skills.length > 0 && (
-              <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                  <Code2 size={20} className="text-blue-500" /> 技术栈
+              <section className={`${theme.cardBg} rounded-3xl p-8 border ${theme.border} shadow-sm`}>
+                <h2 className={`text-xl font-bold ${theme.text} mb-6 flex items-center gap-2 ${currentTheme === 'minimal' ? 'font-light' : ''}`}>
+                  <Code2 size={20} className={theme.accent} /> 技术栈
                 </h2>
                 <div className="space-y-6">
                   {config.skills.map((category) => (
                     <div key={category.category}>
                       <div className="flex items-center gap-2 mb-3">
-                        {iconMap[category.icon] || <Code2 className="text-blue-500" />}
-                        <span className="font-bold text-sm text-slate-700 dark:text-slate-300">
+                        {iconMap[category.icon] || <Code2 className={theme.accent} />}
+                        <span className={`font-bold text-sm ${theme.text}`}>
                           {category.category}
                         </span>
                       </div>
@@ -245,7 +328,7 @@ export function AboutClient({ content, template }: Props) {
                         {category.items.map((item) => (
                           <span
                             key={item}
-                            className="px-3 py-1 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg text-xs border border-slate-100 dark:border-slate-800"
+                            className={`px-3 py-1 ${theme.tagBg} ${theme.textMuted} rounded-lg text-xs border ${theme.tagBorder}`}
                           >
                             {item}
                           </span>
@@ -259,23 +342,23 @@ export function AboutClient({ content, template }: Props) {
 
             {/* 历程时间轴 */}
             {config.timeline && config.timeline.length > 0 && (
-              <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-8 flex items-center gap-2">
+              <section className={`${theme.cardBg} rounded-3xl p-8 border ${theme.border} shadow-sm`}>
+                <h2 className={`text-xl font-bold ${theme.text} mb-8 flex items-center gap-2 ${currentTheme === 'minimal' ? 'font-light' : ''}`}>
                   <Calendar size={20} className="text-amber-500" /> 历程
                 </h2>
-                <div className="space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-blue-500 before:via-slate-300 before:to-transparent dark:before:via-slate-700">
+                <div className={`space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b ${currentTheme === 'classic' ? 'before:from-amber-500 before:via-stone-300 dark:before:via-stone-700' : currentTheme === 'minimal' ? 'before:from-gray-400 before:via-gray-300 dark:before:via-gray-700' : 'before:from-violet-500 before:via-gray-300 dark:before:via-gray-700'} before:to-transparent`}>
                   {config.timeline.map((item, idx) => (
                     <div key={idx} className="relative flex items-start gap-6 group">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-900 border-2 border-blue-500 text-blue-500 z-10 transition-transform group-hover:scale-110">
+                      <div className={`flex items-center justify-center w-10 h-10 rounded-xl ${theme.cardBg} border-2 ${theme.timelineAccent} z-10 transition-transform group-hover:scale-110`}>
                         {item.type === 'education' ? <GraduationCap size={18} /> : <Briefcase size={18} />}
                       </div>
                       <div className="flex-1">
-                        <time className="block text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">
+                        <time className={`block text-xs font-bold ${theme.timelineAccent} uppercase tracking-wider mb-1`}>
                           {item.year}
                         </time>
-                        <h3 className="font-bold text-slate-900 dark:text-white">{item.title}</h3>
-                        <p className="text-xs font-medium text-slate-400 mb-2">{item.company}</p>
-                        <p className="text-sm text-slate-600 dark:text-slate-400">{item.description}</p>
+                        <h3 className={`font-bold ${theme.text}`}>{item.title}</h3>
+                        <p className={`text-xs font-medium ${theme.textMuted} mb-2`}>{item.company}</p>
+                        <p className={`text-sm ${theme.textMuted}`}>{item.description}</p>
                       </div>
                     </div>
                   ))}
@@ -288,17 +371,17 @@ export function AboutClient({ content, template }: Props) {
           <div className="space-y-8">
             {/* 兴趣爱好 */}
             {config.hobbies && config.hobbies.length > 0 && (
-              <section className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">兴趣爱好</h2>
+              <section className={`${theme.cardBg} rounded-3xl p-8 border ${theme.border} shadow-sm`}>
+                <h2 className={`text-xl font-bold ${theme.text} mb-6 ${currentTheme === 'minimal' ? 'font-light' : ''}`}>兴趣爱好</h2>
                 <div className="space-y-4">
                   {config.hobbies.map((hobby, idx) => (
                     <div key={idx} className="flex items-center gap-4 group">
-                      <div className={`p-2.5 rounded-xl ${hobbyColorMap[hobby.icon] || 'bg-slate-50 dark:bg-slate-800 text-slate-600'}`}>
+                      <div className={`p-2.5 rounded-xl ${getHobbyColor(hobby.icon, currentTheme)}`}>
                         {iconMap[hobby.icon] || <Heart size={20} />}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">{hobby.name}</h4>
-                        <p className="text-xs text-slate-500">{hobby.description}</p>
+                        <h4 className={`text-sm font-bold ${theme.text}`}>{hobby.name}</h4>
+                        <p className={`text-xs ${theme.textMuted}`}>{hobby.description}</p>
                       </div>
                     </div>
                   ))}
@@ -308,7 +391,7 @@ export function AboutClient({ content, template }: Props) {
 
             {/* 状态统计 */}
             {config.stats && config.stats.length > 0 && (
-              <section className="bg-blue-600 rounded-3xl p-8 text-white shadow-lg shadow-blue-500/20">
+              <section className={`${theme.statsBg} rounded-3xl p-8 text-white shadow-lg ${theme.statsShadow}`}>
                 <h2 className="text-lg font-bold mb-6">数字足迹</h2>
                 <div className="grid grid-cols-2 gap-4">
                   {config.stats.map((stat, idx) => (
@@ -322,18 +405,18 @@ export function AboutClient({ content, template }: Props) {
             )}
 
             {/* 留言邀请 */}
-            <div className="p-8 bg-slate-900 dark:bg-blue-900/20 rounded-3xl border border-slate-800 text-center">
+            <div className={`p-8 ${theme.ctaBg} rounded-3xl border ${theme.ctaBorder} text-center`}>
               <h3 className="text-white font-bold mb-2">想和我聊聊？</h3>
-              <p className="text-slate-400 text-xs mb-4">无论是技术探讨还是闲聊，都欢迎你的来信。</p>
+              <p className={`${currentTheme === 'minimal' ? 'text-gray-400' : 'text-gray-400'} text-xs mb-4`}>无论是技术探讨还是闲聊，都欢迎你的来信。</p>
               {config.email ? (
                 <a
                   href={`mailto:${config.email}`}
-                  className="block w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-500 transition-colors"
+                  className={`block w-full py-2.5 ${theme.ctaButton} text-white rounded-xl text-sm font-bold transition-colors`}
                 >
                   发送邮件
                 </a>
               ) : (
-                <button className="w-full py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-500 transition-colors">
+                <button className={`w-full py-2.5 ${theme.ctaButton} text-white rounded-xl text-sm font-bold transition-colors`}>
                   联系我
                 </button>
               )}

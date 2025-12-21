@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import type { AIModel } from '../../types';
-import { themes } from '../../themes';
+import { themes, type ThemeConfigOption } from '../../themes';
 import { useCategoriesFlat } from '../../hooks/useCategories';
 import {
   Button,
@@ -124,7 +124,7 @@ function SiteSettings() {
       setMessage({ type: 'success', text: '设置保存成功' });
       setTimeout(() => setMessage(null), 3000);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       setMessage({ type: 'error', text: error.message || '保存失败' });
     },
   });
@@ -327,7 +327,7 @@ function SecuritySettings() {
       setMessage({ type: 'success', text: '密码修改成功' });
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       setMessage({ type: 'error', text: error.message || '密码修改失败' });
     },
   });
@@ -577,10 +577,6 @@ function QuickLinksEditor({ value, onChange }: { value: string; onChange: (value
     }
   }, [value]);
 
-  const handleSave = () => {
-    onChange(JSON.stringify(links));
-  };
-
   const handleAdd = () => {
     if (form.label && form.url) {
       const newLinks = [...links, { label: form.label, url: form.url }];
@@ -686,7 +682,7 @@ function ThemeSettings() {
   });
 
   const updateThemeConfig = useMutation({
-    mutationFn: ({ id, config }: { id: string; config: any }) => 
+    mutationFn: ({ id, config }: { id: string; config: Record<string, unknown> }) => 
       api.put(`/themes/${id}`, { config }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['themes'] });
@@ -719,7 +715,7 @@ function ThemeSettings() {
   const currentConfig = activeTheme?.config ? JSON.parse(activeTheme.config) : {};
   const mergedConfig = { ...(activeThemeData?.defaultConfig || {}), ...currentConfig };
 
-  const handleConfigChange = (key: string, value: any) => {
+  const handleConfigChange = (key: string, value: unknown) => {
     if (!activeTheme) return;
     const newConfig = { ...mergedConfig, [key]: value };
     updateThemeConfig.mutate({ id: activeTheme.id, config: newConfig });
@@ -810,7 +806,7 @@ function ThemeSettings() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {activeThemeData.configOptions.map((option: any) => (
+              {activeThemeData.configOptions.map((option: ThemeConfigOption) => (
                 <div key={option.key} className={`space-y-2 ${option.type === 'json' ? 'md:col-span-2' : ''}`}>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {option.label}
@@ -822,7 +818,7 @@ function ThemeSettings() {
                       onChange={(e) => handleConfigChange(option.key, e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500"
                     >
-                      {option.options?.map((opt: any) => (
+                      {option.options?.map((opt: { value: string; label: string }) => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                       ))}
                     </select>
@@ -1011,7 +1007,7 @@ function MenuSettings() {
       setMessage({ type: 'success', text: '菜单保存成功' });
       setTimeout(() => setMessage(null), 3000);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       setMessage({ type: 'error', text: error.message || '保存失败' });
     },
   });
@@ -1503,7 +1499,7 @@ function SliderSettings() {
       setMessage({ type: 'success', text: '幻灯片设置保存成功' });
       setTimeout(() => setMessage(null), 3000);
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       setMessage({ type: 'error', text: error.message || '保存失败' });
     },
   });
@@ -1558,7 +1554,8 @@ function SliderSettings() {
       formData.append('file', file);
       const response = await api.upload<{ url: string }>('/media/upload', formData);
       setForm({ ...form, image: response.url });
-    } catch (error: any) {
+    } catch (err) {
+      const error = err as Error;
       setMessage({ type: 'error', text: error.message || '上传失败' });
     } finally {
       setUploading(false);

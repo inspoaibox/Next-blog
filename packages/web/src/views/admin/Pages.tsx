@@ -18,7 +18,7 @@ import {
   TableCell,
 } from '../../components/ui';
 import { formatDate } from '../../lib/utils';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 
 const BUILTIN_PAGES = [
   { key: 'about', name: '关于页面', path: '/about' },
@@ -70,18 +70,13 @@ export function PagesPage() {
     setAboutModalOpen(true);
   };
 
-  const saveAboutContent = () => {
-    updateSetting.mutate({ key: 'aboutPageContent', value: aboutContent });
-    setAboutModalOpen(false);
-  };
-
   const createPage = useMutation({
     mutationFn: (data: Partial<Page>) => api.post<Page>('/pages', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pages'] });
       setError(null);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       setError(err.message || '创建失败');
     },
   });
@@ -93,7 +88,7 @@ export function PagesPage() {
       queryClient.invalidateQueries({ queryKey: ['pages'] });
       setError(null);
     },
-    onError: (err: any) => {
+    onError: (err: Error) => {
       setError(err.message || '更新失败');
     },
   });

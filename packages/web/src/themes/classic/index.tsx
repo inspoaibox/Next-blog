@@ -221,7 +221,9 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                             <Link key={index} href={link.url} className={`block text-stone-600 dark:text-stone-400 ${colors.hover}`}>→ {link.label}</Link>
                           ));
                         }
-                      } catch {}
+                      } catch {
+                        // JSON parse failed, use default links
+                      }
                       // 默认链接
                       return (
                         <>
