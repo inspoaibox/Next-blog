@@ -94,6 +94,12 @@ const themeColors = {
     accentBg: 'bg-red-50 dark:bg-red-900/20',
     statsBg: 'bg-gradient-to-r from-red-500 to-cyan-500',
   },
+  'vibe-pulse': {
+    gradient: 'from-orange-500 to-amber-500',
+    accentText: 'text-orange-500 dark:text-orange-400',
+    accentBg: 'bg-orange-50 dark:bg-orange-900/20',
+    statsBg: 'bg-gradient-to-r from-orange-500 to-amber-500',
+  },
 };
 
 // 图标映射

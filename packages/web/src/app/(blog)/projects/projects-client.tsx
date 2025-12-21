@@ -75,6 +75,13 @@ const themeColors = {
     buttonActive: 'bg-red-600 text-white',
     buttonHover: 'hover:border-red-500',
   },
+  'vibe-pulse': {
+    gradient: 'from-orange-500 via-amber-500 to-orange-400',
+    accentText: 'text-orange-500 dark:text-orange-400',
+    accentBg: 'bg-orange-50 dark:bg-orange-900/20',
+    buttonActive: 'bg-orange-500 text-white',
+    buttonHover: 'hover:border-orange-500',
+  },
 };
 
 // 默认配置

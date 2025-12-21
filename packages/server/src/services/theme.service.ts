@@ -182,6 +182,16 @@ export class ThemeService {
           description: '多维排版增强版：支持社论、网格、极简等多种风格，所有参数均可自定义',
         }),
       },
+      {
+        name: 'vibe-pulse',
+        version: '1.0.0',
+        path: '/themes/vibe-pulse',
+        isActive: false,
+        config: JSON.stringify({
+          displayName: '微博风格',
+          description: '社交信息流布局，左侧导航、中间信息流、右侧热搜与AI助手的完美结合',
+        }),
+      },
     ];
 
     const results: Theme[] = [];

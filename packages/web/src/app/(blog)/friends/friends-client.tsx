@@ -69,6 +69,12 @@ const themeColors = {
     accentText: 'text-red-500 dark:text-red-400',
     accentBg: 'bg-red-50 dark:bg-red-900/20',
   },
+  'vibe-pulse': {
+    accent: 'orange',
+    gradient: 'from-orange-500 via-amber-500 to-orange-400',
+    accentText: 'text-orange-500 dark:text-orange-400',
+    accentBg: 'bg-orange-50 dark:bg-orange-900/20',
+  },
 };
 
 // 根据字符串生成稳定的渐变色
