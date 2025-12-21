@@ -11,7 +11,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useSiteSettingsContext } from '@/contexts/site-settings-context';
-import { useBlogThemeStore } from '@/stores/blog-theme.store';
+import { useThemeContext } from '@/contexts/theme-context';
 
 interface Props {
   links: FriendLink[];
@@ -85,8 +85,8 @@ const defaultConfig: FriendsPageConfig = {
 
 export function FriendsClient({ links }: Props) {
   const { settings } = useSiteSettingsContext();
-  const { currentTheme } = useBlogThemeStore();
-  const colors = themeColors[currentTheme as keyof typeof themeColors] || themeColors.classic;
+  const { themeName } = useThemeContext();
+  const colors = themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
 
   // 解析页面配置
   let config: FriendsPageConfig = defaultConfig;

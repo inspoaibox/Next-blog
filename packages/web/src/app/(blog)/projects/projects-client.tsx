@@ -12,7 +12,7 @@ import {
   Star,
   Pin,
 } from 'lucide-react';
-import { useBlogThemeStore } from '@/stores/blog-theme.store';
+import { useThemeContext } from '@/contexts/theme-context';
 import { useSiteSettingsContext } from '@/contexts/site-settings-context';
 
 interface Props {
@@ -69,9 +69,9 @@ const defaultConfig: ProjectsPageConfig = {
 export function ProjectsClient({ projects, categories }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const { currentTheme } = useBlogThemeStore();
+  const { themeName } = useThemeContext();
   const { settings } = useSiteSettingsContext();
-  const colors = themeColors[currentTheme as keyof typeof themeColors] || themeColors.classic;
+  const colors = themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
 
   // 解析页面配置
   let config: ProjectsPageConfig = defaultConfig;

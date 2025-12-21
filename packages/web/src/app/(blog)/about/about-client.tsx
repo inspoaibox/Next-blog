@@ -16,7 +16,7 @@ import {
   Camera,
   Heart,
 } from 'lucide-react';
-import { useBlogThemeStore } from '@/stores/blog-theme.store';
+import { useThemeContext } from '@/contexts/theme-context';
 
 interface AboutConfig {
   name?: string;
@@ -122,8 +122,8 @@ const defaultConfig: AboutConfig = {
 };
 
 export function AboutClient({ content }: Props) {
-  const { currentTheme } = useBlogThemeStore();
-  const colors = themeColors[currentTheme as keyof typeof themeColors] || themeColors.classic;
+  const { themeName } = useThemeContext();
+  const colors = themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
 
   // 解析配置
   let config: AboutConfig = defaultConfig;
