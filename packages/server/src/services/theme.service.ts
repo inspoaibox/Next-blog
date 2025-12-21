@@ -212,6 +212,16 @@ export class ThemeService {
           description: '极致多巴胺美学：未来波普排版、液态金属背景，支持有图全息与无图海报双重前卫视觉',
         }),
       },
+      {
+        name: 'serene-ink',
+        version: '1.0.0',
+        path: '/themes/serene-ink',
+        isActive: false,
+        config: JSON.stringify({
+          displayName: '静墨',
+          description: '以阅读为核心的极简主题：干净、稳重、适合长时间阅读，刻意弱化装饰，让内容成为绝对主角',
+        }),
+      },
     ];
 
     const results: Theme[] = [];
