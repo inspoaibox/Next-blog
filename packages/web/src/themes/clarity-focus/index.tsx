@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { InlineSearchBox } from '../../components/SearchBox';
+import { DesktopNavMenu, MobileNavMenu } from '../../components/NavMenu';
 import { formatDate, truncate } from '../../lib/utils';
 import { useSiteSettingsContext } from '../../contexts/site-settings-context';
 import {
@@ -759,18 +760,10 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
               </Link>
 
               {headerStyle === 'standard' && (
-                <nav className="hidden md:flex items-center gap-6">
-                  {navMenu.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={item.url}
-                      target={item.type === 'external' ? '_blank' : undefined}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </nav>
+                <DesktopNavMenu
+                  items={navMenu}
+                  itemClassName="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors px-3 py-2"
+                />
               )}
 
               <div className="flex items-center gap-3">
@@ -785,29 +778,11 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
               </div>
             </div>
           </div>
+          {/* 移动端菜单 */}
+          {mobileMenuOpen && (
+            <MobileNavMenu items={navMenu} onClose={() => setMobileMenuOpen(false)} />
+          )}
         </header>
-      )}
-
-      {/* 移动端菜单 */}
-      {mobileMenuOpen && (
-        <div className={`md:hidden fixed inset-0 z-40 ${colors.mainBg} ${colors.mainBgDark} pt-14`}>
-          <nav className="p-6 space-y-4">
-            {navMenu.map((item) => (
-              <Link
-                key={item.id}
-                href={item.url}
-                target={item.type === 'external' ? '_blank' : undefined}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block py-2 text-gray-800 dark:text-gray-200"
-              >
-                {item.label}
-              </Link>
-            ))}
-            <div className="pt-4">
-              <InlineSearchBox />
-            </div>
-          </nav>
-        </div>
       )}
 
       {/* 三栏布局 */}
@@ -975,8 +950,37 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
   const toc = (config._articleToc as TOCItem[]) || [];
   
   // 判断TOC应该显示在哪一侧
-  const showTocInLeft = leftContent === 'toc' && toc.length > 0;
-  const showTocInRight = rightContent === 'toc' && toc.length > 0;
+  // 如果左侧配置为 toc，则显示在左侧
+  // 如果右侧配置为 toc，则显示在右侧
+  // 如果两侧都不是 toc，则自动放在侧边栏的对面：
+  //   - 如果左侧有内容（不是hidden），TOC放右侧
+  //   - 如果右侧有内容（不是hidden），TOC放左侧
+  //   - 默认放右侧
+  let showTocInLeft = false;
+  let showTocInRight = false;
+  
+  if (toc.length > 0) {
+    if (leftContent === 'toc') {
+      showTocInLeft = true;
+    } else if (rightContent === 'toc') {
+      showTocInRight = true;
+    } else {
+      // 自动决定 TOC 位置：放在侧边栏内容的对面
+      const hasLeftSidebar = leftContent !== 'hidden';
+      const hasRightSidebar = rightContent !== 'hidden';
+      
+      if (hasLeftSidebar && !hasRightSidebar) {
+        // 左侧有内容，TOC放右侧
+        showTocInRight = true;
+      } else if (!hasLeftSidebar && hasRightSidebar) {
+        // 右侧有内容，TOC放左侧
+        showTocInLeft = true;
+      } else {
+        // 两侧都有或都没有，默认放右侧
+        showTocInRight = true;
+      }
+    }
+  }
 
   return (
     <div className="relative">
