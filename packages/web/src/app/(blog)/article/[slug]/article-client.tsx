@@ -68,7 +68,9 @@ export function ArticleDetailClient({ article: initialArticle }: ArticleDetailCl
   // 这些主题有自己的布局，不显示侧边 TOC
   // classic/minimal 主题的 BlogLayout 已有侧边栏，不需要额外的目录侧边栏
   // magazine 主题需要显示左侧目录
-  const useSimpleLayout = isVibePulseTheme || isAetherBloomTheme || isChromaDimensionTheme || isVibrantTheme || isClassicTheme || isMinimalTheme;
+  // clarity-focus 主题有自己的三栏布局，不需要额外的目录侧边栏
+  const isClarityFocusTheme = themeName === 'clarity-focus';
+  const useSimpleLayout = isVibePulseTheme || isAetherBloomTheme || isChromaDimensionTheme || isVibrantTheme || isClassicTheme || isMinimalTheme || isClarityFocusTheme;
   const showSidebarToc = !useSimpleLayout && !isMagazineTheme && toc.length > 0;
   
   const tocCardClass = isDarkTheme 

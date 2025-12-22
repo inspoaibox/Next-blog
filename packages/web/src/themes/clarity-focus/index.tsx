@@ -3,7 +3,7 @@
 import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
-import { SearchBox } from '../../components/SearchBox';
+import { InlineSearchBox } from '../../components/SearchBox';
 import { formatDate, truncate } from '../../lib/utils';
 import { useSiteSettingsContext } from '../../contexts/site-settings-context';
 import {
@@ -100,6 +100,7 @@ const configOptions: ThemeConfigOption[] = [
     type: 'select',
     options: [
       { value: 'toc', label: '文章目录（详情页）' },
+      { value: 'sidebar', label: '侧边栏内容（搜索+标签）' },
       { value: 'widgets', label: '小部件' },
       { value: 'hidden', label: '隐藏' },
     ],
@@ -114,9 +115,10 @@ const configOptions: ThemeConfigOption[] = [
       { value: 'search-tags', label: '搜索 + 标签' },
       { value: 'recent', label: '最近文章' },
       { value: 'full', label: '搜索 + 标签 + 最近' },
+      { value: 'toc', label: '文章目录（详情页）' },
       { value: 'hidden', label: '隐藏' },
     ],
-    default: 'search-tags',
+    default: 'full',
     description: '右侧栏显示的内容',
   },
   {
@@ -276,7 +278,7 @@ const defaultConfig: ThemeConfig = {
   mainColumnWidth: 'medium',
   sidebarWidth: 'medium',
   leftSidebarContent: 'toc',
-  rightSidebarContent: 'search-tags',
+  rightSidebarContent: 'full',
   sidebarVisibility: 'always',
   fontSize: 'medium',
   lineHeight: 'comfortable',
@@ -423,9 +425,13 @@ function calculateReadingTime(content: string): number {
 function LeftSidebar({
   config,
   colors,
+  tags,
+  recentArticles,
 }: {
   config: ThemeConfig;
   colors: (typeof colorSchemes)['light-gray'];
+  tags?: TagListProps['tags'];
+  recentArticles?: Array<{ id: string; title: string; slug: string; createdAt: string }>;
 }) {
   const content = config.leftSidebarContent as string;
   const opacity = opacityMap[config.sidebarOpacity as string] || opacityMap.light;
@@ -436,15 +442,73 @@ function LeftSidebar({
     <aside className={`${opacity} transition-opacity duration-300`}>
       {/* 文章目录占位 - 在文章详情页会显示目录 */}
       {content === 'toc' && (
-        <div className={`text-xs ${colors.textMuted} ${colors.textMutedDark}`}>
+        <div className="text-xs text-gray-500 dark:text-gray-400">
           <h3 className="font-medium uppercase tracking-wider mb-4">目录</h3>
           <p className="text-xs opacity-60">文章详情页显示目录</p>
         </div>
       )}
 
+      {/* 侧边栏内容（搜索+标签） */}
+      {content === 'sidebar' && (
+        <>
+          {/* 搜索框 */}
+          <div className="mb-8">
+            <h3 className="text-xs font-medium uppercase tracking-wider mb-4 text-gray-500 dark:text-gray-400">
+              搜索
+            </h3>
+            <InlineSearchBox />
+          </div>
+
+          {/* 标签云 */}
+          {tags && tags.length > 0 && (
+            <div className="mb-8">
+              <h3 className="text-xs font-medium uppercase tracking-wider mb-4 text-gray-500 dark:text-gray-400">
+                标签
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {tags.slice(0, 15).map((tag) => (
+                  <Link
+                    key={tag.id}
+                    href={`/tag/${tag.slug}`}
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+                  >
+                    <Hash size={10} />
+                    {tag.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 最近文章 */}
+          {recentArticles && recentArticles.length > 0 && (
+            <div>
+              <h3 className="text-xs font-medium uppercase tracking-wider mb-4 text-gray-500 dark:text-gray-400">
+                最近文章
+              </h3>
+              <ul className="space-y-3">
+                {recentArticles.slice(0, 5).map((article) => (
+                  <li key={article.id}>
+                    <Link
+                      href={`/article/${article.slug}`}
+                      className="block text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors line-clamp-2"
+                    >
+                      {article.title}
+                    </Link>
+                    <time className="text-xs text-gray-400 dark:text-gray-500">
+                      {formatDate(article.createdAt).split(' ')[0]}
+                    </time>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
+      )}
+
       {/* 小部件区域 */}
       {content === 'widgets' && (
-        <div className={`text-xs ${colors.textMuted} ${colors.textMutedDark}`}>
+        <div className="text-xs text-gray-500 dark:text-gray-400">
           <h3 className="font-medium uppercase tracking-wider mb-4">小部件</h3>
         </div>
       )}
@@ -476,22 +540,40 @@ function RightSidebar({
 
   if (content === 'hidden') return null;
 
+  // 目录占位（文章详情页会显示目录）
+  if (content === 'toc') {
+    return (
+      <aside className={`${opacity} transition-opacity duration-300`}>
+        <div className="text-xs text-gray-500 dark:text-gray-400">
+          <h3 className="font-medium uppercase tracking-wider mb-4">目录</h3>
+          <p className="text-xs opacity-60">文章详情页显示目录</p>
+        </div>
+        {/* 自定义HTML代码块 */}
+        {config.rightSidebarCustomHtml && (
+          <div className="mt-8">
+            <CustomHtmlBlock html={config.rightSidebarCustomHtml as string} />
+          </div>
+        )}
+      </aside>
+    );
+  }
+
   return (
     <aside className={`${opacity} transition-opacity duration-300`}>
       {/* 搜索框 */}
       {(content === 'search-tags' || content === 'full') && (
         <div className="mb-8">
-          <h3 className={`text-xs font-medium uppercase tracking-wider mb-4 ${colors.textMuted} ${colors.textMutedDark}`}>
+          <h3 className="text-xs font-medium uppercase tracking-wider mb-4 text-gray-500 dark:text-gray-400">
             搜索
           </h3>
-          <SearchBox />
+          <InlineSearchBox />
         </div>
       )}
 
       {/* 标签云 */}
       {(content === 'search-tags' || content === 'full') && tags && tags.length > 0 && (
         <div className="mb-8">
-          <h3 className={`text-xs font-medium uppercase tracking-wider mb-4 ${colors.textMuted} ${colors.textMutedDark}`}>
+          <h3 className="text-xs font-medium uppercase tracking-wider mb-4 text-gray-500 dark:text-gray-400">
             标签
           </h3>
           <div className="flex flex-wrap gap-2">
@@ -499,7 +581,7 @@ function RightSidebar({
               <Link
                 key={tag.id}
                 href={`/tag/${tag.slug}`}
-                className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded ${colors.border} ${colors.borderDark} border ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}
+                className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
               >
                 <Hash size={10} />
                 {tag.name}
@@ -511,8 +593,8 @@ function RightSidebar({
 
       {/* 最近文章 */}
       {(content === 'recent' || content === 'full') && recentArticles && recentArticles.length > 0 && (
-        <div>
-          <h3 className={`text-xs font-medium uppercase tracking-wider mb-4 ${colors.textMuted} ${colors.textMutedDark}`}>
+        <div className="mb-8">
+          <h3 className="text-xs font-medium uppercase tracking-wider mb-4 text-gray-500 dark:text-gray-400">
             最近文章
           </h3>
           <ul className="space-y-3">
@@ -520,11 +602,11 @@ function RightSidebar({
               <li key={article.id}>
                 <Link
                   href={`/article/${article.slug}`}
-                  className={`block text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors line-clamp-2`}
+                  className="block text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors line-clamp-2"
                 >
                   {article.title}
                 </Link>
-                <time className={`text-xs ${colors.textMuted} ${colors.textMutedDark} opacity-60`}>
+                <time className="text-xs text-gray-400 dark:text-gray-500">
                   {formatDate(article.createdAt).split(' ')[0]}
                 </time>
               </li>
@@ -589,6 +671,10 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const showLeftSidebar = leftContent !== 'hidden';
   const showRightSidebar = rightContent !== 'hidden';
 
+  // 从配置中获取标签和最近文章数据
+  const tags = (config._tags as any[]) || [];
+  const recentArticles = (config._recentArticles as any[]) || [];
+
   // 自定义代码
   const customHeadCode = config.customHeadCode as string;
   const customBodyStartCode = config.customBodyStartCode as string;
@@ -613,14 +699,14 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                 {siteName}
               </Link>
 
-              {headerStyle === 'standard' && (
+              {headerStyle === 'standard' && navMenu.length > 0 && (
                 <nav className="hidden md:flex items-center gap-6">
                   {navMenu.map((item) => (
                     <Link
                       key={item.id}
                       href={item.url}
                       target={item.type === 'external' ? '_blank' : undefined}
-                      className={`text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}
+                      className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                     >
                       {item.label}
                     </Link>
@@ -632,7 +718,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                 <ThemeToggle />
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className={`md:hidden p-2 rounded ${colors.textMuted} ${colors.textMutedDark}`}
+                  className="md:hidden p-2 rounded text-gray-600 dark:text-gray-400"
                   aria-label="菜单"
                 >
                   {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -653,13 +739,13 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                 href={item.url}
                 target={item.type === 'external' ? '_blank' : undefined}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block py-2"
+                className="block py-2 text-gray-800 dark:text-gray-200"
               >
                 {item.label}
               </Link>
             ))}
             <div className="pt-4">
-              <SearchBox />
+              <InlineSearchBox />
             </div>
           </nav>
         </div>
@@ -672,7 +758,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
           {showLeftSidebar && (
             <div className={`hidden lg:block ${sidebarWidth} shrink-0`}>
               <div className="sticky top-20">
-                <LeftSidebar config={config} colors={colors} />
+                <LeftSidebar config={config} colors={colors} tags={tags} recentArticles={recentArticles} />
               </div>
             </div>
           )}
@@ -688,7 +774,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
           {showRightSidebar && (
             <div className={`hidden lg:block ${sidebarWidth} shrink-0`}>
               <div className="sticky top-20">
-                <RightSidebar config={config} colors={colors} />
+                <RightSidebar config={config} colors={colors} tags={tags} recentArticles={recentArticles} />
               </div>
             </div>
           )}

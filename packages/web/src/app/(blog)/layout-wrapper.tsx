@@ -15,6 +15,8 @@ interface BlogLayoutWrapperProps {
   theme: string;
   themeConfig: Record<string, any>;
   stats?: PublicStats;
+  tags?: any[];
+  recentArticles?: any[];
 }
 
 export function BlogLayoutWrapper({ 
@@ -23,6 +25,8 @@ export function BlogLayoutWrapper({
   theme,
   themeConfig,
   stats,
+  tags,
+  recentArticles,
 }: BlogLayoutWrapperProps) {
   const { setSettings } = useSiteSettingsStore();
   const { setTheme, setConfig, setHydrated } = useBlogThemeStore();
@@ -38,10 +42,12 @@ export function BlogLayoutWrapper({
   const themeComponents = getTheme(theme);
   const { BlogLayout } = themeComponents;
 
-  // 将统计数据合并到主题配置中
+  // 将统计数据、标签、最近文章合并到主题配置中
   const configWithStats = {
     ...themeConfig,
     _stats: stats,
+    _tags: tags,
+    _recentArticles: recentArticles,
   };
 
   return (
