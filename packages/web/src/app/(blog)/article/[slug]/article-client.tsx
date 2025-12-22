@@ -68,12 +68,12 @@ export function ArticleDetailClient({ article: initialArticle }: ArticleDetailCl
   // 这些主题有自己的布局，不显示侧边 TOC
   // classic/minimal 主题的 BlogLayout 已有侧边栏，不需要额外的目录侧边栏
   // magazine 主题需要显示左侧目录
-  // clarity-focus 主题有自己的三栏布局，不需要额外的目录侧边栏
+  // clarity-focus 主题需要特殊处理，将TOC传递给主题配置
   // serene-ink 主题使用简洁布局，不需要额外的目录侧边栏
   const isClarityFocusTheme = themeName === 'clarity-focus';
   const isSereneInkTheme = themeName === 'serene-ink';
-  const useSimpleLayout = isVibePulseTheme || isAetherBloomTheme || isChromaDimensionTheme || isVibrantTheme || isClassicTheme || isMinimalTheme || isClarityFocusTheme || isSereneInkTheme;
-  const showSidebarToc = !useSimpleLayout && !isMagazineTheme && toc.length > 0;
+  const useSimpleLayout = isVibePulseTheme || isAetherBloomTheme || isChromaDimensionTheme || isVibrantTheme || isClassicTheme || isMinimalTheme || isSereneInkTheme;
+  const showSidebarToc = !useSimpleLayout && !isMagazineTheme && !isClarityFocusTheme && toc.length > 0;
   
   const tocCardClass = isDarkTheme 
     ? 'bg-white/[0.02] border border-white/10 backdrop-blur-xl' 
@@ -584,6 +584,53 @@ export function ArticleDetailClient({ article: initialArticle }: ArticleDetailCl
             )}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // clarity-focus 主题 - 将TOC传递给主题配置，由主题自己渲染
+  if (isClarityFocusTheme) {
+    // 将TOC添加到配置中，让主题的侧边栏组件可以访问
+    const configWithToc = {
+      ...themeConfig,
+      _articleToc: toc,
+    };
+
+    return (
+      <div className="relative">
+        {/* Mobile TOC Toggle */}
+        {toc.length > 0 && (
+          <div className="lg:hidden mb-6">
+            <button
+              onClick={() => setTocOpen(!tocOpen)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
+            >
+              <span className="font-medium text-sm text-gray-700 dark:text-gray-300">📑 文章目录</span>
+              <svg
+                className={`w-5 h-5 transition-transform text-gray-500 ${tocOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {tocOpen && (
+              <nav className="mt-2 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm">
+                {renderTocItems(toc)}
+              </nav>
+            )}
+          </div>
+        )}
+
+        <ArticleDetail article={article} config={configWithToc} />
+        
+        {/* 评论区 */}
+        {isCommentEnabled() && (
+          <div className="mt-12">
+            <CommentSection articleId={article.id} />
+          </div>
+        )}
       </div>
     );
   }

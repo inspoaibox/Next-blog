@@ -421,17 +421,66 @@ function calculateReadingTime(content: string): number {
 }
 
 
+// ============ TOC 组件 ============
+interface TOCItem {
+  id: string;
+  text: string;
+  level: number;
+  children?: TOCItem[];
+}
+
+function TableOfContents({ toc }: { toc: TOCItem[] }) {
+  if (!toc || toc.length === 0) return null;
+
+  const renderItems = (items: TOCItem[], depth: number = 0) => (
+    <ul className={depth > 0 ? 'ml-3 mt-1 space-y-1 border-l border-gray-200 dark:border-gray-700 pl-2' : 'space-y-2'}>
+      {items.map((item, index) => (
+        <li key={`${item.id}-${index}`}>
+          <a
+            href={`#${item.id}`}
+            onClick={(e) => {
+              e.preventDefault();
+              const element = document.getElementById(item.id);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                window.history.pushState(null, '', `#${item.id}`);
+              }
+            }}
+            className={`block transition-colors line-clamp-2 ${
+              depth === 0
+                ? 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white font-medium text-sm'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 text-xs'
+            }`}
+            title={item.text}
+          >
+            {item.text}
+          </a>
+          {item.children && item.children.length > 0 && renderItems(item.children, depth + 1)}
+        </li>
+      ))}
+    </ul>
+  );
+
+  return (
+    <nav className="max-h-[70vh] overflow-y-auto pr-1">
+      {renderItems(toc)}
+    </nav>
+  );
+}
+
 // ============ 左侧栏组件 ============
 function LeftSidebar({
   config,
   colors,
   tags,
   recentArticles,
+  toc,
 }: {
   config: ThemeConfig;
   colors: (typeof colorSchemes)['light-gray'];
   tags?: TagListProps['tags'];
   recentArticles?: Array<{ id: string; title: string; slug: string; createdAt: string }>;
+  toc?: TOCItem[];
 }) {
   const content = config.leftSidebarContent as string;
   const opacity = opacityMap[config.sidebarOpacity as string] || opacityMap.light;
@@ -440,11 +489,15 @@ function LeftSidebar({
 
   return (
     <aside className={`${opacity} transition-opacity duration-300`}>
-      {/* 文章目录占位 - 在文章详情页会显示目录 */}
+      {/* 文章目录 - 在文章详情页会显示目录 */}
       {content === 'toc' && (
         <div className="text-xs text-gray-500 dark:text-gray-400">
           <h3 className="font-medium uppercase tracking-wider mb-4">目录</h3>
-          <p className="text-xs opacity-60">文章详情页显示目录</p>
+          {toc && toc.length > 0 ? (
+            <TableOfContents toc={toc} />
+          ) : (
+            <p className="text-xs opacity-60">文章详情页显示目录</p>
+          )}
         </div>
       )}
 
@@ -529,24 +582,30 @@ function RightSidebar({
   colors,
   tags,
   recentArticles,
+  toc,
 }: { 
   config: ThemeConfig; 
   colors: typeof colorSchemes['light-gray'];
   tags?: TagListProps['tags'];
   recentArticles?: Array<{ id: string; title: string; slug: string; createdAt: string }>;
+  toc?: TOCItem[];
 }) {
   const content = config.rightSidebarContent as string;
   const opacity = opacityMap[config.sidebarOpacity as string] || opacityMap.light;
 
   if (content === 'hidden') return null;
 
-  // 目录占位（文章详情页会显示目录）
+  // 目录（文章详情页会显示目录）
   if (content === 'toc') {
     return (
       <aside className={`${opacity} transition-opacity duration-300`}>
         <div className="text-xs text-gray-500 dark:text-gray-400">
           <h3 className="font-medium uppercase tracking-wider mb-4">目录</h3>
-          <p className="text-xs opacity-60">文章详情页显示目录</p>
+          {toc && toc.length > 0 ? (
+            <TableOfContents toc={toc} />
+          ) : (
+            <p className="text-xs opacity-60">文章详情页显示目录</p>
+          )}
         </div>
         {/* 自定义HTML代码块 */}
         {config.rightSidebarCustomHtml && (
@@ -660,14 +719,14 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const colors = colorSchemes[config.colorScheme as string] || colorSchemes['light-gray'];
   const sidebarWidth = sidebarWidthMap[config.sidebarWidth as string] || sidebarWidthMap.medium;
   const layoutWidth = layoutWidthMap[config.layoutWidth as string] || layoutWidthMap.standard;
-  const headerStyle = config.headerStyle as string;
+  const headerStyle = (config.headerStyle as string) || 'standard';
   const siteName = settings.siteName || 'Blog';
   const siteLogo = settings.siteLogo;
   const customFooter = config.footerText as string;
   const footerText = customFooter || settings.footerText?.replace('{year}', new Date().getFullYear().toString()) || `© ${new Date().getFullYear()} ${siteName}`;
 
-  const leftContent = config.leftSidebarContent as string;
-  const rightContent = config.rightSidebarContent as string;
+  const leftContent = (config.leftSidebarContent as string) || 'toc';
+  const rightContent = (config.rightSidebarContent as string) || 'full';
   const showLeftSidebar = leftContent !== 'hidden';
   const showRightSidebar = rightContent !== 'hidden';
 
@@ -699,7 +758,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                 {siteName}
               </Link>
 
-              {headerStyle === 'standard' && navMenu.length > 0 && (
+              {headerStyle === 'standard' && (
                 <nav className="hidden md:flex items-center gap-6">
                   {navMenu.map((item) => (
                     <Link
@@ -906,105 +965,145 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
   const showReadingProgress = config.showReadingProgress !== false;
   const showReadingTime = config.showReadingTime !== false;
   const showViewCount = config.showViewCount !== false;
+  const sidebarWidth = sidebarWidthMap[config.sidebarWidth as string] || sidebarWidthMap.medium;
+  const leftContent = (config.leftSidebarContent as string) || 'toc';
+  const rightContent = (config.rightSidebarContent as string) || 'full';
 
   const readingTime = calculateReadingTime(article.content);
+  
+  // 从配置中获取TOC（由article-client传入）
+  const toc = (config._articleToc as TOCItem[]) || [];
+  
+  // 判断TOC应该显示在哪一侧
+  const showTocInLeft = leftContent === 'toc' && toc.length > 0;
+  const showTocInRight = rightContent === 'toc' && toc.length > 0;
 
   return (
-    <article className="animate-in fade-in duration-500">
+    <div className="relative">
       {showReadingProgress && <ReadingProgress color={colors.accent} />}
-
-      {/* 文章头部 */}
-      <header className="mb-8 pb-6 border-b border-inherit">
-        {article.category && (
-          <Link
-            href={`/category/${article.category.id}`}
-            className={`inline-block text-xs uppercase tracking-wider mb-3 ${colors.textMuted} ${colors.textMutedDark} hover:underline`}
-          >
-            {article.category.name}
-          </Link>
+      
+      {/* 桌面端：使用flex布局显示TOC */}
+      <div className="flex gap-8">
+        {/* 左侧TOC */}
+        {showTocInLeft && (
+          <aside className={`hidden lg:block ${sidebarWidth} shrink-0`}>
+            <div className="sticky top-20">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                <h3 className="font-medium uppercase tracking-wider mb-4">目录</h3>
+                <TableOfContents toc={toc} />
+              </div>
+            </div>
+          </aside>
         )}
+        
+        {/* 文章主体 */}
+        <article className="flex-1 min-w-0 animate-in fade-in duration-500">
+          {/* 文章头部 */}
+          <header className="mb-8 pb-6 border-b border-inherit">
+            {article.category && (
+              <Link
+                href={`/category/${article.category.id}`}
+                className={`inline-block text-xs uppercase tracking-wider mb-3 ${colors.textMuted} ${colors.textMutedDark} hover:underline`}
+              >
+                {article.category.name}
+              </Link>
+            )}
 
-        <h1 className={`text-2xl md:text-3xl font-bold leading-tight mb-4 ${colors.text} ${colors.textDark}`}>
-          {article.title}
-        </h1>
+            <h1 className={`text-2xl md:text-3xl font-bold leading-tight mb-4 ${colors.text} ${colors.textDark}`}>
+              {article.title}
+            </h1>
 
-        <div className={`flex flex-wrap items-center gap-4 text-sm ${colors.textMuted} ${colors.textMutedDark}`}>
-          {article.author && (
-            <span>{article.author.username}</span>
-          )}
-          <span className="flex items-center gap-1">
-            <Calendar size={14} />
-            {formatDate(article.publishedAt || article.createdAt)}
-          </span>
-          {showReadingTime && (
-            <span className="flex items-center gap-1">
-              <Clock size={14} />
-              {readingTime} 分钟阅读
-            </span>
-          )}
-          {showViewCount && (article.viewCount || 0) > 0 && (
-            <span className="flex items-center gap-1">
-              <Eye size={14} />
-              {article.viewCount}
-            </span>
-          )}
-        </div>
-      </header>
+            <div className={`flex flex-wrap items-center gap-4 text-sm ${colors.textMuted} ${colors.textMutedDark}`}>
+              {article.author && (
+                <span>{article.author.username}</span>
+              )}
+              <span className="flex items-center gap-1">
+                <Calendar size={14} />
+                {formatDate(article.publishedAt || article.createdAt)}
+              </span>
+              {showReadingTime && (
+                <span className="flex items-center gap-1">
+                  <Clock size={14} />
+                  {readingTime} 分钟阅读
+                </span>
+              )}
+              {showViewCount && (article.viewCount || 0) > 0 && (
+                <span className="flex items-center gap-1">
+                  <Eye size={14} />
+                  {article.viewCount}
+                </span>
+              )}
+            </div>
+          </header>
 
-      {/* 特色图片 */}
-      {article.featuredImage && (
-        <div className="mb-8">
-          <img
-            src={article.featuredImage}
-            alt={article.title}
-            className="w-full rounded-lg"
+          {/* 特色图片 */}
+          {article.featuredImage && (
+            <div className="mb-8">
+              <img
+                src={article.featuredImage}
+                alt={article.title}
+                className="w-full rounded-lg"
+              />
+            </div>
+          )}
+
+          {/* 正文 */}
+          <div
+            className={`
+              prose prose-slate dark:prose-invert max-w-none
+              ${fontSize} ${lineHeight}
+              prose-headings:font-semibold
+              prose-a:underline prose-a:underline-offset-4
+              prose-blockquote:border-l-2 prose-blockquote:not-italic
+              prose-code:text-sm prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:bg-gray-100 dark:prose-code:bg-gray-800
+              prose-pre:rounded-lg prose-pre:bg-[#1a1a1a]
+              prose-img:rounded-lg
+            `}
+            style={{ '--tw-prose-links': colors.accent } as React.CSSProperties}
+            dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
           />
-        </div>
-      )}
 
-      {/* 正文 */}
-      <div
-        className={`
-          prose prose-slate dark:prose-invert max-w-none
-          ${fontSize} ${lineHeight}
-          prose-headings:font-semibold
-          prose-a:underline prose-a:underline-offset-4
-          prose-blockquote:border-l-2 prose-blockquote:not-italic
-          prose-code:text-sm prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:bg-gray-100 dark:prose-code:bg-gray-800
-          prose-pre:rounded-lg prose-pre:bg-[#1a1a1a]
-          prose-img:rounded-lg
-        `}
-        style={{ '--tw-prose-links': colors.accent } as React.CSSProperties}
-        dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
-      />
+          {/* 标签 */}
+          {article.tags && article.tags.length > 0 && (
+            <div className={`flex flex-wrap gap-2 mt-10 pt-6 border-t ${colors.border} ${colors.borderDark}`}>
+              <Tag size={14} className={`${colors.textMuted} ${colors.textMutedDark}`} />
+              {article.tags.map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`/tag/${tag.id}`}
+                  className={`text-sm px-3 py-1 rounded-full border ${colors.border} ${colors.borderDark} ${colors.textMuted} ${colors.textMutedDark} hover:text-gray-900 dark:hover:text-white transition-colors`}
+                >
+                  {tag.name}
+                </Link>
+              ))}
+            </div>
+          )}
 
-      {/* 标签 */}
-      {article.tags && article.tags.length > 0 && (
-        <div className={`flex flex-wrap gap-2 mt-10 pt-6 border-t ${colors.border} ${colors.borderDark}`}>
-          <Tag size={14} className={`${colors.textMuted} ${colors.textMutedDark}`} />
-          {article.tags.map((tag) => (
+          {/* 返回 */}
+          <nav className={`mt-8 pt-6 border-t ${colors.border} ${colors.borderDark}`}>
             <Link
-              key={tag.id}
-              href={`/tag/${tag.id}`}
-              className={`text-sm px-3 py-1 rounded-full border ${colors.border} ${colors.borderDark} ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}
+              href="/"
+              className={`inline-flex items-center gap-2 text-sm ${colors.textMuted} ${colors.textMutedDark} hover:text-gray-900 dark:hover:text-white transition-colors`}
             >
-              {tag.name}
+              <ArrowLeft size={14} />
+              返回首页
             </Link>
-          ))}
-        </div>
-      )}
-
-      {/* 返回 */}
-      <nav className={`mt-8 pt-6 border-t ${colors.border} ${colors.borderDark}`}>
-        <Link
-          href="/"
-          className={`inline-flex items-center gap-2 text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}
-        >
-          <ArrowLeft size={14} />
-          返回首页
-        </Link>
-      </nav>
-    </article>
+          </nav>
+        </article>
+        
+        {/* 右侧TOC */}
+        {showTocInRight && (
+          <aside className={`hidden lg:block ${sidebarWidth} shrink-0`}>
+            <div className="sticky top-20">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                <h3 className="font-medium uppercase tracking-wider mb-4">目录</h3>
+                <TableOfContents toc={toc} />
+              </div>
+            </div>
+          </aside>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -1031,7 +1130,7 @@ function CategoryList({ categories, config = defaultConfig }: CategoryListProps 
           <Link
             key={category.id}
             href={`/category/${category.slug}`}
-            className={`flex items-center justify-between py-3 hover:${colors.text} hover:${colors.textDark} transition-colors`}
+            className="flex items-center justify-between py-3 hover:text-gray-900 dark:hover:text-white transition-colors"
             style={{ paddingLeft: depth * 20 }}
           >
             <div className="flex items-center gap-2">
@@ -1068,7 +1167,7 @@ function TagList({ tags, config = defaultConfig }: TagListProps & { config?: The
           <Link
             key={tag.id}
             href={`/tag/${tag.slug}`}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${colors.border} ${colors.borderDark} ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border ${colors.border} ${colors.borderDark} ${colors.textMuted} ${colors.textMutedDark} hover:text-gray-900 dark:hover:text-white transition-colors`}
           >
             <Hash size={14} />
             {tag.name}

@@ -35,7 +35,9 @@ function parseNavMenu(navMenuStr: string | undefined): NavMenuItem[] {
             children: item.children ? filterVisible(item.children) : undefined,
           }));
       };
-      return filterVisible(parsed);
+      const visibleItems = filterVisible(parsed);
+      // 如果过滤后没有可见项，返回默认菜单
+      return visibleItems.length > 0 ? visibleItems : defaultNavMenu;
     }
   } catch {
     // 解析失败返回默认菜单
