@@ -27,6 +27,10 @@ import { themeService } from './services/theme.service.js';
 const app = express();
 const PORT = process.env.PORT || 3012;
 
+// 信任代理（Caddy/Nginx），这样才能获取真实客户端IP
+// 设置为 1 表示信任第一层代理
+app.set('trust proxy', 1);
+
 // 安全中间件 - HTTP 安全头
 app.use(helmet({
   contentSecurityPolicy: false, // 允许内联脚本（主题自定义代码需要）

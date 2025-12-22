@@ -197,6 +197,36 @@ pm2 start npm --name blog-web -- start
 pm2 logs blog-server
 ```
 
+### Caddy 反向代理配置
+
+如果使用 Caddy 作为反向代理，需要同时配置前端和后端的代理规则：
+
+```caddyfile
+yourdomain.com, www.yourdomain.com {
+    # 上传文件直接访问（静态文件）
+    handle /uploads/* {
+        root * /path/to/blog/packages/server
+        file_server
+    }
+    
+    # API 请求代理到后端服务 (3012)
+    handle /api/* {
+        reverse_proxy 127.0.0.1:3012
+    }
+    
+    # 其他请求代理到 Next.js 前端 (3011)
+    handle {
+        reverse_proxy 127.0.0.1:3011
+    }
+}
+```
+
+**重要说明：**
+- `/api/*` 必须代理到后端端口 (3012)，否则 API 请求会失败
+- `/uploads/*` 可以直接由 Caddy 提供静态文件服务，提高性能
+- 其他请求代理到 Next.js 前端 (3011)
+- 系统已配置 `trust proxy`，可以正确获取客户端真实 IP
+
 ### 版本更新
 
 当拉取新代码后，执行以下步骤：
@@ -280,14 +310,18 @@ blog/
 
 ### 速率限制
 
-系统内置 API 速率限制，防止暴力破解和滥用：
+系统内置 API 速率限制，防止暴力破解和滥用（按客户端 IP 独立计算）：
 
 | 接口 | 时间窗口 | 最大请求数 |
 |------|----------|-----------|
-| 通用 API | 15分钟 | 500次/IP |
-| 登录接口 | 1小时 | 10次/IP |
+| 通用 API | 15分钟 | 2000次/IP |
+| 登录接口 | 1小时 | 30次/IP |
+| 访客追踪 | 1分钟 | 60次/IP |
 
-超出限制后返回 429 状态码。
+**说明：**
+- 速率限制是按 IP 独立计算的，不同访客互不影响
+- 使用反向代理（Caddy/Nginx）时，系统会自动获取真实客户端 IP
+- 超出限制后返回 429 状态码
 
 ### 账户安全
 
