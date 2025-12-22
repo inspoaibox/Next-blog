@@ -34,18 +34,34 @@ app.use(helmet({
 }));
 
 // 速率限制 - 防止暴力破解和 DDoS
+// 开发环境下放宽限制
+const isDev = process.env.NODE_ENV !== 'production';
+
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15分钟
-  max: 500, // 每IP最多500次请求
+  max: isDev ? 5000 : 2000, // 开发环境5000次，生产环境2000次
   message: { success: false, error: 'Too many requests, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // 跳过健康检查和访客追踪接口（追踪接口请求量大但不敏感）
+    return req.path === '/api/health' || req.path === '/api/analytics/track';
+  },
 });
 
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1小时
-  max: 10, // 每IP最多10次登录尝试
+  max: isDev ? 100 : 30, // 开发环境100次，生产环境30次
   message: { success: false, error: 'Too many login attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// 访客追踪专用限制（更宽松）
+const trackingLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1分钟
+  max: 60, // 每分钟最多60次（每秒1次）
+  message: { success: false, error: 'Too many tracking requests' },
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -96,7 +112,7 @@ app.use('/api/prerender', prerenderRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/project-categories', projectCategoryRoutes);
 app.use('/api/friend-links', friendLinkRoutes);
-app.use('/api/analytics', analyticsRoutes);
+app.use('/api/analytics', trackingLimiter, analyticsRoutes);
 
 // Error handler
 app.use(errorHandler);
