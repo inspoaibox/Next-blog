@@ -297,6 +297,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || 'NextBlog';
+  const siteLogo = settings.siteLogo;
   const terminalPrefix = config.terminalPrefix || 'PRISM_NODE';
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString()) 
     || `© ${new Date().getFullYear()} ${siteName}`;
@@ -309,10 +310,14 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       <header className="sticky top-0 z-50 border-b border-white/5 bg-[#0d1117]/80 backdrop-blur-xl h-20">
         <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-full flex items-center justify-between">
           <Link href="/" className="flex items-center gap-4 md:gap-6 group cursor-pointer">
-            <div className={`relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/5 border border-white/10 group-hover:${colors.border} transition-all`}>
-              <Cpu className={`${colors.text} w-5 h-5 md:w-6 md:h-6 group-hover:rotate-90 transition-transform duration-1000`} />
-              <div className={`absolute top-0 right-0 w-2 h-2 ${colors.bg}`} />
-            </div>
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-10 md:h-12 w-auto" />
+            ) : (
+              <div className={`relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-white/5 border border-white/10 group-hover:${colors.border} transition-all`}>
+                <Cpu className={`${colors.text} w-5 h-5 md:w-6 md:h-6 group-hover:rotate-90 transition-transform duration-1000`} />
+                <div className={`absolute top-0 right-0 w-2 h-2 ${colors.bg}`} />
+              </div>
+            )}
             <div>
               <div className="font-mono font-black text-lg md:text-2xl tracking-tighter text-white leading-none italic uppercase">
                 {terminalPrefix}<span className={colors.text}>_SYNC</span>

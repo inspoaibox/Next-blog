@@ -66,9 +66,10 @@ export function ArticleDetailClient({ article: initialArticle }: ArticleDetailCl
   const isDarkTheme = isCyberTheme || isAuraNexusTheme;
   
   // 这些主题有自己的布局，不显示侧边 TOC
-  // classic/minimal/magazine 主题的 BlogLayout 已有侧边栏，不需要额外的目录侧边栏
-  const useSimpleLayout = isVibePulseTheme || isAetherBloomTheme || isChromaDimensionTheme || isVibrantTheme || isClassicTheme || isMinimalTheme || isMagazineTheme;
-  const showSidebarToc = !useSimpleLayout && toc.length > 0;
+  // classic/minimal 主题的 BlogLayout 已有侧边栏，不需要额外的目录侧边栏
+  // magazine 主题需要显示左侧目录
+  const useSimpleLayout = isVibePulseTheme || isAetherBloomTheme || isChromaDimensionTheme || isVibrantTheme || isClassicTheme || isMinimalTheme;
+  const showSidebarToc = !useSimpleLayout && !isMagazineTheme && toc.length > 0;
   
   const tocCardClass = isDarkTheme 
     ? 'bg-white/[0.02] border border-white/10 backdrop-blur-xl' 
@@ -448,6 +449,109 @@ export function ArticleDetailClient({ article: initialArticle }: ArticleDetailCl
                                     }
                                   }}
                                   className="block py-0.5 text-xs text-slate-500 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors line-clamp-1"
+                                  title={child.text}
+                                >
+                                  {child.text}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+            </aside>
+          )}
+
+          {/* 文章内容 */}
+          <div className="flex-1 min-w-0">
+            <ArticleDetail article={article} config={themeConfig} />
+            
+            {/* 评论区 */}
+            {isCommentEnabled() && (
+              <div className="mt-12">
+                <CommentSection articleId={article.id} />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // magazine 主题使用左侧固定目录布局
+  if (isMagazineTheme) {
+    return (
+      <div className="relative">
+        {/* Mobile TOC Toggle */}
+        {toc.length > 0 && (
+          <div className="xl:hidden mb-6">
+            <button
+              onClick={() => setTocOpen(!tocOpen)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm"
+            >
+              <span className="font-bold text-sm text-gray-700 dark:text-gray-300">📑 文章目录</span>
+              <svg
+                className={`w-5 h-5 transition-transform text-gray-500 ${tocOpen ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {tocOpen && (
+              <nav className="mt-2 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm text-sm">
+                {renderTocItems(toc)}
+              </nav>
+            )}
+          </div>
+        )}
+
+        <div className="flex gap-8 items-start">
+          {/* 左侧固定目录 - 仅桌面端 */}
+          {toc.length > 0 && (
+            <aside className="hidden xl:block w-56 shrink-0 sticky top-24">
+              <div className="p-5 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-sm">
+                <h3 className="font-bold text-sm mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                  <span>📑</span> 目录
+                </h3>
+                <nav className="text-sm max-h-[70vh] overflow-y-auto pr-1">
+                  <ul className="space-y-2">
+                    {toc.map((item: TOCItem, index: number) => (
+                      <li key={`${item.id}-${index}`}>
+                        <a
+                          href={`#${item.id}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const element = document.getElementById(item.id);
+                            if (element) {
+                              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              window.history.pushState(null, '', `#${item.id}`);
+                            }
+                          }}
+                          className="block py-1 text-gray-600 dark:text-gray-400 hover:text-violet-500 dark:hover:text-violet-400 transition-colors line-clamp-2"
+                          title={item.text}
+                        >
+                          {item.text}
+                        </a>
+                        {item.children && item.children.length > 0 && (
+                          <ul className="ml-3 mt-1 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-2">
+                            {item.children.map((child: TOCItem, childIndex: number) => (
+                              <li key={`${child.id}-${childIndex}`}>
+                                <a
+                                  href={`#${child.id}`}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    const element = document.getElementById(child.id);
+                                    if (element) {
+                                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                      window.history.pushState(null, '', `#${child.id}`);
+                                    }
+                                  }}
+                                  className="block py-0.5 text-xs text-gray-500 dark:text-gray-500 hover:text-violet-500 dark:hover:text-violet-400 transition-colors line-clamp-1"
                                   title={child.text}
                                 >
                                   {child.text}

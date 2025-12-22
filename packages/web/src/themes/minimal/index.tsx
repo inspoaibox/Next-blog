@@ -92,6 +92,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || 'NextBlog';
+  const siteLogo = settings.siteLogo;
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString()) 
     || `© ${new Date().getFullYear()} ${siteName}`;
 
@@ -99,7 +100,10 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
     <div className="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-gray-100">
       <header className={`${isLargeHeader ? 'py-12 md:py-20' : 'py-10 md:py-16'} px-4`}>
         <div className={`${widthClass} mx-auto text-center`}>
-          <Link href="/" className={`${isLargeHeader ? 'text-3xl md:text-5xl' : 'text-2xl md:text-4xl'} font-extralight tracking-[0.2em] uppercase`}>
+          <Link href="/" className={`inline-flex flex-col items-center gap-3 ${isLargeHeader ? 'text-3xl md:text-5xl' : 'text-2xl md:text-4xl'} font-extralight tracking-[0.2em] uppercase`}>
+            {siteLogo && (
+              <img src={siteLogo} alt={siteName} className={`${isLargeHeader ? 'h-12 md:h-16' : 'h-10 md:h-12'} w-auto`} />
+            )}
             {siteName}
           </Link>
           <div className={`w-12 h-px bg-gray-300 dark:bg-gray-700 mx-auto ${isLargeHeader ? 'mt-6 md:mt-8' : 'mt-4 md:mt-6'}`} />

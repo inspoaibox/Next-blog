@@ -1,5 +1,6 @@
 export { Button } from './Button';
 export { Input } from './Input';
+export { ImageInput } from './ImageInput';
 export { Card, CardHeader, CardContent, CardFooter, CardTitle } from './Card';
 export { Modal } from './Modal';
 export { Select } from './Select';

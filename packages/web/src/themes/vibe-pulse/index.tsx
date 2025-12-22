@@ -276,7 +276,7 @@ function NavItem({ item, theme, depth = 0 }: { item: NavMenuItem; theme: typeof 
 }
 
 // ============ 左侧导航栏（支持多级菜单） ============
-function LeftSidebar({ config, siteName }: { config: ThemeConfig; siteName: string }) {
+function LeftSidebar({ config, siteName, siteLogo }: { config: ThemeConfig; siteName: string; siteLogo?: string | null }) {
   const theme = colorMaps[config.primaryColor as string] || colorMaps['weibo-orange'];
   const { navMenu } = useSiteSettingsContext();
 
@@ -293,12 +293,16 @@ function LeftSidebar({ config, siteName }: { config: ThemeConfig; siteName: stri
     <aside className="hidden lg:flex flex-col w-[260px] h-screen sticky top-0 py-4 px-3 gap-1 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f0f0f] overflow-y-auto">
       {/* Logo */}
       <Link href="/" className="mb-4 px-3 flex items-center gap-3">
-        <div
-          className="w-11 h-11 flex items-center justify-center rounded-xl text-white shadow-lg"
-          style={{ backgroundColor: theme.primary }}
-        >
-          <Sparkles size={24} fill="white" />
-        </div>
+        {siteLogo ? (
+          <img src={siteLogo} alt={siteName} className="h-11 w-auto" />
+        ) : (
+          <div
+            className="w-11 h-11 flex items-center justify-center rounded-xl text-white shadow-lg"
+            style={{ backgroundColor: theme.primary }}
+          >
+            <Sparkles size={24} fill="white" />
+          </div>
+        )}
         <span className="text-lg font-black text-slate-800 dark:text-slate-200 hidden xl:block">{siteName}</span>
       </Link>
 
@@ -434,6 +438,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || 'NextBlog';
+  const siteLogo = settings.siteLogo;
   const navBrandText = config.navBrandText || '首页';
   const showRightSidebar = config.showRightSidebar !== false;
 
@@ -447,18 +452,22 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   return (
     <div className="min-h-screen bg-[#F2F2F2] dark:bg-[#0a0a0a] text-slate-800 dark:text-slate-200 font-sans transition-all duration-300">
       <div className={`${layoutWidthClass} mx-auto flex ${config.layoutWidth === 'full' ? 'px-0' : ''}`}>
-        <LeftSidebar config={config} siteName={siteName} />
+        <LeftSidebar config={config} siteName={siteName} siteLogo={siteLogo} />
 
         <main className={`flex-1 min-w-0 min-h-screen bg-white dark:bg-[#0f0f0f] border-x border-slate-100 dark:border-slate-700 ${config.layoutWidth === 'full' ? 'max-w-none' : ''}`}>
           {/* 移动端顶部 */}
           <div className="lg:hidden sticky top-0 z-50 bg-white/90 dark:bg-[#0f0f0f]/90 backdrop-blur-md px-4 h-14 flex items-center justify-between border-b border-slate-100 dark:border-slate-700">
             <Link href="/" className="flex items-center gap-2">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
-                style={{ backgroundColor: theme.primary }}
-              >
-                <Sparkles size={16} fill="white" />
-              </div>
+              {siteLogo ? (
+                <img src={siteLogo} alt={siteName} className="h-8 w-auto" />
+              ) : (
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white"
+                  style={{ backgroundColor: theme.primary }}
+                >
+                  <Sparkles size={16} fill="white" />
+                </div>
+              )}
               <span className="font-bold text-slate-800 dark:text-slate-200">{siteName}</span>
             </Link>
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="p-2" aria-label="菜单">

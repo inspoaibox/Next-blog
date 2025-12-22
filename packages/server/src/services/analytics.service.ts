@@ -439,10 +439,11 @@ export const analyticsService = {
     }));
   },
 
-  // 获取实时访客
+  // 获取实时访客 - 按独立访客去重统计
   async getRealtimeVisitors(minutes = 5) {
     const since = new Date(Date.now() - minutes * 60 * 1000);
     
+    // 获取最近的页面浏览记录，按访客去重
     const recentPageViews = await prisma.visitorPageView.findMany({
       where: {
         enterTime: { gte: since },
@@ -455,13 +456,23 @@ export const analyticsService = {
         },
       },
       orderBy: { enterTime: 'desc' },
-      take: 50,
     });
 
-    return recentPageViews.map((pv) => ({
+    // 按访客ID去重，只保留每个访客最新的页面浏览
+    const visitorMap = new Map<string, typeof recentPageViews[0]>();
+    for (const pv of recentPageViews) {
+      const visitorId = pv.session.visitor.visitorId;
+      if (!visitorMap.has(visitorId)) {
+        visitorMap.set(visitorId, pv);
+      }
+    }
+
+    // 转换为数组并返回
+    return Array.from(visitorMap.values()).slice(0, 50).map((pv) => ({
       path: pv.path,
       title: pv.title,
       enterTime: pv.enterTime,
+      visitorId: pv.session.visitor.visitorId,
       visitor: {
         country: pv.session.visitor.country,
         city: pv.session.visitor.city,

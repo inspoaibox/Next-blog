@@ -349,6 +349,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || 'NextBlog';
+  const siteLogo = settings.siteLogo;
   const navBrandText = config.navBrandText || 'Aura.Nexus';
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString())
     || `© ${new Date().getFullYear()} ${siteName}`;
@@ -364,9 +365,13 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       {/* 导航栏 */}
       <nav className="relative z-50 flex items-center justify-between px-4 md:px-8 lg:px-16 py-8 md:py-12">
         <Link href="/" className="group cursor-pointer flex items-center gap-3 md:gap-4">
-          <div className="w-10 h-10 border border-current flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
-            <Aperture size={20} />
-          </div>
+          {siteLogo ? (
+            <img src={siteLogo} alt={siteName} className="h-10 w-auto" />
+          ) : (
+            <div className="w-10 h-10 border border-current flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
+              <Aperture size={20} />
+            </div>
+          )}
           <span className="text-lg md:text-xl font-black uppercase tracking-tighter">{navBrandText}</span>
         </Link>
 

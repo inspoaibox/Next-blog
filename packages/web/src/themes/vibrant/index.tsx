@@ -280,6 +280,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || 'NextBlog';
+  const siteLogo = settings.siteLogo;
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString())
     || `© ${new Date().getFullYear()} ${siteName}`;
 
@@ -291,11 +292,15 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       <header className="sticky top-4 md:top-6 mx-auto max-w-6xl z-50 px-4">
         <div className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border border-white dark:border-slate-800 ${radius.card} shadow-[0_10px_30px_-10px_rgba(0,0,0,0.05)] h-16 flex items-center justify-between px-4 md:px-6`}>
           <Link href="/" className="flex items-center gap-3 group cursor-pointer shrink-0">
-            <div
-              className={`w-10 h-10 bg-gradient-to-br ${colors.gradient} ${radius.button} flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform`}
-            >
-              <Command size={20} className="text-white" />
-            </div>
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-10 w-auto" />
+            ) : (
+              <div
+                className={`w-10 h-10 bg-gradient-to-br ${colors.gradient} ${radius.button} flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform`}
+              >
+                <Command size={20} className="text-white" />
+              </div>
+            )}
             <span className="font-black text-xl tracking-tighter leading-none hidden sm:block">
               {siteName}<span style={{ color: colors.secondary }}>.</span>
             </span>

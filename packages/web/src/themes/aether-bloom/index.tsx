@@ -306,6 +306,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || '以太花语';
+  const siteLogo = settings.siteLogo;
   const siteSlogan = settings.siteDescription || '在这里，打破像素的桎梏。每一段文字都是一颗种子。';
   const heroTagline = config.heroTagline || 'Natural Protocol';
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString())
@@ -339,12 +340,16 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         }`}
       >
         <Link href="/" className="flex items-center gap-4 group cursor-pointer">
-          <div
-            className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-transform group-hover:rotate-12"
-            style={{ backgroundColor: style.secondary }}
-          >
-            <Bird style={{ color: style.primary }} size={24} />
-          </div>
+          {siteLogo ? (
+            <img src={siteLogo} alt={siteName} className="h-10 md:h-12 w-auto" />
+          ) : (
+            <div
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-transform group-hover:rotate-12"
+              style={{ backgroundColor: style.secondary }}
+            >
+              <Bird style={{ color: style.primary }} size={24} />
+            </div>
+          )}
           <span className={`text-xl md:text-2xl font-black tracking-tighter ${style.title} ${style.darkTitle}`}>
             {siteName}
           </span>

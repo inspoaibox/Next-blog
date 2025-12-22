@@ -10,6 +10,7 @@ import {
   CardContent,
   CardHeader,
   Input,
+  ImageInput,
   Select,
   Modal,
   Badge,
@@ -186,17 +187,17 @@ function SiteSettings() {
               placeholder="博客,技术,生活,分享（用逗号分隔）"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="网站 Logo URL"
+              <ImageInput
+                label="网站 Logo"
                 value={form.siteLogo}
-                onChange={(e) => setForm({ ...form, siteLogo: e.target.value })}
-                placeholder="https://example.com/logo.png"
+                onChange={(url) => setForm({ ...form, siteLogo: url })}
+                placeholder="上传或输入 Logo 图片地址"
               />
-              <Input
-                label="网站 Favicon URL"
+              <ImageInput
+                label="网站 Favicon"
                 value={form.siteFavicon}
-                onChange={(e) => setForm({ ...form, siteFavicon: e.target.value })}
-                placeholder="https://example.com/favicon.ico"
+                onChange={(url) => setForm({ ...form, siteFavicon: url })}
+                placeholder="上传或输入 Favicon 图片地址"
               />
             </div>
             <Input
@@ -1830,14 +1831,23 @@ function HelpCenter() {
   description: string;    // 主题描述
   configOptions: ThemeConfigOption[];  // 配置选项
   defaultConfig: ThemeConfig;          // 默认配置
+  
+  // 必需组件
   BlogLayout: React.FC;   // 布局组件
   ArticleCard: React.FC;  // 文章卡片
   ArticleDetail: React.FC; // 文章详情
   CategoryList: React.FC; // 分类列表
   TagList: React.FC;      // 标签列表
   SearchResults: React.FC; // 搜索结果
+  
+  // 可选组件（不提供则使用默认实现）
+  ProjectDetail?: React.FC; // 项目详情页
 }`}
               </pre>
+              <p className="text-sm text-gray-500">
+                💡 可选组件如 <code>ProjectDetail</code> 不需要实现，系统会自动使用 <code>themes/shared/</code> 中的默认组件。
+                如需自定义样式，可在主题中导出同名组件覆盖。
+              </p>
 
               <h4>3. 获取站点设置和导航菜单</h4>
               <p>在主题组件中使用 <code>useSiteSettingsContext</code> 获取站点设置和导航菜单数据：</p>
@@ -1999,8 +2009,83 @@ interface ArticleDetailProps {
     viewCount?: number;
   };
   config?: ThemeConfig;
+}
+
+// 项目详情（可选组件）
+interface ProjectDetailProps {
+  project: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    content?: string | null;
+    htmlContent?: string | null;  // 已渲染的 Markdown
+    techStack?: string | null;    // JSON 数组字符串
+    githubUrl?: string | null;
+    demoUrl?: string | null;
+    docsUrl?: string | null;
+    chromeUrl?: string | null;
+    firefoxUrl?: string | null;
+    npmUrl?: string | null;
+    featuredImage?: string | null;
+    category?: { id: string; name: string } | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  config?: ThemeConfig;
 }`}
               </pre>
+
+              <h4>9. 共享组件</h4>
+              <p>位于 <code>themes/shared/</code> 目录，可被所有主题复用：</p>
+              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+{`// 导入共享组件
+import { 
+  DefaultProjectDetail,    // 默认项目详情组件
+  CustomHtmlBlock,         // 自定义 HTML 渲染
+  useHeadCodeInjector,     // Head 代码注入 Hook
+  SiteLogo,                // 网站 Logo 组件
+} from '@/themes/shared';
+
+// 使用默认项目详情（主题不需要实现 ProjectDetail 时自动使用）
+// 如需自定义，可在主题中导出 ProjectDetail 组件覆盖`}
+              </pre>
+
+              <h4>10. 使用系统设置</h4>
+              <p>主题应从系统设置中读取 Logo、网站名称等配置，而非硬编码：</p>
+              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+{`import { useSiteSettingsContext } from '@/contexts/site-settings-context';
+
+function BlogLayout({ children, config }) {
+  const { settings, navMenu } = useSiteSettingsContext();
+  
+  // 从系统设置读取
+  const siteName = settings.siteName || 'NextBlog';
+  const siteLogo = settings.siteLogo;  // Logo 图片 URL
+  const siteDescription = settings.siteDescription;
+  const footerText = settings.footerText?.replace(
+    '{year}', 
+    new Date().getFullYear().toString()
+  );
+
+  return (
+    <header>
+      <Link href="/" className="flex items-center gap-2">
+        {/* 如果设置了 Logo 则显示图片，否则显示默认图标 */}
+        {siteLogo ? (
+          <img src={siteLogo} alt={siteName} className="h-10 w-auto" />
+        ) : (
+          <DefaultIcon />
+        )}
+        <span>{siteName}</span>
+      </Link>
+    </header>
+  );
+}`}
+              </pre>
+              <p className="text-sm text-gray-500">
+                💡 系统设置中的 Logo 支持上传图片或输入 URL，所有主题都应该使用 <code>settings.siteLogo</code> 来显示 Logo。
+              </p>
             </div>
           )}
 

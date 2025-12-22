@@ -9,3 +9,6 @@ export {
   sidebarCustomHtmlDefaultConfig,
   dualSidebarCustomHtmlDefaultConfig,
 } from './CustomCodeInjector';
+
+export { DefaultProjectDetail } from './ProjectDetail';
+export { SiteLogo } from './SiteLogo';

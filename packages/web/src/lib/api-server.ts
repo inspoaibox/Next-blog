@@ -148,6 +148,13 @@ export async function getPublishedProjects(categoryId?: string) {
   });
 }
 
+export async function getProjectBySlug(slug: string) {
+  return fetchAPI<any>(`/projects/slug/${slug}`, {
+    revalidate: CACHE_TIME.static,
+    tags: ['projects', `project-${slug}`],
+  });
+}
+
 export async function getProjectCategories() {
   return fetchAPI<any[]>('/project-categories', {
     revalidate: CACHE_TIME.static,

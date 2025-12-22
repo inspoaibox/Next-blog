@@ -84,6 +84,29 @@ export interface SearchResultProps {
   query: string;
 }
 
+// 项目详情页 Props
+export interface ProjectDetailProps {
+  project: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string;
+    content?: string | null;
+    htmlContent?: string | null;
+    techStack?: string | null;
+    githubUrl?: string | null;
+    demoUrl?: string | null;
+    docsUrl?: string | null;
+    chromeUrl?: string | null;
+    firefoxUrl?: string | null;
+    npmUrl?: string | null;
+    featuredImage?: string | null;
+    category?: { id: string; name: string } | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
 // 主题配置选项定义
 export interface ThemeConfigOption {
   key: string;
@@ -116,6 +139,8 @@ export interface ThemeComponents {
   TagList: React.ComponentType<TagListProps & { config?: ThemeConfig }>;
   // 搜索
   SearchResults: React.ComponentType<SearchResultProps & { config?: ThemeConfig }>;
+  // 项目详情（可选，不提供则使用默认组件）
+  ProjectDetail?: React.ComponentType<ProjectDetailProps & { config?: ThemeConfig }>;
 }
 
 // 所有可用主题

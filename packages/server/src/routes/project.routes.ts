@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import { projectService } from '../services/project.service.js';
+import { markdownService } from '../services/markdown.service.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 import { createError } from '../middleware/errorHandler.js';
 
@@ -33,6 +34,32 @@ router.get('/published', async (req, res, next) => {
     const categoryId = req.query.categoryId as string | undefined;
     const projects = await projectService.findPublished(categoryId);
     res.json({ success: true, data: projects });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/slug/:slug', async (req, res, next) => {
+  try {
+    const project = await projectService.findBySlug(req.params.slug);
+    if (!project) {
+      return next(createError('Project not found', 404, 'NOT_FOUND'));
+    }
+
+    // 渲染 Markdown 内容
+    let htmlContent = null;
+    if (project.content) {
+      const { html } = await markdownService.parse(project.content);
+      htmlContent = html;
+    }
+
+    res.json({
+      success: true,
+      data: {
+        ...project,
+        htmlContent,
+      },
+    });
   } catch (error) {
     next(error);
   }

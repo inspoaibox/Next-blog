@@ -45,6 +45,18 @@ import type {
 // ============ 主题配置选项 ============
 const configOptions: ThemeConfigOption[] = [
   {
+    key: 'layoutWidth',
+    label: '布局宽度',
+    type: 'select',
+    options: [
+      { value: 'standard', label: '标准 (1280px)' },
+      { value: 'wide', label: '宽屏 (1536px)' },
+      { value: 'full', label: '全宽' },
+    ],
+    default: 'standard',
+    description: '整体布局最大宽度',
+  },
+  {
     key: 'colorScheme',
     label: '色彩方案',
     type: 'select',
@@ -65,6 +77,7 @@ const configOptions: ThemeConfigOption[] = [
       { value: 'narrow', label: '窄版 (600px)' },
       { value: 'medium', label: '中等 (680px) - 推荐' },
       { value: 'wide', label: '宽版 (760px)' },
+      { value: 'full', label: '自适应（撑满）' },
     ],
     default: 'medium',
     description: '中间主内容区域宽度',
@@ -86,12 +99,11 @@ const configOptions: ThemeConfigOption[] = [
     label: '左侧栏内容',
     type: 'select',
     options: [
-      { value: 'categories', label: '分类导航' },
       { value: 'toc', label: '文章目录（详情页）' },
-      { value: 'both', label: '分类 + 目录' },
+      { value: 'widgets', label: '小部件' },
       { value: 'hidden', label: '隐藏' },
     ],
-    default: 'categories',
+    default: 'toc',
     description: '左侧栏显示的内容',
   },
   {
@@ -211,7 +223,7 @@ const configOptions: ThemeConfigOption[] = [
       { value: 'standard', label: '标准（Logo+导航）' },
       { value: 'hidden', label: '隐藏' },
     ],
-    default: 'minimal',
+    default: 'standard',
     description: '顶部导航栏风格',
   },
   {
@@ -259,10 +271,11 @@ const configOptions: ThemeConfigOption[] = [
 ];
 
 const defaultConfig: ThemeConfig = {
+  layoutWidth: 'standard',
   colorScheme: 'light-gray',
   mainColumnWidth: 'medium',
   sidebarWidth: 'medium',
-  leftSidebarContent: 'categories',
+  leftSidebarContent: 'toc',
   rightSidebarContent: 'search-tags',
   sidebarVisibility: 'always',
   fontSize: 'medium',
@@ -274,7 +287,7 @@ const defaultConfig: ThemeConfig = {
   excerptLength: 100,
   showFeaturedImage: false,
   sidebarOpacity: 'light',
-  headerStyle: 'minimal',
+  headerStyle: 'standard',
   footerText: '',
   leftSidebarCustomHtml: '',
   rightSidebarCustomHtml: '',
@@ -365,6 +378,13 @@ const mainWidthMap: Record<string, string> = {
   narrow: 'max-w-[600px]',
   medium: 'max-w-[680px]',
   wide: 'max-w-[760px]',
+  full: '',
+};
+
+const layoutWidthMap: Record<string, string> = {
+  standard: 'max-w-7xl',
+  wide: 'max-w-[1536px]',
+  full: 'w-full',
 };
 
 const sidebarWidthMap: Record<string, string> = {
@@ -400,104 +420,38 @@ function calculateReadingTime(content: string): number {
 
 
 // ============ 左侧栏组件 ============
-function LeftSidebar({ 
-  config, 
-  colors, 
-  categories 
-}: { 
-  config: ThemeConfig; 
-  colors: typeof colorSchemes['light-gray'];
-  categories?: CategoryListProps['categories'];
+function LeftSidebar({
+  config,
+  colors,
+}: {
+  config: ThemeConfig;
+  colors: (typeof colorSchemes)['light-gray'];
 }) {
   const content = config.leftSidebarContent as string;
   const opacity = opacityMap[config.sidebarOpacity as string] || opacityMap.light;
-  const { navMenu } = useSiteSettingsContext();
 
   if (content === 'hidden') return null;
 
-  const defaultCategories = categories || [];
-
   return (
     <aside className={`${opacity} transition-opacity duration-300`}>
-      {/* 站点导航 */}
-      {(content === 'categories' || content === 'both') && (
-        <nav className="mb-8">
-          <h3 className={`text-xs font-medium uppercase tracking-wider mb-4 ${colors.textMuted} ${colors.textMutedDark}`}>
-            导航
-          </h3>
-          <ul className="space-y-2">
-            {navMenu.length > 0 ? (
-              navMenu.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    href={item.url}
-                    target={item.type === 'external' ? '_blank' : undefined}
-                    className={`flex items-center gap-2 py-1 text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}
-                  >
-                    <ChevronRight size={12} />
-                    {item.label}
-                    {item.type === 'external' && <ExternalLink size={10} />}
-                  </Link>
-                </li>
-              ))
-            ) : (
-              <>
-                <li>
-                  <Link href="/" className={`flex items-center gap-2 py-1 text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}>
-                    <ChevronRight size={12} />首页
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/categories" className={`flex items-center gap-2 py-1 text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}>
-                    <ChevronRight size={12} />分类
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/tags" className={`flex items-center gap-2 py-1 text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}>
-                    <ChevronRight size={12} />标签
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/about" className={`flex items-center gap-2 py-1 text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}>
-                    <ChevronRight size={12} />关于
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
-        </nav>
+      {/* 文章目录占位 - 在文章详情页会显示目录 */}
+      {content === 'toc' && (
+        <div className={`text-xs ${colors.textMuted} ${colors.textMutedDark}`}>
+          <h3 className="font-medium uppercase tracking-wider mb-4">目录</h3>
+          <p className="text-xs opacity-60">文章详情页显示目录</p>
+        </div>
       )}
 
-      {/* 分类列表 */}
-      {(content === 'categories' || content === 'both') && defaultCategories.length > 0 && (
-        <nav>
-          <h3 className={`text-xs font-medium uppercase tracking-wider mb-4 ${colors.textMuted} ${colors.textMutedDark}`}>
-            分类
-          </h3>
-          <ul className="space-y-1">
-            {defaultCategories.slice(0, 10).map((cat) => (
-              <li key={cat.id}>
-                <Link
-                  href={`/category/${cat.slug}`}
-                  className={`flex items-center justify-between py-1.5 text-sm ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Folder size={12} />
-                    {cat.name}
-                  </span>
-                  {cat._count?.articles !== undefined && (
-                    <span className="text-xs opacity-60">{cat._count.articles}</span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+      {/* 小部件区域 */}
+      {content === 'widgets' && (
+        <div className={`text-xs ${colors.textMuted} ${colors.textMutedDark}`}>
+          <h3 className="font-medium uppercase tracking-wider mb-4">小部件</h3>
+        </div>
       )}
 
-      {/* 自定义HTML代码块 */}
+      {/* 自定义HTML */}
       {config.leftSidebarCustomHtml && (
-        <div className="mt-8">
+        <div className="mt-6">
           <CustomHtmlBlock html={config.leftSidebarCustomHtml as string} />
         </div>
       )}
@@ -506,8 +460,8 @@ function LeftSidebar({
 }
 
 // ============ 右侧栏组件 ============
-function RightSidebar({ 
-  config, 
+function RightSidebar({
+  config,
   colors,
   tags,
   recentArticles,
@@ -623,8 +577,10 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 
   const colors = colorSchemes[config.colorScheme as string] || colorSchemes['light-gray'];
   const sidebarWidth = sidebarWidthMap[config.sidebarWidth as string] || sidebarWidthMap.medium;
+  const layoutWidth = layoutWidthMap[config.layoutWidth as string] || layoutWidthMap.standard;
   const headerStyle = config.headerStyle as string;
   const siteName = settings.siteName || 'Blog';
+  const siteLogo = settings.siteLogo;
   const customFooter = config.footerText as string;
   const footerText = customFooter || settings.footerText?.replace('{year}', new Date().getFullYear().toString()) || `© ${new Date().getFullYear()} ${siteName}`;
 
@@ -650,15 +606,16 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       {/* 顶部导航 */}
       {headerStyle !== 'hidden' && (
         <header className={`sticky top-0 z-50 ${colors.mainBg} ${colors.mainBgDark} border-b ${colors.border} ${colors.borderDark}`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6">
-            <div className="flex items-center justify-between h-12">
-              <Link href="/" className="font-medium text-lg tracking-tight">
+          <div className={`${layoutWidth} mx-auto px-4 sm:px-6`}>
+            <div className="flex items-center justify-between h-14">
+              <Link href="/" className="flex items-center gap-2 font-medium text-lg tracking-tight">
+                {siteLogo && <img src={siteLogo} alt={siteName} className="h-7 w-auto" />}
                 {siteName}
               </Link>
 
               {headerStyle === 'standard' && (
                 <nav className="hidden md:flex items-center gap-6">
-                  {navMenu.slice(0, 5).map((item) => (
+                  {navMenu.map((item) => (
                     <Link
                       key={item.id}
                       href={item.url}
@@ -675,7 +632,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
                 <ThemeToggle />
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className={`lg:hidden p-2 rounded ${colors.textMuted} ${colors.textMutedDark}`}
+                  className={`md:hidden p-2 rounded ${colors.textMuted} ${colors.textMutedDark}`}
                   aria-label="菜单"
                 >
                   {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -688,12 +645,19 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 
       {/* 移动端菜单 */}
       {mobileMenuOpen && (
-        <div className={`lg:hidden fixed inset-0 z-40 ${colors.mainBg} ${colors.mainBgDark} pt-14`}>
+        <div className={`md:hidden fixed inset-0 z-40 ${colors.mainBg} ${colors.mainBgDark} pt-14`}>
           <nav className="p-6 space-y-4">
-            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="block py-2">首页</Link>
-            <Link href="/categories" onClick={() => setMobileMenuOpen(false)} className="block py-2">分类</Link>
-            <Link href="/tags" onClick={() => setMobileMenuOpen(false)} className="block py-2">标签</Link>
-            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="block py-2">关于</Link>
+            {navMenu.map((item) => (
+              <Link
+                key={item.id}
+                href={item.url}
+                target={item.type === 'external' ? '_blank' : undefined}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2"
+              >
+                {item.label}
+              </Link>
+            ))}
             <div className="pt-4">
               <SearchBox />
             </div>
@@ -702,7 +666,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       )}
 
       {/* 三栏布局 */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 lg:py-12">
+      <div className={`${layoutWidth} mx-auto px-4 sm:px-6 py-8 lg:py-12`}>
         <div className="flex gap-8 lg:gap-12">
           {/* 左侧栏 */}
           {showLeftSidebar && (
@@ -733,7 +697,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 
       {/* 页脚 */}
       <footer className={`py-8 border-t ${colors.border} ${colors.borderDark}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+        <div className={`${layoutWidth} mx-auto px-4 sm:px-6 text-center`}>
           <p className={`text-sm ${colors.textMuted} ${colors.textMutedDark}`}>
             {footerText}
           </p>

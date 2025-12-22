@@ -469,6 +469,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || 'CHROMA';
+  const siteLogo = settings.siteLogo;
   const siteMood = config.siteMood || 'PURE_ENERGY';
   const heroTagline = config.heroTagline || 'HIGH_FREQUENCY_MODE';
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString())
@@ -491,11 +492,15 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
         className={`fixed top-0 left-0 w-full z-[100] h-20 md:h-24 px-4 md:px-8 lg:px-16 flex items-center justify-between border-b border-white/10 dark:border-white/5 backdrop-blur-xl ${p.glass} ${p.darkGlass}`}
       >
         <Link href="/" className="flex items-center gap-3 md:gap-4 group cursor-pointer">
-          <div
-            className={`w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br ${p.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
-          >
-            <Zap className="text-white" size={20} fill="white" />
-          </div>
+          {siteLogo ? (
+            <img src={siteLogo} alt={siteName} className="h-10 md:h-12 w-auto" />
+          ) : (
+            <div
+              className={`w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br ${p.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}
+            >
+              <Zap className="text-white" size={20} fill="white" />
+            </div>
+          )}
           <div className="flex flex-col">
             <span className={`text-lg md:text-2xl font-black tracking-widest ${p.title} ${p.darkTitle}`}>
               {siteName}

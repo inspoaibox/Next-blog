@@ -368,6 +368,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const colors = colorSchemes[config.colorScheme as string] || colorSchemes['warm-paper'];
   const contentWidth = contentWidthMap[config.contentWidth as string] || contentWidthMap.medium;
   const siteName = settings.siteName || 'Blog';
+  const siteLogo = settings.siteLogo;
   const headerStyle = config.headerStyle || 'standard';
   const customFooter = config.footerText as string;
   const footerText = customFooter || settings.footerText?.replace('{year}', new Date().getFullYear().toString()) || `© ${new Date().getFullYear()} ${siteName}`;
@@ -399,7 +400,8 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
           <div className={`${contentWidth} mx-auto px-4 sm:px-6`}>
             <div className="flex items-center justify-between h-14">
               {/* Logo */}
-              <Link href="/" className="font-semibold text-lg tracking-tight">
+              <Link href="/" className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+                {siteLogo && <img src={siteLogo} alt={siteName} className="h-8 w-auto" />}
                 {siteName}
               </Link>
 

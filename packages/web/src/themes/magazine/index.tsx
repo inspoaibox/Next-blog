@@ -182,6 +182,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || 'NextBlog';
+  const siteLogo = settings.siteLogo;
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString()) 
     || `© ${new Date().getFullYear()} ${siteName}`;
 
@@ -205,7 +206,11 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl sticky top-0 z-50 border-b border-gray-200/50 dark:border-gray-800/50">
         <div className={`${layoutWidthClass} mx-auto px-4 md:px-6 py-4 flex items-center justify-between`} style={getContainerStyle()}>
           <Link href="/" className="flex items-center gap-2 md:gap-3">
-            <div className={`w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br ${colors.gradient} ${rounded.button} flex items-center justify-center text-white font-bold text-sm md:text-lg`}>{siteName[0]}</div>
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-8 md:h-10 w-auto" />
+            ) : (
+              <div className={`w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br ${colors.gradient} ${rounded.button} flex items-center justify-center text-white font-bold text-sm md:text-lg`}>{siteName[0]}</div>
+            )}
             <span className={`text-lg md:text-xl font-bold bg-gradient-to-r ${colors.gradient} bg-clip-text text-transparent`}>{siteName}</span>
           </Link>
           <DesktopNavMenu 
@@ -252,7 +257,11 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       <footer className="bg-gray-900 text-gray-400 py-8 md:py-12">
         <div className={`${layoutWidthClass} mx-auto px-4 md:px-6 text-center`} style={getContainerStyle()}>
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className={`w-8 h-8 bg-gradient-to-br ${colors.gradient} ${rounded.button} flex items-center justify-center text-white font-bold text-sm`}>{siteName[0]}</div>
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-8 w-auto" />
+            ) : (
+              <div className={`w-8 h-8 bg-gradient-to-br ${colors.gradient} ${rounded.button} flex items-center justify-center text-white font-bold text-sm`}>{siteName[0]}</div>
+            )}
             <span className="font-bold text-white">{siteName}</span>
           </div>
           <p className="text-sm inline-flex items-center gap-2">
@@ -418,7 +427,7 @@ function ArticleCard({ article, config = defaultConfig }: ArticleCardProps & { c
           )}
         </div>
         <Link href={`/article/${article.slug}`}>
-          <h2 className={`text-lg font-bold mt-2 mb-3 group-hover:${colors.text} transition-colors line-clamp-2`}>{article.title}</h2>
+          <h2 className={`text-lg font-bold mt-2 mb-3 text-gray-900 dark:text-white group-hover:${colors.text} transition-colors line-clamp-2`}>{article.title}</h2>
         </Link>
         <p className="text-gray-500 text-sm mb-4 line-clamp-2">{truncate(article.excerpt || article.content, 100)}</p>
         <div className="flex items-center justify-between">

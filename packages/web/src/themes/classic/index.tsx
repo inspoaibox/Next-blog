@@ -158,6 +158,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const siteName = settings.siteName || 'NextBlog';
+  const siteLogo = settings.siteLogo;
   const siteDescription = settings.siteDescription || '下一个博客，记录精彩生活';
   const footerText = settings.footerText?.replace('{year}', new Date().getFullYear().toString()) 
     || `© ${new Date().getFullYear()} ${siteName}`;
@@ -167,8 +168,13 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       {/* 顶部横幅 */}
       <div className={`bg-gradient-to-r ${colors.gradient} text-white`}>
         <div className="max-w-6xl mx-auto px-4 py-6 md:py-8 text-center">
-          <Link href="/" className="text-2xl md:text-3xl font-serif font-bold tracking-wide">
-            📚 {siteName}
+          <Link href="/" className="inline-flex items-center gap-3 text-2xl md:text-3xl font-serif font-bold tracking-wide">
+            {siteLogo ? (
+              <img src={siteLogo} alt={siteName} className="h-10 md:h-12 w-auto" />
+            ) : (
+              <span>📚</span>
+            )}
+            {siteName}
           </Link>
           <p className="mt-2 text-white/70 text-sm hidden md:block">{siteDescription}</p>
         </div>

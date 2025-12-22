@@ -393,10 +393,42 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:3012
 
 ## 主题开发
 
-主题位于 `packages/web/src/themes/` 目录，每个主题包含：
+主题位于 `packages/web/src/themes/` 目录，每个主题需要实现 `ThemeComponents` 接口。
 
-- `index.tsx` - 主题组件和配置
-- 共享组件位于 `themes/shared/`
+### 必需组件
+
+| 组件 | 说明 |
+|------|------|
+| `BlogLayout` | 博客布局容器 |
+| `ArticleCard` | 文章卡片 |
+| `ArticleDetail` | 文章详情页 |
+| `CategoryList` | 分类列表 |
+| `TagList` | 标签列表 |
+| `SearchResults` | 搜索结果 |
+
+### 可选组件
+
+| 组件 | 说明 | 默认行为 |
+|------|------|----------|
+| `ProjectDetail` | 项目详情页 | 使用 `DefaultProjectDetail` |
+
+### 共享组件
+
+位于 `themes/shared/` 目录，可被所有主题复用：
+
+- `DefaultProjectDetail` - 默认项目详情组件
+- `CustomHtmlBlock` - 自定义 HTML 渲染组件
+- `useHeadCodeInjector` - Head 代码注入 Hook
+
+### 主题配置
+
+每个主题可定义 `configOptions` 配置选项，支持类型：
+- `select` - 下拉选择
+- `boolean` - 开关
+- `color` - 颜色选择器
+- `number` - 数字输入
+- `text` - 文本输入
+- `json` - JSON 编辑器
 
 ### 自定义代码注入
 
@@ -405,7 +437,8 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:3012
 - **customHeadCode** - 注入到 `<head>` 标签（统计代码、字体等）
 - **customBodyStartCode** - 页面顶部代码
 - **customBodyEndCode** - 页面底部代码
-- **sidebarCustomHtml** - 侧边栏自定义 HTML
+- **leftSidebarCustomHtml** - 左侧边栏自定义 HTML
+- **rightSidebarCustomHtml** - 右侧边栏自定义 HTML
 
 ## SEO 说明
 
@@ -422,6 +455,7 @@ NEXT_PUBLIC_API_URL=http://127.0.0.1:3012
 ## 更新日志
 
 ### 2025-12-22
+- 新增项目详情页 `/project/[slug]`，支持 Markdown 内容
 - 新增 Serene-Ink（静墨）主题 - 以阅读为核心的极简设计
 - 新增 Clarity-Focus（清晰聚焦）主题 - 三栏结构布局
 - 新增主题自定义代码注入功能

@@ -371,7 +371,9 @@ function ProjectCard({
   const techStack = parseTechStack(project.techStack);
 
   return (
-    <div className="group bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+    <a
+      href={`/project/${project.slug}`}
+      className="group block bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
       {/* 顶部装饰 */}
       <div className={`h-1 bg-gradient-to-r ${colors.gradient} opacity-0 group-hover:opacity-100 transition-opacity`} />
 
@@ -439,12 +441,13 @@ function ProjectCard({
         )}
 
         {/* 操作按钮 */}
-        <div className="flex flex-wrap border-t border-gray-100 dark:border-gray-700 -mx-5 -mb-5 mt-4">
+        <div className="flex flex-wrap border-t border-gray-100 dark:border-gray-700 -mx-5 -mb-5 mt-4" onClick={(e) => e.preventDefault()}>
           {project.githubUrl && (
             <a
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               title="GitHub"
             >
@@ -456,6 +459,7 @@ function ProjectCard({
               href={project.demoUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className={`flex-1 flex items-center justify-center gap-1.5 py-3 text-sm ${colors.accentText} hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-l border-gray-100 dark:border-gray-700`}
               title="演示"
             >
@@ -467,6 +471,7 @@ function ProjectCard({
               href={project.docsUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-l border-gray-100 dark:border-gray-700"
               title="文档"
             >
@@ -478,6 +483,7 @@ function ProjectCard({
               href={project.chromeUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-l border-gray-100 dark:border-gray-700"
               title="Chrome商店"
             >
@@ -489,6 +495,7 @@ function ProjectCard({
               href={project.npmUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="flex-1 flex items-center justify-center gap-1.5 py-3 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border-l border-gray-100 dark:border-gray-700"
               title="NPM"
             >
@@ -502,6 +509,6 @@ function ProjectCard({
           )}
         </div>
       </div>
-    </div>
+    </a>
   );
 }
