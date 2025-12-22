@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui';
@@ -35,35 +35,38 @@ export function AnalyticsPage() {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
 
-  const getDateParams = () => {
+  const dateParams = useMemo(() => {
     const now = new Date();
     let startDate: Date;
-    const endDate = now;
+    let endDate: Date;
 
     switch (dateRange) {
       case '7d':
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       case '30d':
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       case '90d':
-        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90);
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       case 'custom':
-        startDate = customStart ? new Date(customStart) : new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        startDate = customStart ? new Date(customStart) : new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+        endDate = customEnd ? new Date(customEnd) : new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         break;
       default:
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30);
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
     }
 
     return {
       startDate: startDate.toISOString(),
-      endDate: (dateRange === 'custom' && customEnd ? new Date(customEnd) : endDate).toISOString(),
+      endDate: endDate.toISOString(),
     };
-  };
-
-  const dateParams = getDateParams();
+  }, [dateRange, customStart, customEnd]);
 
   // 获取统计概览
   const { data: summary, isLoading: summaryLoading, refetch: refetchSummary } = useQuery({
