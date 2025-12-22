@@ -2055,13 +2055,66 @@ import {
   CustomHtmlBlock,         // 自定义 HTML 渲染
   useHeadCodeInjector,     // Head 代码注入 Hook
   SiteLogo,                // 网站 Logo 组件
+  // 配色方案相关
+  type ColorScheme,        // 配色方案接口
+  builtinColorSchemes,     // 内置主题配色
+  magazineColorSchemes,    // magazine 主题配色
 } from '@/themes/shared';
 
 // 使用默认项目详情（主题不需要实现 ProjectDetail 时自动使用）
 // 如需自定义，可在主题中导出 ProjectDetail 组件覆盖`}
               </pre>
 
-              <h4>10. 使用系统设置</h4>
+              <h4>10. 配色方案接口</h4>
+              <p>主题可以提供 <code>getColorScheme</code> 方法，供友链、关于、项目等页面使用统一的配色：</p>
+              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+{`// ColorScheme 接口定义
+interface ColorScheme {
+  accent: string;      // 主色调名称，如 'violet'
+  gradient: string;    // 渐变类，如 'from-violet-500 to-pink-500'
+  accentText: string;  // 强调文字，如 'text-violet-600'
+  accentBg: string;    // 强调背景，如 'bg-violet-50'
+  statsBg?: string;    // 统计区域背景（可选）
+  buttonActive?: string;  // 激活按钮样式（可选）
+  buttonHover?: string;   // 按钮悬停样式（可选）
+}
+
+// 在主题中实现 getColorScheme（可选）
+export const MagazineTheme: ThemeComponents = {
+  name: 'magazine',
+  // ... 其他配置
+  getColorScheme: (config) => {
+    const scheme = config.colorScheme || 'purple';
+    return magazineColorSchemes[scheme];
+  },
+};`}
+              </pre>
+              <p className="text-sm text-gray-500">
+                💡 页面组件使用 <code>useThemeColorScheme()</code> Hook 获取当前主题的配色方案，
+                无需在页面中硬编码颜色。如果主题没有实现 <code>getColorScheme</code>，
+                系统会使用 <code>builtinColorSchemes</code> 中的默认配色。
+              </p>
+              <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+{`// 在页面组件中使用配色方案
+import { useThemeColorScheme } from '@/contexts/theme-context';
+
+function FriendsPage() {
+  const colors = useThemeColorScheme();
+  
+  return (
+    <div>
+      <h1 className={\`bg-gradient-to-r \${colors.gradient} bg-clip-text text-transparent\`}>
+        友情链接
+      </h1>
+      <div className={colors.accentBg}>
+        <span className={colors.accentText}>强调文字</span>
+      </div>
+    </div>
+  );
+}`}
+              </pre>
+
+              <h4>11. 使用系统设置</h4>
               <p>主题应从系统设置中读取 Logo、网站名称等配置，而非硬编码：</p>
               <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
 {`import { useSiteSettingsContext } from '@/contexts/site-settings-context';

@@ -16,7 +16,7 @@ import {
   Camera,
   Heart,
 } from 'lucide-react';
-import { useThemeContext } from '@/contexts/theme-context';
+import { useThemeColorScheme } from '@/contexts/theme-context';
 
 interface AboutConfig {
   name?: string;
@@ -55,76 +55,6 @@ interface Props {
   content: string;
   template: string;
 }
-
-// 主题配色
-const themeColors = {
-  classic: {
-    gradient: 'from-amber-600 to-orange-700',
-    accentText: 'text-amber-600 dark:text-amber-400',
-    accentBg: 'bg-amber-50 dark:bg-amber-900/20',
-    statsBg: 'bg-gradient-to-r from-amber-600 to-orange-600',
-  },
-  minimal: {
-    gradient: 'from-gray-600 to-gray-800',
-    accentText: 'text-gray-600 dark:text-gray-400',
-    accentBg: 'bg-gray-100 dark:bg-gray-800',
-    statsBg: 'bg-gray-800 dark:bg-gray-700',
-  },
-  magazine: {
-    gradient: 'from-violet-600 to-fuchsia-600',
-    accentText: 'text-violet-600 dark:text-violet-400',
-    accentBg: 'bg-violet-50 dark:bg-violet-900/20',
-    statsBg: 'bg-gradient-to-r from-violet-600 to-fuchsia-600',
-  },
-  cyber: {
-    gradient: 'from-emerald-500 to-cyan-500',
-    accentText: 'text-emerald-500',
-    accentBg: 'bg-emerald-500/10',
-    statsBg: 'bg-gradient-to-r from-emerald-600 to-cyan-600',
-  },
-  vibrant: {
-    gradient: 'from-indigo-500 via-pink-500 to-lime-400',
-    accentText: 'text-indigo-600 dark:text-indigo-400',
-    accentBg: 'bg-indigo-50 dark:bg-indigo-900/20',
-    statsBg: 'bg-gradient-to-r from-indigo-500 via-pink-500 to-lime-400',
-  },
-  'aura-nexus': {
-    gradient: 'from-red-500 via-orange-500 to-cyan-500',
-    accentText: 'text-red-500 dark:text-red-400',
-    accentBg: 'bg-red-50 dark:bg-red-900/20',
-    statsBg: 'bg-gradient-to-r from-red-500 to-cyan-500',
-  },
-  'vibe-pulse': {
-    gradient: 'from-orange-500 to-amber-500',
-    accentText: 'text-orange-500 dark:text-orange-400',
-    accentBg: 'bg-orange-50 dark:bg-orange-900/20',
-    statsBg: 'bg-gradient-to-r from-orange-500 to-amber-500',
-  },
-  'aether-bloom': {
-    gradient: 'from-blue-400 via-teal-400 to-amber-300',
-    accentText: 'text-blue-500 dark:text-blue-400',
-    accentBg: 'bg-blue-50 dark:bg-blue-900/20',
-    statsBg: 'bg-gradient-to-r from-blue-400 via-teal-400 to-amber-300',
-  },
-  'chroma-dimension': {
-    gradient: 'from-fuchsia-500 via-purple-500 to-cyan-500',
-    accentText: 'text-fuchsia-500 dark:text-fuchsia-400',
-    accentBg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
-    statsBg: 'bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500',
-  },
-  'serene-ink': {
-    gradient: 'from-stone-600 to-stone-800',
-    accentText: 'text-stone-600 dark:text-stone-400',
-    accentBg: 'bg-stone-100 dark:bg-stone-800/30',
-    statsBg: 'bg-gradient-to-r from-stone-600 to-stone-700',
-  },
-  'clarity-focus': {
-    gradient: 'from-emerald-600 to-teal-700',
-    accentText: 'text-emerald-600 dark:text-emerald-400',
-    accentBg: 'bg-emerald-50 dark:bg-emerald-900/20',
-    statsBg: 'bg-gradient-to-r from-emerald-600 to-teal-600',
-  },
-};
 
 // 图标映射
 const iconMap: Record<string, React.ReactNode> = {
@@ -170,8 +100,8 @@ const defaultConfig: AboutConfig = {
 };
 
 export function AboutClient({ content }: Props) {
-  const { themeName } = useThemeContext();
-  const colors = themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
+  // 使用统一的配色方案接口
+  const colors = useThemeColorScheme();
 
   // 解析配置
   let config: AboutConfig = defaultConfig;
@@ -332,7 +262,7 @@ export function AboutClient({ content }: Props) {
 
           {/* 统计 */}
           {config.stats && config.stats.length > 0 && (
-            <section className={`${colors.statsBg} rounded-2xl p-6 text-white`}>
+            <section className={`${colors.statsBg || `bg-gradient-to-r ${colors.gradient}`} rounded-2xl p-6 text-white`}>
               <h2 className="text-lg font-semibold mb-4">数字足迹</h2>
               <div className="grid grid-cols-2 gap-3">
                 {config.stats.map((stat, idx) => (
@@ -351,11 +281,11 @@ export function AboutClient({ content }: Props) {
             <p className="text-gray-400 text-sm mb-4">无论是技术探讨还是闲聊，都欢迎来信。</p>
             {config.email ? (
               <a href={`mailto:${config.email}`}
-                className={`block w-full py-2.5 ${colors.statsBg} text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity`}>
+                className={`block w-full py-2.5 ${colors.statsBg || `bg-gradient-to-r ${colors.gradient}`} text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity`}>
                 发送邮件
               </a>
             ) : (
-              <button className={`w-full py-2.5 ${colors.statsBg} text-white rounded-xl text-sm font-semibold`}>
+              <button className={`w-full py-2.5 ${colors.statsBg || `bg-gradient-to-r ${colors.gradient}`} text-white rounded-xl text-sm font-semibold`}>
                 联系我
               </button>
             )}

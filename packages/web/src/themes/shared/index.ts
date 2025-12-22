@@ -12,3 +12,13 @@ export {
 
 export { DefaultProjectDetail } from './ProjectDetail';
 export { SiteLogo } from './SiteLogo';
+
+// 配色方案接口和工具
+export {
+  type ColorScheme,
+  type GetColorScheme,
+  defaultColorScheme,
+  builtinColorSchemes,
+  chromaDimensionPalettes,
+  magazineColorSchemes,
+} from './ColorScheme';

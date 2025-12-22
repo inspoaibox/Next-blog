@@ -11,7 +11,8 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { useSiteSettingsContext } from '@/contexts/site-settings-context';
-import { useThemeContext } from '@/contexts/theme-context';
+import { useThemeColorScheme } from '@/contexts/theme-context';
+import type { ColorScheme } from '@/themes/shared';
 
 interface Props {
   links: FriendLink[];
@@ -30,115 +31,6 @@ interface FriendsPageConfig {
   ctaButtonText?: string;
   ctaButtonLink?: string;
 }
-
-// 主题配色
-const themeColors = {
-  classic: {
-    accent: 'amber',
-    gradient: 'from-amber-500 via-orange-500 to-amber-600',
-    accentText: 'text-amber-600 dark:text-amber-400',
-    accentBg: 'bg-amber-50 dark:bg-amber-900/20',
-  },
-  minimal: {
-    accent: 'gray',
-    gradient: 'from-gray-500 via-gray-600 to-gray-700',
-    accentText: 'text-gray-600 dark:text-gray-400',
-    accentBg: 'bg-gray-100 dark:bg-gray-800',
-  },
-  magazine: {
-    accent: 'violet',
-    gradient: 'from-violet-500 via-fuchsia-500 to-pink-500',
-    accentText: 'text-violet-600 dark:text-violet-400',
-    accentBg: 'bg-violet-50 dark:bg-violet-900/20',
-  },
-  cyber: {
-    accent: 'emerald',
-    gradient: 'from-emerald-500 via-cyan-500 to-emerald-400',
-    accentText: 'text-emerald-500',
-    accentBg: 'bg-emerald-500/10',
-  },
-  vibrant: {
-    accent: 'indigo',
-    gradient: 'from-indigo-500 via-pink-500 to-lime-400',
-    accentText: 'text-indigo-600 dark:text-indigo-400',
-    accentBg: 'bg-indigo-50 dark:bg-indigo-900/20',
-  },
-  'aura-nexus': {
-    accent: 'red',
-    gradient: 'from-red-500 via-orange-500 to-cyan-500',
-    accentText: 'text-red-500 dark:text-red-400',
-    accentBg: 'bg-red-50 dark:bg-red-900/20',
-  },
-  'vibe-pulse': {
-    accent: 'orange',
-    gradient: 'from-orange-500 via-amber-500 to-orange-400',
-    accentText: 'text-orange-500 dark:text-orange-400',
-    accentBg: 'bg-orange-50 dark:bg-orange-900/20',
-  },
-  'aether-bloom': {
-    accent: 'blue',
-    gradient: 'from-blue-400 via-teal-400 to-amber-300',
-    accentText: 'text-blue-500 dark:text-blue-400',
-    accentBg: 'bg-blue-50 dark:bg-blue-900/20',
-  },
-  'serene-ink': {
-    accent: 'stone',
-    gradient: 'from-stone-500 via-stone-600 to-stone-700',
-    accentText: 'text-stone-600 dark:text-stone-400',
-    accentBg: 'bg-stone-100 dark:bg-stone-800/30',
-  },
-  'clarity-focus': {
-    accent: 'emerald',
-    gradient: 'from-emerald-500 via-teal-500 to-emerald-600',
-    accentText: 'text-emerald-600 dark:text-emerald-400',
-    accentBg: 'bg-emerald-50 dark:bg-emerald-900/20',
-  },
-};
-
-// chroma-dimension 主题的 vibeMode 配色方案
-const chromaDimensionPalettes: Record<string, {
-  gradient: string;
-  accentText: string;
-  accentBg: string;
-  accent: string;
-}> = {
-  'electric-candy': {
-    gradient: 'from-[#FF00FF] via-[#7000FF] to-[#00FFFF]',
-    accentText: 'text-fuchsia-500',
-    accentBg: 'bg-fuchsia-500/20',
-    accent: 'fuchsia',
-  },
-  'acid-sun': {
-    gradient: 'from-[#CCFF00] via-[#FF5E00] to-[#00E5FF]',
-    accentText: 'text-lime-400',
-    accentBg: 'bg-lime-500/20',
-    accent: 'lime',
-  },
-  'holographic': {
-    gradient: 'from-blue-400 via-pink-400 to-yellow-400',
-    accentText: 'text-blue-500',
-    accentBg: 'bg-blue-500/20',
-    accent: 'blue',
-  },
-  'hyper-white': {
-    gradient: 'from-[#00FF41] via-slate-900 to-[#00FF41]',
-    accentText: 'text-emerald-500',
-    accentBg: 'bg-emerald-500/20',
-    accent: 'emerald',
-  },
-  'cyber-pulse': {
-    gradient: 'from-[#00FFFF] via-[#FF00FF] to-[#FFFF00]',
-    accentText: 'text-cyan-400',
-    accentBg: 'bg-cyan-500/20',
-    accent: 'cyan',
-  },
-  'rainbow-vortex': {
-    gradient: 'from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500',
-    accentText: 'text-purple-400',
-    accentBg: 'bg-purple-500/20',
-    accent: 'purple',
-  },
-};
 
 // 根据字符串生成稳定的渐变色
 const getHashGradient = (str: string) => {
@@ -172,12 +64,8 @@ const defaultConfig: FriendsPageConfig = {
 
 export function FriendsClient({ links }: Props) {
   const { settings } = useSiteSettingsContext();
-  const { themeName, themeConfig } = useThemeContext();
-  
-  // 获取颜色配置：chroma-dimension 主题根据 vibeMode 动态选择
-  const colors = themeName === 'chroma-dimension'
-    ? chromaDimensionPalettes[(themeConfig?.vibeMode as string) || 'electric-candy'] || chromaDimensionPalettes['electric-candy']
-    : themeColors[themeName as keyof typeof themeColors] || themeColors.classic;
+  // 使用统一的配色方案接口
+  const colors = useThemeColorScheme();
 
   // 解析页面配置
   let config: FriendsPageConfig = defaultConfig;
@@ -226,7 +114,7 @@ export function FriendsClient({ links }: Props) {
         </div>
       )}
 
-      {/* 申请交换区域 - 修复布局 */}
+      {/* 申请交换区域 */}
       <section className="bg-white dark:bg-gray-800 rounded-2xl p-6 md:p-8 border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center gap-3 mb-6">
           <div className={`p-2 rounded-lg ${colors.accentBg}`}>
@@ -281,13 +169,6 @@ export function FriendsClient({ links }: Props) {
       </section>
     </div>
   );
-}
-
-interface ColorScheme {
-  accent: string;
-  gradient: string;
-  accentText: string;
-  accentBg: string;
 }
 
 function FriendCard({ link, colors }: { link: FriendLink; colors: ColorScheme }) {

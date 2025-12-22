@@ -660,4 +660,18 @@ export const MagazineTheme: ThemeComponents = {
   CategoryList,
   TagList,
   SearchResults,
+  // 配色方案接口 - 根据 colorScheme 配置返回对应的配色
+  getColorScheme: (config: ThemeConfig) => {
+    const scheme = config.colorScheme || 'purple';
+    const colors = colorSchemes[scheme] || colorSchemes.purple;
+    return {
+      accent: colors.primary,
+      gradient: colors.gradient,
+      accentText: colors.text,
+      accentBg: colors.bg,
+      statsBg: `bg-gradient-to-r ${colors.gradient}`,
+      buttonActive: `bg-${colors.primary}-600 text-white`,
+      buttonHover: `hover:border-${colors.primary}-500`,
+    };
+  },
 };

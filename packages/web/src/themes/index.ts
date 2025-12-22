@@ -122,6 +122,9 @@ export interface ThemeConfig {
   [key: string]: any;
 }
 
+// 配色方案接口（从 shared 重新导出）
+export type { ColorScheme, GetColorScheme } from './shared/ColorScheme';
+
 export interface ThemeComponents {
   name: string;
   displayName: string;
@@ -141,6 +144,9 @@ export interface ThemeComponents {
   SearchResults: React.ComponentType<SearchResultProps & { config?: ThemeConfig }>;
   // 项目详情（可选，不提供则使用默认组件）
   ProjectDetail?: React.ComponentType<ProjectDetailProps & { config?: ThemeConfig }>;
+  // 配色方案（可选，用于友链/关于/项目等页面）
+  // 如果主题有多种配色方案（如 magazine 的 purple/blue/warm），应实现此方法
+  getColorScheme?: (config: ThemeConfig) => import('./shared/ColorScheme').ColorScheme;
 }
 
 // 所有可用主题
