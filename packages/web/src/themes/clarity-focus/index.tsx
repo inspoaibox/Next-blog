@@ -1059,9 +1059,10 @@ function ArticleDetail({ article, config = defaultConfig }: ArticleDetailProps &
               prose-headings:font-semibold
               prose-a:underline prose-a:underline-offset-4
               prose-blockquote:border-l-2 prose-blockquote:not-italic
-              prose-code:text-sm prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:bg-gray-100 dark:prose-code:bg-gray-800
               prose-pre:rounded-lg prose-pre:bg-[#1a1a1a]
               prose-img:rounded-lg
+              [&_:not(pre)>code]:text-sm [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-gray-100 dark:[&_:not(pre)>code]:bg-gray-800
+              [&_pre_code]:bg-transparent [&_pre_code]:p-0
             `}
             style={{ '--tw-prose-links': colors.accent } as React.CSSProperties}
             dangerouslySetInnerHTML={{ __html: article.htmlContent || article.content }}
