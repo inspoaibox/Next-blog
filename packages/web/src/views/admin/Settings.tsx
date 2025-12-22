@@ -872,6 +872,16 @@ function ThemeSettings() {
                     />
                   )}
 
+                  {option.type === 'number' && (
+                    <input
+                      type="number"
+                      value={mergedConfig[option.key] ?? option.default ?? ''}
+                      onChange={(e) => handleConfigChange(option.key, e.target.value ? Number(e.target.value) : option.default)}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:ring-2 focus:ring-primary-500"
+                      placeholder={String(option.default || '')}
+                    />
+                  )}
+
                   {option.type === 'json' && (
                     <QuickLinksEditor
                       value={mergedConfig[option.key] || option.default}

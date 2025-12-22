@@ -81,6 +81,18 @@ const themeColors = {
     accentText: 'text-blue-500 dark:text-blue-400',
     accentBg: 'bg-blue-50 dark:bg-blue-900/20',
   },
+  'serene-ink': {
+    accent: 'stone',
+    gradient: 'from-stone-500 via-stone-600 to-stone-700',
+    accentText: 'text-stone-600 dark:text-stone-400',
+    accentBg: 'bg-stone-100 dark:bg-stone-800/30',
+  },
+  'clarity-focus': {
+    accent: 'emerald',
+    gradient: 'from-emerald-500 via-teal-500 to-emerald-600',
+    accentText: 'text-emerald-600 dark:text-emerald-400',
+    accentBg: 'bg-emerald-50 dark:bg-emerald-900/20',
+  },
 };
 
 // chroma-dimension 主题的 vibeMode 配色方案

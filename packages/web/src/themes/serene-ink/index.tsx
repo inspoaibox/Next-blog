@@ -363,7 +363,6 @@ function NavItem({ item, colors, depth = 0 }: { item: any; colors: typeof colorS
 function BlogLayout({ children, config = defaultConfig }: { children: ReactNode; config?: ThemeConfig }) {
   const { settings, navMenu } = useSiteSettingsContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
 
   const colors = colorSchemes[config.colorScheme as string] || colorSchemes['warm-paper'];
   const contentWidth = contentWidthMap[config.contentWidth as string] || contentWidthMap.medium;
@@ -397,49 +396,44 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
       {/* 导航栏 */}
       {headerStyle !== 'hidden' && (
         <header className={`sticky top-0 z-50 ${colors.bg} ${colors.bgDark} border-b ${colors.border} ${colors.borderDark} backdrop-blur-sm bg-opacity-95`}>
-          <div className={`${contentWidth} mx-auto px-4 sm:px-6`}>
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
             <div className="flex items-center justify-between h-14">
               {/* Logo */}
-              <Link href="/" className="flex items-center gap-2 font-semibold text-lg tracking-tight">
+              <Link href="/" className="flex items-center gap-2 font-semibold text-lg tracking-tight shrink-0">
                 {siteLogo && <img src={siteLogo} alt={siteName} className="h-8 w-auto" />}
-                {siteName}
+                <span className="hidden sm:inline">{siteName}</span>
               </Link>
 
               {/* 桌面导航 */}
-              <nav className="hidden md:flex items-center gap-6">
+              <nav className="hidden md:flex items-center gap-4 lg:gap-6 overflow-x-auto">
                 {navItems.map((item) => (
-                  <NavItem key={item.id} item={item} colors={colors} />
+                  <Link
+                    key={item.id}
+                    href={item.url}
+                    target={item.type === 'external' ? '_blank' : undefined}
+                    className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap"
+                  >
+                    {item.label}
+                    {item.type === 'external' && <ExternalLink size={12} className="inline ml-1" />}
+                  </Link>
                 ))}
               </nav>
 
               {/* 右侧操作 */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 shrink-0">
                 {headerStyle === 'standard' && (
-                  <button
-                    onClick={() => setSearchOpen(!searchOpen)}
-                    className={`p-2 rounded-lg ${colors.textMuted} ${colors.textMutedDark} hover:${colors.text} hover:${colors.textDark} transition-colors`}
-                    aria-label="搜索"
-                  >
-                    <Search size={18} />
-                  </button>
+                  <SearchBox />
                 )}
                 <ThemeToggle />
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className={`md:hidden p-2 rounded-lg ${colors.textMuted} ${colors.textMutedDark}`}
+                  className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-400"
                   aria-label="菜单"
                 >
                   {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
               </div>
             </div>
-
-            {/* 搜索框展开 */}
-            {searchOpen && (
-              <div className="py-3 border-t border-inherit">
-                <SearchBox />
-              </div>
-            )}
           </div>
         </header>
       )}
@@ -458,7 +452,7 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 
       {/* 页脚 - 极简 */}
       <footer className={`py-12 border-t ${colors.border} ${colors.borderDark}`}>
-        <div className={`${contentWidth} mx-auto px-4 sm:px-6 text-center`}>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center">
           <p className={`text-sm ${colors.textMuted} ${colors.textMutedDark}`}>
             {footerText}
           </p>

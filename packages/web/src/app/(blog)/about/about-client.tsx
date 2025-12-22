@@ -112,6 +112,18 @@ const themeColors = {
     accentBg: 'bg-fuchsia-50 dark:bg-fuchsia-900/20',
     statsBg: 'bg-gradient-to-r from-fuchsia-500 via-purple-500 to-cyan-500',
   },
+  'serene-ink': {
+    gradient: 'from-stone-600 to-stone-800',
+    accentText: 'text-stone-600 dark:text-stone-400',
+    accentBg: 'bg-stone-100 dark:bg-stone-800/30',
+    statsBg: 'bg-gradient-to-r from-stone-600 to-stone-700',
+  },
+  'clarity-focus': {
+    gradient: 'from-emerald-600 to-teal-700',
+    accentText: 'text-emerald-600 dark:text-emerald-400',
+    accentBg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    statsBg: 'bg-gradient-to-r from-emerald-600 to-teal-600',
+  },
 };
 
 // 图标映射

@@ -91,6 +91,20 @@ const themeColors = {
     buttonActive: 'bg-blue-500 text-white',
     buttonHover: 'hover:border-blue-500',
   },
+  'serene-ink': {
+    gradient: 'from-stone-500 via-stone-600 to-stone-700',
+    accentText: 'text-stone-600 dark:text-stone-400',
+    accentBg: 'bg-stone-100 dark:bg-stone-800/30',
+    buttonActive: 'bg-stone-600 text-white',
+    buttonHover: 'hover:border-stone-500',
+  },
+  'clarity-focus': {
+    gradient: 'from-emerald-500 via-teal-500 to-emerald-600',
+    accentText: 'text-emerald-600 dark:text-emerald-400',
+    accentBg: 'bg-emerald-50 dark:bg-emerald-900/20',
+    buttonActive: 'bg-emerald-600 text-white',
+    buttonHover: 'hover:border-emerald-500',
+  },
 };
 
 // chroma-dimension 主题的 vibeMode 配色方案
