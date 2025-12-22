@@ -184,21 +184,31 @@ export const analyticsService = {
     const defaultStart = startDate || new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 默认30天
     const defaultEnd = endDate || now;
 
+    // 获取时间范围内有会话的独立访客数
+    const activeVisitorIds = await prisma.visitorSession.findMany({
+      where: {
+        startTime: { gte: defaultStart, lte: defaultEnd },
+      },
+      select: { visitorId: true },
+      distinct: ['visitorId'],
+    });
+
+    const todayVisitorIds = await prisma.visitorSession.findMany({
+      where: {
+        startTime: { gte: todayStart },
+      },
+      select: { visitorId: true },
+      distinct: ['visitorId'],
+    });
+
     const [
-      totalVisitors,
       totalSessions,
       totalPageViews,
-      todayVisitors,
       todaySessions,
       todayPageViews,
       avgSessionDuration,
       avgPageDuration,
     ] = await Promise.all([
-      prisma.visitor.count({
-        where: {
-          firstVisit: { gte: defaultStart, lte: defaultEnd },
-        },
-      }),
       prisma.visitorSession.count({
         where: {
           startTime: { gte: defaultStart, lte: defaultEnd },
@@ -207,11 +217,6 @@ export const analyticsService = {
       prisma.visitorPageView.count({
         where: {
           enterTime: { gte: defaultStart, lte: defaultEnd },
-        },
-      }),
-      prisma.visitor.count({
-        where: {
-          firstVisit: { gte: todayStart },
         },
       }),
       prisma.visitorSession.count({
@@ -240,23 +245,27 @@ export const analyticsService = {
       }),
     ]);
 
-    // 计算跳出率（只访问一个页面的会话比例）
-    const singlePageSessions = await prisma.visitorSession.count({
+    // 计算跳出率（只有一个页面浏览的会话比例）
+    const sessionsWithPageViews = await prisma.visitorSession.findMany({
       where: {
         startTime: { gte: defaultStart, lte: defaultEnd },
-        pageViews: { none: {} },
+      },
+      include: {
+        _count: { select: { pageViews: true } },
       },
     });
+    
+    const singlePageSessions = sessionsWithPageViews.filter((s: { _count: { pageViews: number } }) => s._count.pageViews <= 1).length;
     const bounceRate = totalSessions > 0 ? (singlePageSessions / totalSessions) * 100 : 0;
 
     return {
-      totalVisitors,
+      totalVisitors: activeVisitorIds.length,
       totalSessions,
       totalPageViews,
       avgSessionDuration: Math.round(avgSessionDuration._avg.duration || 0),
       avgPageDuration: Math.round(avgPageDuration._avg.duration || 0),
       bounceRate: Math.round(bounceRate * 100) / 100,
-      todayVisitors,
+      todayVisitors: todayVisitorIds.length,
       todaySessions,
       todayPageViews,
     };
@@ -264,34 +273,50 @@ export const analyticsService = {
 
   // 获取时间序列数据
   async getTimeSeries(startDate: Date, endDate: Date, granularity: 'hour' | 'day' | 'week' | 'month' = 'day') {
-    const sessions = await prisma.visitorSession.findMany({
+    // 直接查询页面浏览记录，按日期分组
+    const pageViews = await prisma.visitorPageView.findMany({
       where: {
-        startTime: { gte: startDate, lte: endDate },
+        enterTime: { gte: startDate, lte: endDate },
       },
       include: {
-        pageViews: true,
+        session: {
+          select: { visitorId: true },
+        },
       },
     });
 
     // 按日期分组
-    const dataMap = new Map<string, { visitors: Set<string>; sessions: number; pageViews: number }>();
+    const dataMap = new Map<string, { visitors: Set<string>; pageViews: number }>();
 
-    for (const session of sessions) {
-      const date = session.startTime.toISOString().split('T')[0];
+    for (const pv of pageViews) {
+      const date = pv.enterTime.toISOString().split('T')[0];
       if (!dataMap.has(date)) {
-        dataMap.set(date, { visitors: new Set(), sessions: 0, pageViews: 0 });
+        dataMap.set(date, { visitors: new Set(), pageViews: 0 });
       }
       const data = dataMap.get(date)!;
-      data.visitors.add(session.visitorId);
-      data.sessions++;
-      data.pageViews += session.pageViews.length;
+      data.visitors.add(pv.session.visitorId);
+      data.pageViews++;
+    }
+
+    // 获取会话数
+    const sessions = await prisma.visitorSession.findMany({
+      where: {
+        startTime: { gte: startDate, lte: endDate },
+      },
+      select: { startTime: true },
+    });
+
+    const sessionCountMap = new Map<string, number>();
+    for (const session of sessions) {
+      const date = session.startTime.toISOString().split('T')[0];
+      sessionCountMap.set(date, (sessionCountMap.get(date) || 0) + 1);
     }
 
     return Array.from(dataMap.entries())
       .map(([date, data]) => ({
         date,
         visitors: data.visitors.size,
-        sessions: data.sessions,
+        sessions: sessionCountMap.get(date) || 0,
         pageViews: data.pageViews,
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
@@ -310,7 +335,7 @@ export const analyticsService = {
       take: limit,
     });
 
-    return pageViews.map((pv) => ({
+    return pageViews.map((pv: { path: string; _count: { id: number }; _avg: { duration: number | null } }) => ({
       path: pv.path,
       views: pv._count.id,
       avgDuration: Math.round(pv._avg.duration || 0),
@@ -331,8 +356,8 @@ export const analyticsService = {
     });
 
     return referers
-      .filter((r) => r.referer)
-      .map((r) => ({
+      .filter((r: { referer: string | null }) => r.referer)
+      .map((r: { referer: string | null; _count: { id: number } }) => ({
         referer: r.referer!,
         count: r._count.id,
       }));
@@ -340,7 +365,7 @@ export const analyticsService = {
 
   // 获取设备统计 - 基于会话时间统计活跃访客的设备
   async getDeviceStats(startDate: Date, endDate: Date) {
-    // 先获取时间范围内有会话的访客ID
+    // 先获取时间范围内有会话的访客ID（这里是 Visitor 表的 id）
     const activeSessions = await prisma.visitorSession.findMany({
       where: {
         startTime: { gte: startDate, lte: endDate },
@@ -349,7 +374,7 @@ export const analyticsService = {
       distinct: ['visitorId'],
     });
     
-    const visitorIds = activeSessions.map(s => s.visitorId);
+    const visitorIds = activeSessions.map((s: { visitorId: string }) => s.visitorId);
     
     if (visitorIds.length === 0) {
       return [];
@@ -363,8 +388,8 @@ export const analyticsService = {
       _count: { id: true },
     });
 
-    const total = devices.reduce((sum, d) => sum + d._count.id, 0);
-    return devices.map((d) => ({
+    const total = devices.reduce((sum: number, d: { _count: { id: number } }) => sum + d._count.id, 0);
+    return devices.map((d: { device: string | null; _count: { id: number } }) => ({
       device: d.device || 'unknown',
       count: d._count.id,
       percentage: Math.round((d._count.id / total) * 10000) / 100,
@@ -381,7 +406,7 @@ export const analyticsService = {
       distinct: ['visitorId'],
     });
     
-    const visitorIds = activeSessions.map(s => s.visitorId);
+    const visitorIds = activeSessions.map((s: { visitorId: string }) => s.visitorId);
     
     if (visitorIds.length === 0) {
       return [];
@@ -397,8 +422,8 @@ export const analyticsService = {
       take: 10,
     });
 
-    const total = browsers.reduce((sum, b) => sum + b._count.id, 0);
-    return browsers.map((b) => ({
+    const total = browsers.reduce((sum: number, b: { _count: { id: number } }) => sum + b._count.id, 0);
+    return browsers.map((b: { browser: string | null; _count: { id: number } }) => ({
       browser: b.browser || 'unknown',
       count: b._count.id,
       percentage: Math.round((b._count.id / total) * 10000) / 100,
@@ -415,7 +440,7 @@ export const analyticsService = {
       distinct: ['visitorId'],
     });
     
-    const visitorIds = activeSessions.map(s => s.visitorId);
+    const visitorIds = activeSessions.map((s: { visitorId: string }) => s.visitorId);
     
     if (visitorIds.length === 0) {
       return [];
@@ -431,8 +456,8 @@ export const analyticsService = {
       take: 10,
     });
 
-    const total = countries.reduce((sum, c) => sum + c._count.id, 0);
-    return countries.map((c) => ({
+    const total = countries.reduce((sum: number, c: { _count: { id: number } }) => sum + c._count.id, 0);
+    return countries.map((c: { country: string | null; _count: { id: number } }) => ({
       country: c.country || 'unknown',
       count: c._count.id,
       percentage: Math.round((c._count.id / total) * 10000) / 100,
