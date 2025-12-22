@@ -122,45 +122,10 @@ export function DefaultProjectDetail({ project }: ProjectDetailProps) {
   };
 
   return (
-    <div className="relative">
-      {/* 左侧固定 TOC */}
-      {tocItems.length > 0 && (
-        <aside className="hidden xl:block fixed left-[max(1rem,calc(50%-45rem))] top-24 w-56 max-h-[calc(100vh-8rem)] overflow-y-auto">
-          <div className={`p-4 ${colors.accentBg} backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700`}>
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-3">
-              <List size={14} />
-              目录
-            </h3>
-            <nav className="space-y-1">
-              {tocItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToHeading(item.id)}
-                  className={`block w-full text-left text-sm py-1 transition-colors truncate ${
-                    item.level === 1
-                      ? 'pl-0'
-                      : item.level === 2
-                        ? 'pl-3'
-                        : item.level === 3
-                          ? 'pl-6'
-                          : 'pl-9'
-                  } ${
-                    activeId === item.id
-                      ? `${colors.accentText} font-medium`
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                  }`}
-                  title={item.text}
-                >
-                  {item.text}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </aside>
-      )}
-
-      {/* 主内容区 */}
-      <article className="max-w-4xl mx-auto">
+    <div className="relative max-w-6xl mx-auto">
+      <div className="flex gap-8">
+        {/* 主内容区 */}
+        <article className="flex-1 min-w-0 max-w-4xl">
         {/* 返回链接 */}
         <Link
           href="/projects"
@@ -255,7 +220,46 @@ export function DefaultProjectDetail({ project }: ProjectDetailProps) {
             )}
           </div>
         </footer>
-      </article>
+        </article>
+
+        {/* 右侧固定 TOC */}
+        {tocItems.length > 0 && (
+          <aside className="hidden xl:block w-56 flex-shrink-0">
+            <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
+              <div className={`p-4 ${colors.accentBg} backdrop-blur-sm rounded-xl border border-gray-200 dark:border-gray-700`}>
+                <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                  <List size={14} />
+                  目录
+                </h3>
+                <nav className="space-y-1">
+                  {tocItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => scrollToHeading(item.id)}
+                      className={`block w-full text-left text-sm py-1 transition-colors truncate ${
+                        item.level === 1
+                          ? 'pl-0'
+                          : item.level === 2
+                            ? 'pl-3'
+                            : item.level === 3
+                              ? 'pl-6'
+                              : 'pl-9'
+                      } ${
+                        activeId === item.id
+                          ? `${colors.accentText} font-medium`
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                      title={item.text}
+                    >
+                      {item.text}
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            </div>
+          </aside>
+        )}
+      </div>
     </div>
   );
 }
