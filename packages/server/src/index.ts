@@ -61,15 +61,6 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// 访客追踪专用限制（更宽松）
-const trackingLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1分钟
-  max: 60, // 每分钟最多60次（每秒1次）
-  message: { success: false, error: 'Too many tracking requests' },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
 app.use('/api/', generalLimiter);
 
 // CORS 配置 - 支持环境变量 ALLOWED_ORIGINS（逗号分隔）
@@ -116,7 +107,7 @@ app.use('/api/prerender', prerenderRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/project-categories', projectCategoryRoutes);
 app.use('/api/friend-links', friendLinkRoutes);
-app.use('/api/analytics', trackingLimiter, analyticsRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Error handler
 app.use(errorHandler);

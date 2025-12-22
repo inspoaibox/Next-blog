@@ -1,11 +1,21 @@
 import { Router, Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
 import { analyticsService } from '../services/analytics.service.js';
 import { authenticate, AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 
+// 访客追踪专用限制（更宽松）
+const trackingLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1分钟
+  max: 60, // 每分钟最多60次
+  message: { success: false, error: 'Too many tracking requests' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // 公开接口：记录访客数据（前端调用）
-router.post('/track', async (req: Request, res: Response) => {
+router.post('/track', trackingLimiter, async (req: Request, res: Response) => {
   try {
     console.log('[Analytics] Track request received:', {
       visitorId: req.body.visitorId,
