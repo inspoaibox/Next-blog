@@ -209,7 +209,13 @@ yourdomain.com, www.yourdomain.com {
         file_server
     }
     
-    # API 请求代理到后端服务 (3012)
+    # Next.js API Routes（必须在后端 API 之前配置）
+    # 这些是 Next.js 前端的 API 路由，需要代理到前端
+    handle /api/revalidate {
+        reverse_proxy 127.0.0.1:3011
+    }
+    
+    # 后端 API 请求代理到后端服务 (3012)
     handle /api/* {
         reverse_proxy 127.0.0.1:3012
     }
@@ -222,10 +228,17 @@ yourdomain.com, www.yourdomain.com {
 ```
 
 **重要说明：**
-- `/api/*` 必须代理到后端端口 (3012)，否则 API 请求会失败
+- `/api/revalidate` 是 Next.js 的 API Route，用于清除前端缓存，**必须代理到前端端口 (3011)**
+- `/api/revalidate` 规则必须放在 `/api/*` 之前，否则会被后端规则拦截
+- `/api/*` 代理到后端端口 (3012)，处理数据 API 请求
 - `/uploads/*` 可以直接由 Caddy 提供静态文件服务，提高性能
 - 其他请求代理到 Next.js 前端 (3011)
 - 系统已配置 `trust proxy`，可以正确获取客户端真实 IP
+
+**配置完成后重载 Caddy：**
+```bash
+sudo systemctl reload caddy
+```
 
 ### 版本更新
 

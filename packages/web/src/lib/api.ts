@@ -38,6 +38,12 @@ async function request<T>(
     headers,
   });
 
+  // 检查响应类型，如果不是 JSON 则抛出特定错误
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    throw new Error(`非JSON响应: ${response.status}`);
+  }
+
   const data: ApiResponse<T> = await response.json();
 
   if (!response.ok || !data.success) {

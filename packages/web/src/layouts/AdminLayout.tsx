@@ -47,6 +47,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     setClearing(true);
     try {
       const res = await fetch('/api/revalidate', { method: 'POST' });
+      
+      // 检查响应类型
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        // 返回的不是 JSON，可能是代理配置问题
+        const text = await res.text();
+        console.error('Non-JSON response:', text.substring(0, 200));
+        alert('清除失败: 服务器返回了非JSON响应，请检查Caddy代理配置，确保 /api/revalidate 路由到前端(3011)而不是后端(3012)');
+        return;
+      }
+      
       const data = await res.json();
       if (data.success) {
         alert('缓存已清除');
