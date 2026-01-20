@@ -679,6 +679,207 @@ function QuickLinksEditor({ value, onChange }: { value: string; onChange: (value
   );
 }
 
+// 自定义模块编辑器组件
+function CustomModulesEditor({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [modules, setModules] = useState<Array<{ title: string; html: string; js: string; enabled: boolean }>>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form, setForm] = useState({ title: '', html: '', js: '', enabled: true });
+
+  useEffect(() => {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        setModules(parsed);
+      }
+    } catch {
+      setModules([]);
+    }
+  }, [value]);
+
+  const handleAdd = () => {
+    if (form.title && form.html) {
+      const newModules = [...modules, { ...form }];
+      setModules(newModules);
+      onChange(JSON.stringify(newModules));
+      setForm({ title: '', html: '', js: '', enabled: true });
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleEdit = (index: number) => {
+    setEditingIndex(index);
+    setForm(modules[index]);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdate = () => {
+    if (editingIndex !== null && form.title && form.html) {
+      const newModules = [...modules];
+      newModules[editingIndex] = { ...form };
+      setModules(newModules);
+      onChange(JSON.stringify(newModules));
+      setEditingIndex(null);
+      setForm({ title: '', html: '', js: '', enabled: true });
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleDelete = (index: number) => {
+    const newModules = modules.filter((_, i) => i !== index);
+    setModules(newModules);
+    onChange(JSON.stringify(newModules));
+  };
+
+  const handleToggle = (index: number) => {
+    const newModules = [...modules];
+    newModules[index].enabled = !newModules[index].enabled;
+    setModules(newModules);
+    onChange(JSON.stringify(newModules));
+  };
+
+  const handleMove = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= modules.length) return;
+    const newModules = [...modules];
+    [newModules[index], newModules[targetIndex]] = [newModules[targetIndex], newModules[index]];
+    setModules(newModules);
+    onChange(JSON.stringify(newModules));
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* 模块列表 */}
+      <div className="space-y-2">
+        {modules.map((module, index) => (
+          <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <div className="flex flex-col gap-1">
+              <button onClick={() => handleMove(index, 'up')} disabled={index === 0} className="text-gray-400 hover:text-gray-600 disabled:opacity-30 text-xs">▲</button>
+              <button onClick={() => handleMove(index, 'down')} disabled={index === modules.length - 1} className="text-gray-400 hover:text-gray-600 disabled:opacity-30 text-xs">▼</button>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-medium text-sm truncate">{module.title}</div>
+              <div className="text-xs text-gray-500 mt-1">
+                HTML: {module.html.length} 字符 {module.js && `| JS: ${module.js.length} 字符`}
+              </div>
+            </div>
+            <button
+              onClick={() => handleToggle(index)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                module.enabled ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-600'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  module.enabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <Button size="sm" variant="ghost" onClick={() => handleEdit(index)}>编辑</Button>
+            <Button size="sm" variant="ghost" className="text-red-600" onClick={() => handleDelete(index)}>删除</Button>
+          </div>
+        ))}
+      </div>
+
+      {/* 添加按钮 */}
+      <Button 
+        size="sm" 
+        onClick={() => {
+          setEditingIndex(null);
+          setForm({ title: '', html: '', js: '', enabled: true });
+          setIsModalOpen(true);
+        }}
+      >
+        + 添加自定义模块
+      </Button>
+
+      {/* 编辑模态框 */}
+      {isModalOpen && (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingIndex(null);
+            setForm({ title: '', html: '', js: '', enabled: true });
+          }}
+          title={editingIndex !== null ? '编辑自定义模块' : '添加自定义模块'}
+        >
+          <div className="space-y-4">
+            <Input
+              label="模块标题"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="例如：最新公告"
+              required
+            />
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                HTML 代码
+              </label>
+              <textarea
+                value={form.html}
+                onChange={(e) => setForm({ ...form, html: e.target.value })}
+                placeholder="输入 HTML 代码，例如：<div>内容</div>"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 font-mono text-sm"
+                rows={6}
+                required
+              />
+              <p className="text-xs text-gray-500 mt-1">支持任意 HTML 标签和样式</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                JavaScript 代码（可选）
+              </label>
+              <textarea
+                value={form.js}
+                onChange={(e) => setForm({ ...form, js: e.target.value })}
+                placeholder="输入 JavaScript 代码，例如：console.log('Hello');"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 font-mono text-sm"
+                rows={4}
+              />
+              <p className="text-xs text-gray-500 mt-1">用于添加交互功能，留空则不执行</p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={form.enabled}
+                  onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
+                  className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">启用此模块</span>
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEditingIndex(null);
+                  setForm({ title: '', html: '', js: '', enabled: true });
+                }}
+              >
+                取消
+              </Button>
+              <Button 
+                type="button" 
+                onClick={editingIndex !== null ? handleUpdate : handleAdd}
+              >
+                {editingIndex !== null ? '更新' : '添加'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
 interface DbTheme {
   id: string;
   name: string;
@@ -882,7 +1083,14 @@ function ThemeSettings() {
                     />
                   )}
 
-                  {option.type === 'json' && (
+                  {option.type === 'json' && option.key === 'customModules' && (
+                    <CustomModulesEditor
+                      value={mergedConfig[option.key] || option.default}
+                      onChange={(value) => handleConfigChange(option.key, value)}
+                    />
+                  )}
+
+                  {option.type === 'json' && option.key !== 'customModules' && (
                     <QuickLinksEditor
                       value={mergedConfig[option.key] || option.default}
                       onChange={(value) => handleConfigChange(option.key, value)}

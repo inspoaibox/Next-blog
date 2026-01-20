@@ -1,5 +1,5 @@
 // 杂志主题 - 大图卡片网格，紫粉渐变，现代视觉
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { ThemeToggle } from '../../components/ThemeToggle';
 import { SearchBox } from '../../components/SearchBox';
@@ -30,6 +30,13 @@ const configOptions: ThemeConfigOption[] = [
     ],
     default: 'normal',
     description: '页面内容区域的最大宽度',
+  },
+  {
+    key: 'customModules',
+    label: '自定义侧边栏模块',
+    type: 'json',
+    default: '[]',
+    description: '在侧边栏快捷导航下方添加自定义 HTML/JS 模块',
   },
   {
     key: 'customMaxWidth',
@@ -128,6 +135,7 @@ const defaultConfig: ThemeConfig = {
   colorScheme: 'purple',
   showHeroHeader: true,
   roundedCorners: 'large',
+  customModules: '[]',
 };
 
 // 配色方案
@@ -285,6 +293,54 @@ function BlogLayout({ children, config = defaultConfig }: { children: ReactNode;
 }
 
 // ============ 侧边栏组件 ============
+// 自定义模块组件
+function CustomModule({ 
+  title, 
+  html, 
+  js, 
+  rounded,
+  colors 
+}: { 
+  title: string; 
+  html: string; 
+  js: string;
+  rounded: { card: string; button: string };
+  colors: { primary: string; gradient: string; text: string; bg: string };
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (containerRef.current && js) {
+      try {
+        // 在安全的上下文中执行 JS 代码
+        const script = document.createElement('script');
+        script.textContent = js;
+        containerRef.current.appendChild(script);
+        
+        // 清理函数
+        return () => {
+          if (containerRef.current && containerRef.current.contains(script)) {
+            containerRef.current.removeChild(script);
+          }
+        };
+      } catch (error) {
+        console.error('自定义模块 JS 执行错误:', error);
+      }
+    }
+  }, [js]);
+
+  return (
+    <div className={`bg-white dark:bg-gray-900 ${rounded.card} p-6 shadow-sm`}>
+      {title && <h4 className={`font-bold mb-4 ${colors.text}`}>{title}</h4>}
+      <div 
+        ref={containerRef}
+        dangerouslySetInnerHTML={{ __html: html }}
+        className="custom-module-content"
+      />
+    </div>
+  );
+}
+
 function MagazineSidebar({ 
   config, 
   colors, 
@@ -296,6 +352,15 @@ function MagazineSidebar({
 }) {
   const { settings } = useSiteSettingsContext();
   const stats = (config as any)._stats;
+
+  // 解析自定义模块
+  let customModules: Array<{ title: string; html: string; js: string; enabled: boolean }> = [];
+  try {
+    const modulesData = config.customModules || '[]';
+    customModules = typeof modulesData === 'string' ? JSON.parse(modulesData) : modulesData;
+  } catch {
+    customModules = [];
+  }
 
   return (
     <aside className="w-full lg:w-80 flex-shrink-0 space-y-6">
@@ -345,7 +410,7 @@ function MagazineSidebar({
         <h4 className={`font-bold mb-4 ${colors.text}`}>快捷导航</h4>
         <div className="space-y-2">
           <Link href="/categories" className="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
-            📂 分类
+            � 分链类
           </Link>
           <Link href="/tags" className="block px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
             🏷️ 标签
@@ -358,6 +423,18 @@ function MagazineSidebar({
           </Link>
         </div>
       </div>
+
+      {/* 自定义模块 */}
+      {customModules.filter(m => m.enabled).map((module, index) => (
+        <CustomModule
+          key={index}
+          title={module.title}
+          html={module.html}
+          js={module.js}
+          rounded={rounded}
+          colors={colors}
+        />
+      ))}
     </aside>
   );
 }
